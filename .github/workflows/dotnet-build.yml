@@ -1,0 +1,20 @@
+name: .NET Build
+
+on:
+  pull_request:
+  push:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+      - name: Restore
+        run: dotnet restore AiWithMcp.sln
+      - name: Build
+        run: dotnet build --no-restore AiWithMcp.sln
