@@ -11,15 +11,7 @@ var builder = Host.CreateApplicationBuilder(args);
 
 builder.Logging.AddConsole();
 
-builder.Services.AddChatClient(_ =>
-    new OpenAI.Chat.ChatClient(
-        builder.Configuration["OPENAI_MODEL"] ?? "gpt-3.5-turbo",
-        builder.Configuration["OPENAI_API_KEY"] ?? Environment.GetEnvironmentVariable("OPENAI_API_KEY")
-    )
-    .AsIChatClient()
-    .AsBuilder()
-    .UseFunctionInvocation()
-    .Build());
+builder.Services.AddSemanticKernelChatClient(builder.Configuration);
 
 builder.Services.AddSingleton<IChatHistoryService, ChatHistoryService>();
 
