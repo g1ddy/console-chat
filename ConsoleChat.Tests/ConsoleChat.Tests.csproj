@@ -22,4 +22,9 @@
     </PackageReference>
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\McpServer\McpServer.csproj" />
+    <ProjectReference Include="..\SemanticKernelChat\SemanticKernelChat.csproj" />
+  </ItemGroup>
+
 </Project>
