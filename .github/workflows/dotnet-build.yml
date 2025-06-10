@@ -18,3 +18,5 @@ jobs:
         run: dotnet restore AiWithMcp.sln
       - name: Build
         run: dotnet build --no-restore AiWithMcp.sln
+      - name: Test
+        run: dotnet test --no-build AiWithMcp.sln -v minimal
