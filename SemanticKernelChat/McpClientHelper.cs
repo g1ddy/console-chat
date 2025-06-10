@@ -1,20 +1,26 @@
 using ModelContextProtocol.Client;
 using System.Collections.Generic;
+using System;
+using System.IO;
 
 namespace SemanticKernelChat;
 
 public static class McpClientHelper
 {
-    public static StdioClientTransport[] CreateTransports() =>
-    [
-        new(new()
-        {
-            Command = "dotnet",
-            Arguments = ["run", "--project", "../McpServer", "--no-build"],
-            Name = "McpServer"
-        }),
-        // Add additional MCP transports here
-    ];
+    public static StdioClientTransport[] CreateTransports()
+    {
+        var projectPath = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "../../../../McpServer"));
+        return
+        [
+            new(new()
+            {
+                Command = "dotnet",
+                Arguments = ["run", "--project", projectPath, "--no-build"],
+                Name = "McpServer"
+            }),
+            // Add additional MCP transports here
+        ];
+    }
 
     public static async Task<IList<McpClientTool>> GetToolsAsync(IEnumerable<StdioClientTransport> transports)
     {
