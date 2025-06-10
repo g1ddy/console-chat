@@ -8,6 +8,8 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="AWSSDK.Extensions.Bedrock.MEAI" Version="4.0.1.1" />
+    <PackageReference Include="AWSSDK.SecurityToken" Version="4.0.0.5" />
     <PackageReference Include="Microsoft.SemanticKernel" Version="1.55.0" />
     <PackageReference Include="Microsoft.Extensions.AI.Abstractions" Version="9.5.0" />
     <PackageReference Include="Microsoft.Extensions.AI.OpenAI" Version="9.5.0-preview.1.25265.7" />
@@ -16,6 +18,12 @@
 
   <ItemGroup>
     <ProjectReference Include="..\McpServer\McpServer.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="appsettings.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
 
 </Project>

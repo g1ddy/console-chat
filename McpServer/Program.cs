@@ -1,31 +1,26 @@
+// Entry point for the MCP server application
+// Sets up dependency injection, logging, and server transports
+
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using ModelContextProtocol.Server;
-using System.ComponentModel;
+
 using System.Linq;
 
 var builder = Host.CreateApplicationBuilder(args);
 
+// Configure logging to output all logs to stderr at the Trace level
 builder.Logging.AddConsole(options =>
 {
-    // Configure all logs to go to stderr
+    // All logs go to stderr for better separation from stdout
     options.LogToStandardErrorThreshold = LogLevel.Trace;
 });
 
+// Register the MCP server and configure transports and tools
 builder.Services
     .AddMcpServer()
     .WithStdioServerTransport()
     .WithToolsFromAssembly();
 
+// Build and run the host asynchronously
 await builder.Build().RunAsync();
-
-[McpServerToolType]
-public static class EchoTool
-{
-    [McpServerTool, Description("Echoes the message back to the client.")]
-    public static string Echo(string message) => $"Hello from C#: {message}";
-
-    [McpServerTool, Description("Echoes in reverse the message sent by the client.")]
-    public static string ReverseEcho(string message) => new string(message.Reverse().ToArray());
-}

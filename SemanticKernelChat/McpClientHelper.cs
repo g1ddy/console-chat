@@ -1,7 +1,4 @@
 using ModelContextProtocol.Client;
-using System.Collections.Generic;
-using System;
-using System.IO;
 
 namespace SemanticKernelChat;
 
