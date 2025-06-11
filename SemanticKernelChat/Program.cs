@@ -2,6 +2,8 @@ using Microsoft.Extensions.AI;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using System.Text;
+using Spectre.Console;
 
 using SemanticKernelChat;
 
@@ -23,8 +25,8 @@ var chatClient = host.Services.GetRequiredService<IChatClient>();
 var history = host.Services.GetRequiredService<IChatHistoryService>();
 
 // Create transports and tools for the chat client
-var transports = McpClientHelper.CreateTransports();
-var tools = await McpClientHelper.GetToolsAsync(transports);
+await using var toolCollection = await McpToolCollection.CreateAsync();
+var tools = toolCollection.Tools;
 
 Console.WriteLine("Type 'exit' to quit.");
 
@@ -32,7 +34,7 @@ Console.WriteLine("Type 'exit' to quit.");
 while (true)
 {
     Console.Write("You: ");
-    var input = Console.ReadLine();
+    var input = ReadMultilineInput();
     if (string.IsNullOrWhiteSpace(input))
     {
         continue;
@@ -52,4 +54,56 @@ while (true)
 
     // Add assistant message to history
     history.AddAssistantMessage(reply);
+}
+
+static string ReadMultilineInput()
+{
+    var console = AnsiConsole.Console;
+    var sb = new StringBuilder();
+
+    while (true)
+    {
+        var key = console.Input.ReadKey(intercept: true);
+        if (key == null)
+        {
+            continue;
+        }
+
+        if (key.Value.Key == ConsoleKey.Enter)
+        {
+            if (key.Value.Modifiers.HasFlag(ConsoleModifiers.Shift))
+            {
+                console.WriteLine();
+                sb.AppendLine();
+                continue;
+            }
+
+            console.WriteLine();
+            break;
+        }
+
+        if (key.Value.Key == ConsoleKey.Backspace)
+        {
+            if (sb.Length > 0)
+            {
+                var lastChar = sb[sb.Length - 1];
+                sb.Length--;
+                if (!char.IsControl(lastChar))
+                {
+                    console.Cursor.MoveLeft(1);
+                    console.Write(" ");
+                    console.Cursor.MoveLeft(1);
+                }
+            }
+            continue;
+        }
+
+        if (!char.IsControl(key.Value.KeyChar))
+        {
+            console.Write(key.Value.KeyChar.ToString());
+            sb.Append(key.Value.KeyChar);
+        }
+    }
+
+    return sb.ToString();
 }
