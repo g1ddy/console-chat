@@ -12,15 +12,48 @@ internal static class ChatConsole
 {
     public static void WriteChatMessage(ChatMessage message)
     {
+        var headerText = message.Role.ToString();
         var header = message.Role == ChatRole.Assistant
-            ? new PanelHeader("AI", Justify.Right)
-            : new PanelHeader("You");
+            ? new PanelHeader(headerText, Justify.Right)
+            : new PanelHeader(headerText);
 
         AnsiConsole.Write(
             new Panel(message.Text)
                 .RoundedBorder()
                 .Header(header)
                 .Expand());
+    }
+
+    private static string? GetToolSummary(AdditionalPropertiesDictionary properties)
+    {
+        if (properties.TryGetValue("tool_calls", out var calls) &&
+            calls is System.Text.Json.JsonElement element &&
+            element.ValueKind == System.Text.Json.JsonValueKind.Array &&
+            element.GetArrayLength() > 0)
+        {
+            var names = new List<string>();
+            foreach (var call in element.EnumerateArray())
+            {
+                if (call.TryGetProperty("function", out var func) &&
+                    func.TryGetProperty("name", out var nameElement))
+                {
+                    var name = nameElement.GetString();
+                    if (!string.IsNullOrWhiteSpace(name))
+                    {
+                        names.Add(name);
+                    }
+                }
+            }
+
+            if (names.Count > 0)
+            {
+                return $"Tool calls: {string.Join(", ", names)}";
+            }
+
+            return "Tool calls used";
+        }
+
+        return null;
     }
 
     public static async Task SendAndDisplayAsync(
@@ -33,6 +66,7 @@ internal static class ChatConsole
         WriteChatMessage(new ChatMessage(ChatRole.User, input));
 
         string reply = string.Empty;
+        string? info = null;
         Exception? error = null;
         await AnsiConsole.Status()
             .Spinner(Spinner.Known.Monkey)
@@ -44,6 +78,7 @@ internal static class ChatConsole
                         history.Messages,
                         new() { Tools = [.. tools] });
                     reply = response.Text;
+                    info = GetToolSummary(response.AdditionalProperties);
                 }
                 catch (Exception ex)
                 {
@@ -58,6 +93,11 @@ internal static class ChatConsole
         }
 
         history.AddAssistantMessage(reply);
+        if (info is not null)
+        {
+            AnsiConsole.MarkupLine($"[grey]{info}[/]");
+        }
+
         WriteChatMessage(new ChatMessage(ChatRole.Assistant, reply));
     }
 
@@ -72,7 +112,8 @@ internal static class ChatConsole
 
         var replyBuilder = new StringBuilder();
         Exception? error = null;
-        var header = new PanelHeader("AI", Justify.Right);
+        string? info = null;
+        var header = new PanelHeader(ChatRole.Assistant.ToString(), Justify.Right);
         var panel = new Panel(string.Empty)
             .RoundedBorder()
             .Header(header)
@@ -88,6 +129,7 @@ internal static class ChatConsole
                         history.Messages,
                         new() { Tools = [.. tools] }))
                     {
+                        info ??= GetToolSummary(update.AdditionalProperties);
                         replyBuilder.Append(update.Text);
                         panel = new Panel(replyBuilder.ToString())
                             .RoundedBorder()
@@ -110,6 +152,10 @@ internal static class ChatConsole
 
         var reply = replyBuilder.ToString();
         history.AddAssistantMessage(reply);
+        if (info is not null)
+        {
+            AnsiConsole.MarkupLine($"[grey]{info}[/]");
+        }
     }
 
     /// <summary>
