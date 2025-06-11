@@ -12,6 +12,21 @@ internal static class ChatConsole
 {
     public static void WriteChatMessage(ChatMessage message)
     {
+        if (message.Role == ChatRole.Tool)
+        {
+            if (!string.IsNullOrWhiteSpace(message.AuthorName))
+            {
+                AnsiConsole.MarkupLine($"[grey]Tool call: {message.AuthorName}[/]");
+            }
+
+            if (!string.IsNullOrWhiteSpace(message.Text))
+            {
+                AnsiConsole.MarkupLine($"[grey]{message.Text}[/]");
+            }
+
+            return;
+        }
+
         var headerText = message.Role.ToString();
         var header = message.Role == ChatRole.Assistant
             ? new PanelHeader(headerText, Justify.Right)
@@ -24,19 +39,15 @@ internal static class ChatConsole
                 .Expand());
     }
 
-    private static string? GetToolSummary(IEnumerable<ChatMessage> messages)
+    public static void WriteChatMessages(IChatHistoryService history, IEnumerable<ChatMessage> messages)
     {
-        var names = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         foreach (var message in messages)
         {
-            if (message.Role == ChatRole.Tool && !string.IsNullOrWhiteSpace(message.AuthorName))
-            {
-                names.Add(message.AuthorName!);
-            }
+            history.Add(message);
+            WriteChatMessage(message);
         }
-
-        return names.Count > 0 ? $"Tool calls: {string.Join(", ", names)}" : null;
     }
+
 
     public static async Task SendAndDisplayAsync(
         IChatClient chatClient,
@@ -73,16 +84,7 @@ internal static class ChatConsole
             return;
         }
 
-        var info = GetToolSummary(responses);
-        foreach (var message in responses)
-        {
-            history.Add(message);
-            WriteChatMessage(message);
-        }
-        if (info is not null)
-        {
-            AnsiConsole.MarkupLine($"[grey]{info}[/]");
-        }
+        WriteChatMessages(history, responses);
     }
 
     public static async Task SendAndDisplayStreamingAsync(
