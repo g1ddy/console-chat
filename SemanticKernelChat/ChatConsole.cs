@@ -2,63 +2,80 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
+
 using Microsoft.Extensions.AI;
+
 using ModelContextProtocol.Client;
+
 using Spectre.Console;
+using Spectre.Console.Rendering;
 
 namespace SemanticKernelChat;
 
 internal static class ChatConsole
 {
-    public static void WriteChatMessage(ChatMessage message)
-    {
-        if (message.Role == ChatRole.Tool)
-        {
-            if (!string.IsNullOrWhiteSpace(message.AuthorName))
-            {
-                AnsiConsole.MarkupLine($"[grey]Tool call: {message.AuthorName}[/]");
-            }
-
-            if (!string.IsNullOrWhiteSpace(message.Text))
-            {
-                AnsiConsole.MarkupLine($"[grey]{message.Text}[/]");
-            }
-
-            return;
-        }
-
-        var headerText = message.Role.ToString();
-        var header = message.Role == ChatRole.Assistant
-            ? new PanelHeader(headerText, Justify.Right)
-            : new PanelHeader(headerText);
-
-        AnsiConsole.Write(
-            new Panel(message.Text)
-                .RoundedBorder()
-                .Header(header)
-                .Expand());
-    }
-
-    public static void WriteChatMessages(IChatHistoryService history, IEnumerable<ChatMessage> messages)
+    public static void WriteChatMessages(IChatHistoryService history, params ChatMessage[] messages)
     {
         foreach (var message in messages)
         {
             history.Add(message);
-            WriteChatMessage(message);
+
+            IRenderable markupResponse = new Markup(message.Text.EscapeMarkup());
+            if (message.Role == ChatRole.Tool)
+            {
+                var content = message.Contents.FirstOrDefault();
+                if (content is FunctionResultContent functionResultContent)
+                {
+                    markupResponse = new Markup("[grey]tool: Tool Result...[/]");
+                    //textResponse = new JsonJsonText(functionResultContent.Result?.ToString());
+                }
+            }
+
+            var headerText = message.Role.ToString();
+            var header = message.Role == ChatRole.Assistant
+                ? new PanelHeader(headerText, Justify.Right)
+                : new PanelHeader(headerText);
+
+            AnsiConsole.Write(
+                new Panel(markupResponse)
+                    .RoundedBorder()
+                    .Header(header)
+                    .Expand());
         }
     }
 
+    /// <summary>
+    /// Reads user text until a blank line is entered. Returns <c>null</c> when the input stream ends.
+    /// An empty string means the user pressed Enter on an empty line.
+    /// This keeps the implementation minimal at the cost of advanced editing features.
+    /// </summary>
+    public static string? ReadMultilineInput()
+    {
+        var lines = new List<string>();
+        string? line;
+        while ((line = Console.ReadLine()) != null)
+        {
+            if (string.IsNullOrEmpty(line))
+            {
+                if (lines.Count > 0)
+                {
+                    break;
+                }
+
+                continue;
+            }
+
+            lines.Add(line);
+        }
+
+        return string.Join(Environment.NewLine, lines);
+    }
 
     public static async Task SendAndDisplayAsync(
         IChatClient chatClient,
         IChatHistoryService history,
-        string input,
         IReadOnlyList<McpClientTool> tools)
     {
-        var userMessage = new ChatMessage(ChatRole.User, input);
-        history.Add(userMessage);
-        WriteChatMessage(userMessage);
-
         List<ChatMessage> responses = [];
         Exception? error = null;
         await AnsiConsole.Status()
@@ -84,19 +101,14 @@ internal static class ChatConsole
             return;
         }
 
-        WriteChatMessages(history, responses);
+        WriteChatMessages(history, responses.ToArray());
     }
 
     public static async Task SendAndDisplayStreamingAsync(
         IChatClient chatClient,
         IChatHistoryService history,
-        string input,
         IReadOnlyList<McpClientTool> tools)
     {
-        var userMessage = new ChatMessage(ChatRole.User, input);
-        history.Add(userMessage);
-        WriteChatMessage(userMessage);
-
         var replyBuilder = new StringBuilder();
         Exception? error = null;
         var toolNames = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
@@ -116,10 +128,6 @@ internal static class ChatConsole
                         history.Messages,
                         new() { Tools = [.. tools] }))
                     {
-                        if (update.Role == ChatRole.Tool && !string.IsNullOrWhiteSpace(update.AuthorName))
-                        {
-                            toolNames.Add(update.AuthorName!);
-                        }
                         if (update.Role == ChatRole.Assistant)
                         {
                             replyBuilder.Append(update.Text);
@@ -128,6 +136,11 @@ internal static class ChatConsole
                                 .Header(header)
                                 .Expand();
                             ctx.UpdateTarget(panel);
+                        }
+                        else if (update.Role == ChatRole.Tool)
+                        {
+                            replyBuilder.Append(Environment.NewLine);
+                            replyBuilder.AppendFormat("[grey]{0}: Tool Result...[/]", update.Role);
                         }
                     }
                 }
@@ -146,36 +159,5 @@ internal static class ChatConsole
         var reply = replyBuilder.ToString();
         var assistantMessage = new ChatMessage(ChatRole.Assistant, reply);
         history.Add(assistantMessage);
-        if (toolNames.Count > 0)
-        {
-            AnsiConsole.MarkupLine($"[grey]Tool calls: {string.Join(", ", toolNames)}[/]");
-        }
-    }
-
-    /// <summary>
-    /// Reads user text until a blank line is entered. Returns <c>null</c> when the input stream ends.
-    /// An empty string means the user pressed Enter on an empty line.
-    /// This keeps the implementation minimal at the cost of advanced editing features.
-    /// </summary>
-    public static string? ReadMultilineInput()
-    {
-        var lines = new List<string>();
-        string? line;
-        while ((line = Console.ReadLine()) != null)
-        {
-            if (string.IsNullOrEmpty(line))
-            {
-                if (lines.Count > 0)
-                {
-                    break;
-                }
-                continue;
-            }
-            lines.Add(line);
-        }
-
-        return line is null && lines.Count == 0
-            ? null
-            : string.Join(Environment.NewLine, lines);
     }
 }

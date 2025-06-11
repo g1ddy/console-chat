@@ -1,10 +1,11 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using Spectre.Console;
-using Spectre.Console.Cli;
 
 using SemanticKernelChat;
+
+using Spectre.Console;
+using Spectre.Console.Cli;
 
 var builder = Host.CreateApplicationBuilder(args);
 
@@ -23,6 +24,6 @@ app.Configure(config =>
     config.AddCommand<ChatStreamCommand>("chat-stream");
 });
 
-app.SetDefaultCommand<ChatCommand>();
+app.SetDefaultCommand<ChatStreamCommand>();
 
 return await app.RunAsync(args);

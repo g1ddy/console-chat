@@ -1,7 +1,6 @@
-using System;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.Logging;
-using ModelContextProtocol.Client;
+
 using Spectre.Console;
 using Spectre.Console.Cli;
 
@@ -47,7 +46,10 @@ public sealed class ChatStreamCommand : AsyncCommand<ChatCommand.Settings>
                 break;
             }
 
-            await ChatConsole.SendAndDisplayStreamingAsync(_chatClient, _history, input, tools);
+            var userMessage = new ChatMessage(ChatRole.User, input);
+            ChatConsole.WriteChatMessages(_history, userMessage);
+
+            await ChatConsole.SendAndDisplayStreamingAsync(_chatClient, _history, tools);
         }
 
         return 0;

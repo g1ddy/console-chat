@@ -1,7 +1,6 @@
-using System;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.Logging;
-using ModelContextProtocol.Client;
+
 using Spectre.Console;
 using Spectre.Console.Cli;
 
@@ -36,7 +35,7 @@ public sealed class ChatCommand : AsyncCommand<ChatCommand.Settings>
             AnsiConsole.Markup("You: ");
             var input = ChatConsole.ReadMultilineInput();
 
-            if (input is null)
+            if (input is null || input.Equals("exit", StringComparison.OrdinalIgnoreCase))
             {
                 break;
             }
@@ -46,12 +45,10 @@ public sealed class ChatCommand : AsyncCommand<ChatCommand.Settings>
                 continue;
             }
 
-            if (input.Equals("exit", StringComparison.OrdinalIgnoreCase))
-            {
-                break;
-            }
+            var userMessage = new ChatMessage(ChatRole.User, input);
+            ChatConsole.WriteChatMessages(_history, userMessage);
 
-            await ChatConsole.SendAndDisplayAsync(_chatClient, _history, input, tools);
+            await ChatConsole.SendAndDisplayAsync(_chatClient, _history, tools);
         }
 
         return 0;
