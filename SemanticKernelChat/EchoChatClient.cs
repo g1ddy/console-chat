@@ -14,11 +14,13 @@ namespace SemanticKernelChat;
 public sealed class EchoChatClient : IChatClient
 {
     /// <inheritdoc />
-    public Task<ChatResponse> GetResponseAsync(IEnumerable<ChatMessage> messages, ChatOptions? options = null, CancellationToken cancellationToken = default)
+    public async Task<ChatResponse> GetResponseAsync(IEnumerable<ChatMessage> messages, ChatOptions? options = null, CancellationToken cancellationToken = default)
     {
         var text = messages.Last().Text;
+        // Simulate a response delay like a real AI model would have
+        await Task.Delay(TimeSpan.FromSeconds(2), cancellationToken);
         var responseMessage = new ChatMessage(ChatRole.Assistant, text);
-        return Task.FromResult(new ChatResponse(responseMessage));
+        return new ChatResponse(responseMessage);
     }
 
     /// <inheritdoc />
