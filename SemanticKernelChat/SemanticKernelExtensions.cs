@@ -36,12 +36,21 @@ public static class SemanticKernelExtensions
     /// </summary>
     private static IChatClient CreateChatClient(IConfiguration configuration)
     {
-        // Get provider and model configuration
-        var provider = configuration["Provider"] ?? throw new ArgumentNullException("PROVIDER", "Semantic Kernel provider is not configured.");
+        // Get provider and model configuration. If either is missing, return an echo client.
+        var provider = configuration["Provider"];
+        if (string.IsNullOrWhiteSpace(provider))
+        {
+            return new EchoChatClient();
+        }
+
         var providerSection = configuration.GetSection(provider);
 
         // Get the model ID from the configuration
-        var modelId = providerSection["ModelId"] ?? throw new ArgumentNullException("MODEL", "Semantic Kernel model is not configured.");
+        var modelId = providerSection["ModelId"];
+        if (string.IsNullOrWhiteSpace(modelId))
+        {
+            return new EchoChatClient();
+        }
 
         switch (provider)
         {
