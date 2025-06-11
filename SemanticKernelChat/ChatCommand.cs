@@ -44,9 +44,23 @@ public sealed class ChatCommand : AsyncCommand<ChatCommand.Settings>
             }
 
             _history.AddUserMessage(input);
-            var response = await _chatClient.GetResponseAsync(_history.Messages, new() { Tools = [.. tools] });
-            var reply = response.Text;
-            AnsiConsole.MarkupLine($"AI: {reply}");
+            AnsiConsole.Write(new Panel(input).Header("You"));
+
+            string reply = string.Empty;
+            await AnsiConsole.Status()
+                .Spinner(Spinner.Known.Monkey)
+                .StartAsync("Thinking...", async _ =>
+                {
+                    var response = await _chatClient.GetResponseAsync(
+                        _history.Messages,
+                        new() { Tools = [.. tools] });
+                    reply = response.Text;
+                });
+
+            AnsiConsole.Write(
+                new Align(
+                    new Panel(reply).Header("AI"),
+                    HorizontalAlignment.Right));
             _history.AddAssistantMessage(reply);
         }
 
