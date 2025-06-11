@@ -24,36 +24,18 @@ internal static class ChatConsole
                 .Expand());
     }
 
-    private static string? GetToolSummary(AdditionalPropertiesDictionary properties)
+    private static string? GetToolSummary(IEnumerable<ChatMessage> messages)
     {
-        if (properties.TryGetValue("tool_calls", out var calls) &&
-            calls is System.Text.Json.JsonElement element &&
-            element.ValueKind == System.Text.Json.JsonValueKind.Array &&
-            element.GetArrayLength() > 0)
+        var names = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        foreach (var message in messages)
         {
-            var names = new List<string>();
-            foreach (var call in element.EnumerateArray())
+            if (message.Role == ChatRole.Tool && !string.IsNullOrWhiteSpace(message.AuthorName))
             {
-                if (call.TryGetProperty("function", out var func) &&
-                    func.TryGetProperty("name", out var nameElement))
-                {
-                    var name = nameElement.GetString();
-                    if (!string.IsNullOrWhiteSpace(name))
-                    {
-                        names.Add(name);
-                    }
-                }
+                names.Add(message.AuthorName!);
             }
-
-            if (names.Count > 0)
-            {
-                return $"Tool calls: {string.Join(", ", names)}";
-            }
-
-            return "Tool calls used";
         }
 
-        return null;
+        return names.Count > 0 ? $"Tool calls: {string.Join(", ", names)}" : null;
     }
 
     public static async Task SendAndDisplayAsync(
@@ -62,11 +44,11 @@ internal static class ChatConsole
         string input,
         IReadOnlyList<McpClientTool> tools)
     {
-        history.AddUserMessage(input);
-        WriteChatMessage(new ChatMessage(ChatRole.User, input));
+        var userMessage = new ChatMessage(ChatRole.User, input);
+        history.Add(userMessage);
+        WriteChatMessage(userMessage);
 
-        string reply = string.Empty;
-        string? info = null;
+        List<ChatMessage> responses = [];
         Exception? error = null;
         await AnsiConsole.Status()
             .Spinner(Spinner.Known.Monkey)
@@ -77,8 +59,7 @@ internal static class ChatConsole
                     var response = await chatClient.GetResponseAsync(
                         history.Messages,
                         new() { Tools = [.. tools] });
-                    reply = response.Text;
-                    info = GetToolSummary(response.AdditionalProperties);
+                    responses.AddRange(response.Messages);
                 }
                 catch (Exception ex)
                 {
@@ -92,13 +73,16 @@ internal static class ChatConsole
             return;
         }
 
-        history.AddAssistantMessage(reply);
+        var info = GetToolSummary(responses);
+        foreach (var message in responses)
+        {
+            history.Add(message);
+            WriteChatMessage(message);
+        }
         if (info is not null)
         {
             AnsiConsole.MarkupLine($"[grey]{info}[/]");
         }
-
-        WriteChatMessage(new ChatMessage(ChatRole.Assistant, reply));
     }
 
     public static async Task SendAndDisplayStreamingAsync(
@@ -107,12 +91,13 @@ internal static class ChatConsole
         string input,
         IReadOnlyList<McpClientTool> tools)
     {
-        history.AddUserMessage(input);
-        WriteChatMessage(new ChatMessage(ChatRole.User, input));
+        var userMessage = new ChatMessage(ChatRole.User, input);
+        history.Add(userMessage);
+        WriteChatMessage(userMessage);
 
         var replyBuilder = new StringBuilder();
         Exception? error = null;
-        string? info = null;
+        var toolNames = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         var header = new PanelHeader(ChatRole.Assistant.ToString(), Justify.Right);
         var panel = new Panel(string.Empty)
             .RoundedBorder()
@@ -129,13 +114,19 @@ internal static class ChatConsole
                         history.Messages,
                         new() { Tools = [.. tools] }))
                     {
-                        info ??= GetToolSummary(update.AdditionalProperties);
-                        replyBuilder.Append(update.Text);
-                        panel = new Panel(replyBuilder.ToString())
-                            .RoundedBorder()
-                            .Header(header)
-                            .Expand();
-                        ctx.UpdateTarget(panel);
+                        if (update.Role == ChatRole.Tool && !string.IsNullOrWhiteSpace(update.AuthorName))
+                        {
+                            toolNames.Add(update.AuthorName!);
+                        }
+                        if (update.Role == ChatRole.Assistant)
+                        {
+                            replyBuilder.Append(update.Text);
+                            panel = new Panel(replyBuilder.ToString())
+                                .RoundedBorder()
+                                .Header(header)
+                                .Expand();
+                            ctx.UpdateTarget(panel);
+                        }
                     }
                 }
                 catch (Exception ex)
@@ -151,10 +142,11 @@ internal static class ChatConsole
         }
 
         var reply = replyBuilder.ToString();
-        history.AddAssistantMessage(reply);
-        if (info is not null)
+        var assistantMessage = new ChatMessage(ChatRole.Assistant, reply);
+        history.Add(assistantMessage);
+        if (toolNames.Count > 0)
         {
-            AnsiConsole.MarkupLine($"[grey]{info}[/]");
+            AnsiConsole.MarkupLine($"[grey]Tool calls: {string.Join(", ", toolNames)}[/]");
         }
     }
 
