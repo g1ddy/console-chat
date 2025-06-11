@@ -56,46 +56,61 @@ public sealed class ChatCommand : AsyncCommand<ChatCommand.Settings>
         AnsiConsole.Write(
             new Panel(input)
                 .RoundedBorder()
-                .Header(new PanelHeader("You")));
+                .Header(new PanelHeader("You"))
+                .Expand());
 
         string reply = string.Empty;
+        Exception? error = null;
         await AnsiConsole.Status()
             .Spinner(Spinner.Known.Monkey)
             .StartAsync("Thinking...", async _ =>
             {
-                var response = await _chatClient.GetResponseAsync(
-                    _history.Messages,
-                    new() { Tools = [.. tools] });
-                reply = response.Text;
+                try
+                {
+                    var response = await _chatClient.GetResponseAsync(
+                        _history.Messages,
+                        new() { Tools = [.. tools] });
+                    reply = response.Text;
+                }
+                catch (Exception ex)
+                {
+                    error = ex;
+                }
             });
+
+        if (error is not null)
+        {
+            AnsiConsole.Write(
+                new Panel(error.ToString())
+                    .RoundedBorder()
+                    .Header(new PanelHeader("Error"))
+                    .Expand());
+            return;
+        }
 
         _history.AddAssistantMessage(reply);
 
         AnsiConsole.Write(
             new Panel(reply)
                 .RoundedBorder()
-                .Header(new PanelHeader("AI", Justify.Right)));
+                .Header(new PanelHeader("AI", Justify.Right))
+                .Expand());
     }
 
-    private static string ReadMultilineInput()
+    internal static string ReadMultilineInput()
     {
+        // Console.ReadLine returns null if the input stream has ended (e.g. Ctrl+D)
+        // and an empty string when the user just presses Enter.
         var lines = new List<string>();
-
-        while (true)
+        string? line;
+        while ((line = Console.ReadLine()) != null)
         {
-            var line = Console.ReadLine();
-            if (line is null)
-            {
-                break;
-            }
-
             if (string.IsNullOrEmpty(line))
             {
                 if (lines.Count > 0)
                 {
                     break;
                 }
-
                 continue;
             }
 

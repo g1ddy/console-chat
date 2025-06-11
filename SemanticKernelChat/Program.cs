@@ -18,6 +18,7 @@ var app = new CommandApp(registrar);
 app.Configure(config =>
 {
     config.AddCommand<ChatCommand>("chat");
+    config.AddCommand<ChatStreamCommand>("chat-stream");
 });
 
 app.SetDefaultCommand<ChatCommand>();
