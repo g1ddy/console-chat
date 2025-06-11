@@ -34,90 +34,29 @@ public sealed class ChatCommand : AsyncCommand<ChatCommand.Settings>
         while (true)
         {
             AnsiConsole.Markup("You: ");
-            var input = ReadMultilineInput();
+            var input = ChatConsole.ReadMultilineInput();
+
+            if (input is null)
+            {
+                break;
+            }
+
             if (string.IsNullOrWhiteSpace(input))
             {
                 continue;
             }
+
             if (input.Equals("exit", StringComparison.OrdinalIgnoreCase))
             {
                 break;
             }
 
-            await SendAndDisplayAsync(input, tools);
+            await ChatConsole.SendAndDisplayAsync(_chatClient, _history, input, tools);
         }
 
         return 0;
     }
 
-    private async Task SendAndDisplayAsync(string input, IReadOnlyList<McpClientTool> tools)
-    {
-        _history.AddUserMessage(input);
-        AnsiConsole.Write(
-            new Panel(input)
-                .RoundedBorder()
-                .Header(new PanelHeader("You"))
-                .Expand());
 
-        string reply = string.Empty;
-        Exception? error = null;
-        await AnsiConsole.Status()
-            .Spinner(Spinner.Known.Monkey)
-            .StartAsync("Thinking...", async _ =>
-            {
-                try
-                {
-                    var response = await _chatClient.GetResponseAsync(
-                        _history.Messages,
-                        new() { Tools = [.. tools] });
-                    reply = response.Text;
-                }
-                catch (Exception ex)
-                {
-                    error = ex;
-                }
-            });
-
-        if (error is not null)
-        {
-            AnsiConsole.Write(
-                new Panel(error.ToString())
-                    .RoundedBorder()
-                    .Header(new PanelHeader("Error"))
-                    .Expand());
-            return;
-        }
-
-        _history.AddAssistantMessage(reply);
-
-        AnsiConsole.Write(
-            new Panel(reply)
-                .RoundedBorder()
-                .Header(new PanelHeader("AI", Justify.Right))
-                .Expand());
-    }
-
-    internal static string ReadMultilineInput()
-    {
-        // Console.ReadLine returns null if the input stream has ended (e.g. Ctrl+D)
-        // and an empty string when the user just presses Enter.
-        var lines = new List<string>();
-        string? line;
-        while ((line = Console.ReadLine()) != null)
-        {
-            if (string.IsNullOrEmpty(line))
-            {
-                if (lines.Count > 0)
-                {
-                    break;
-                }
-                continue;
-            }
-
-            lines.Add(line);
-        }
-
-        return string.Join(Environment.NewLine, lines);
-    }
 }
 

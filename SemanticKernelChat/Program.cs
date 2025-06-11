@@ -1,6 +1,7 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Spectre.Console;
 using Spectre.Console.Cli;
 
 using SemanticKernelChat;
@@ -17,6 +18,7 @@ var app = new CommandApp(registrar);
 
 app.Configure(config =>
 {
+    config.SetExceptionHandler(ex => AnsiConsole.WriteException(ex, ExceptionFormats.ShortenTypes));
     config.AddCommand<ChatCommand>("chat");
     config.AddCommand<ChatStreamCommand>("chat-stream");
 });
