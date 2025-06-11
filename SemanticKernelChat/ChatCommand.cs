@@ -1,6 +1,7 @@
 using System;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.Logging;
+using ModelContextProtocol.Client;
 using Spectre.Console;
 using Spectre.Console.Cli;
 
@@ -43,78 +44,65 @@ public sealed class ChatCommand : AsyncCommand<ChatCommand.Settings>
                 break;
             }
 
-            _history.AddUserMessage(input);
-            AnsiConsole.Write(new Panel(input).Header("You"));
-
-            string reply = string.Empty;
-            await AnsiConsole.Status()
-                .Spinner(Spinner.Known.Monkey)
-                .StartAsync("Thinking...", async _ =>
-                {
-                    var response = await _chatClient.GetResponseAsync(
-                        _history.Messages,
-                        new() { Tools = [.. tools] });
-                    reply = response.Text;
-                });
-
-            AnsiConsole.Write(
-                new Align(
-                    new Panel(reply).Header("AI"),
-                    HorizontalAlignment.Right));
-            _history.AddAssistantMessage(reply);
+            await SendAndDisplayAsync(input, tools);
         }
 
         return 0;
     }
 
+    private async Task SendAndDisplayAsync(string input, IReadOnlyList<McpClientTool> tools)
+    {
+        _history.AddUserMessage(input);
+        AnsiConsole.Write(
+            new Panel(input)
+                .RoundedBorder()
+                .Header(new PanelHeader("You")));
+
+        string reply = string.Empty;
+        await AnsiConsole.Status()
+            .Spinner(Spinner.Known.Monkey)
+            .StartAsync("Thinking...", async _ =>
+            {
+                var response = await _chatClient.GetResponseAsync(
+                    _history.Messages,
+                    new() { Tools = [.. tools] });
+                reply = response.Text;
+            });
+
+        _history.AddAssistantMessage(reply);
+
+        AnsiConsole.Write(
+            new Panel(reply)
+                .RoundedBorder()
+                .Header(new PanelHeader("AI", Justify.Right)));
+    }
+
     private static string ReadMultilineInput()
     {
-        var console = AnsiConsole.Console;
-        var sb = new System.Text.StringBuilder();
+        var lines = new List<string>();
+
         while (true)
         {
-            var key = console.Input.ReadKey(intercept: true);
-            if (key == null)
+            var line = Console.ReadLine();
+            if (line is null)
             {
-                continue;
-            }
-
-            if (key.Value.Key == ConsoleKey.Enter)
-            {
-                if (key.Value.Modifiers.HasFlag(ConsoleModifiers.Shift))
-                {
-                    console.WriteLine();
-                    sb.AppendLine();
-                    continue;
-                }
-
-                console.WriteLine();
                 break;
             }
 
-            if (key.Value.Key == ConsoleKey.Backspace)
+            if (string.IsNullOrEmpty(line))
             {
-                if (sb.Length > 0)
+                if (lines.Count > 0)
                 {
-                    var lastChar = sb[^1];
-                    sb.Length--;
-                    if (!char.IsControl(lastChar))
-                    {
-                        console.Cursor.MoveLeft(1);
-                        console.Write(" ");
-                        console.Cursor.MoveLeft(1);
-                    }
+                    break;
                 }
+
                 continue;
             }
 
-            if (!char.IsControl(key.Value.KeyChar))
-            {
-                console.Write(key.Value.KeyChar.ToString());
-                sb.Append(key.Value.KeyChar);
-            }
+            lines.Add(line);
         }
-        return sb.ToString();
+
+        return string.Join(Environment.NewLine, lines);
     }
 }
 
