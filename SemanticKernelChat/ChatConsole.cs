@@ -1,5 +1,7 @@
 using System.Text;
 
+using Amazon.BedrockRuntime.Model;
+
 using Microsoft.Extensions.AI;
 
 using ModelContextProtocol.Client;
@@ -11,9 +13,36 @@ namespace SemanticKernelChat;
 
 internal static class ChatConsole
 {
-    private static readonly Style UserPanelStyle = new(Color.White, Color.RoyalBlue1);
-    private static readonly Style AssistantPanelStyle = new(Color.White, Color.DarkSeaGreen2);
-    private static readonly Style ToolPanelStyle = new(Color.White, Color.Grey37);
+    private static readonly Style UserPanelStyle = new(Color.RoyalBlue1);
+    private static readonly Style AssistantPanelStyle = new(Color.DarkSeaGreen2);
+    private static readonly Style ToolPanelStyle = new(Color.Grey37);
+
+    private static (Style style, PanelHeader header) GetPanelConfig(ChatRole messageRole)
+    {
+        var style = Style.Plain;
+        var headerText = messageRole.ToString();
+        if (messageRole == ChatRole.User)
+        {
+            style = UserPanelStyle;
+            headerText = ":bust_in_silhouette: User";
+        }
+        else if (messageRole == ChatRole.Assistant)
+        {
+            style = AssistantPanelStyle;
+            headerText = ":robot: Assistant";
+        }
+        else if (messageRole == ChatRole.Tool)
+        {
+            style = ToolPanelStyle;
+            headerText = ":wrench: Tool";
+        }
+
+        var header = messageRole == ChatRole.Assistant
+            ? new PanelHeader(headerText, Justify.Right)
+            : new PanelHeader(headerText);
+
+        return (style, header);
+    }
 
     public static void WriteChatMessages(IChatHistoryService history, params ChatMessage[] messages)
     {
@@ -31,33 +60,12 @@ internal static class ChatConsole
                 }
             }
 
-            var style = Style.Plain;
-            var headerText = message.Role.ToString();
-            if (message.Role == ChatRole.User)
-            {
-                style = UserPanelStyle;
-                headerText = ":bust_in_silhouette: User";
-            }
-            else if (message.Role == ChatRole.Assistant)
-            {
-                style = AssistantPanelStyle;
-                headerText = ":robot: Assistant";
-            }
-            else if (message.Role == ChatRole.Tool)
-            {
-                style = ToolPanelStyle;
-                headerText = ":wrench: Tool";
-            }
-
-            var header = message.Role == ChatRole.Assistant
-                ? new PanelHeader(headerText, Justify.Right)
-                : new PanelHeader(headerText);
-
+            var config = GetPanelConfig(message.Role);
             AnsiConsole.Write(
                 new Panel(markupResponse)
                     .RoundedBorder()
-                    .BorderStyle(style)
-                    .Header(header)
+                    .BorderStyle(config.style)
+                    .Header(config.header)
                     .Expand());
         }
     }
@@ -131,11 +139,11 @@ internal static class ChatConsole
         var replyBuilder = new StringBuilder();
         Exception? error = null;
 
-        var header = new PanelHeader(":robot: Assistant", Justify.Right);
+        var config = GetPanelConfig(ChatRole.Assistant);
         var panel = new Panel(string.Empty)
             .RoundedBorder()
-            .BorderStyle(AssistantPanelStyle)
-            .Header(header)
+            .BorderStyle(config.style)
+            .Header(config.header)
             .Expand();
 
         await AnsiConsole.Live(panel)
@@ -156,7 +164,7 @@ internal static class ChatConsole
                             panel = new Panel(replyBuilder.ToString())
                                 .RoundedBorder()
                                 .BorderStyle(AssistantPanelStyle)
-                                .Header(header)
+                                .Header(config.header)
                                 .Expand();
                             ctx.UpdateTarget(panel);
                         }
