@@ -2,6 +2,8 @@ using System.Text;
 using System.Linq;
 using System.Threading;
 
+using Amazon.BedrockRuntime.Model;
+
 using Microsoft.Extensions.AI;
 
 using ModelContextProtocol.Client;
@@ -15,6 +17,9 @@ namespace SemanticKernelChat;
 internal static class ChatConsole
 {
     private static LineEditor? _editor;
+    private static readonly Style UserPanelStyle = new(Color.RoyalBlue1);
+    private static readonly Style AssistantPanelStyle = new(Color.DarkSeaGreen2);
+    private static readonly Style ToolPanelStyle = new(Color.Grey37);
 
     public static void Initialize(IEnumerable<McpClientTool> tools)
     {
@@ -29,6 +34,33 @@ internal static class ChatConsole
             Completion = new CommandCompletion(tools.Select(t => t.Name)),
         };
     }
+
+    private static (Style style, PanelHeader header) GetPanelConfig(ChatRole messageRole)
+    {
+        var style = Style.Plain;
+        var headerText = messageRole.ToString();
+        if (messageRole == ChatRole.User)
+        {
+            style = UserPanelStyle;
+            headerText = ":bust_in_silhouette: User";
+        }
+        else if (messageRole == ChatRole.Assistant)
+        {
+            style = AssistantPanelStyle;
+            headerText = ":robot: Assistant";
+        }
+        else if (messageRole == ChatRole.Tool)
+        {
+            style = ToolPanelStyle;
+            headerText = ":wrench: Tool";
+        }
+
+        var header = messageRole == ChatRole.Assistant
+            ? new PanelHeader(headerText, Justify.Right)
+            : new PanelHeader(headerText);
+
+        return (style, header);
+    }
     public static void WriteChatMessages(IChatHistoryService history, params ChatMessage[] messages)
     {
         history.Add(messages);
@@ -39,22 +71,18 @@ internal static class ChatConsole
             if (message.Role == ChatRole.Tool)
             {
                 var content = message.Contents.FirstOrDefault();
-                if (content is FunctionResultContent /*functionResultContent*/)
+                if (content is FunctionResultContent)
                 {
-                    markupResponse = new Markup("[grey]tool: Tool Result...[/]");
-                    //textResponse = new JsonJsonText(functionResultContent.Result?.ToString());
+                    markupResponse = new Markup("[grey]:wrench: Tool Result...[/]");
                 }
             }
 
-            var headerText = message.Role.ToString();
-            var header = message.Role == ChatRole.Assistant
-                ? new PanelHeader(headerText, Justify.Right)
-                : new PanelHeader(headerText);
-
+            var config = GetPanelConfig(message.Role);
             AnsiConsole.Write(
                 new Panel(markupResponse)
                     .RoundedBorder()
-                    .Header(header)
+                    .BorderStyle(config.style)
+                    .Header(config.header)
                     .Expand());
         }
     }
@@ -111,10 +139,11 @@ internal static class ChatConsole
         var replyBuilder = new StringBuilder();
         Exception? error = null;
 
-        var header = new PanelHeader(ChatRole.Assistant.ToString(), Justify.Right);
+        var config = GetPanelConfig(ChatRole.Assistant);
         var panel = new Panel(string.Empty)
             .RoundedBorder()
-            .Header(header)
+            .BorderStyle(config.style)
+            .Header(config.header)
             .Expand();
 
         await AnsiConsole.Live(panel)
@@ -134,14 +163,15 @@ internal static class ChatConsole
                             _ = replyBuilder.Append(update.Text.EscapeMarkup());
                             panel = new Panel(replyBuilder.ToString())
                                 .RoundedBorder()
-                                .Header(header)
+                                .BorderStyle(AssistantPanelStyle)
+                                .Header(config.header)
                                 .Expand();
                             ctx.UpdateTarget(panel);
                         }
                         else if (update.Role == ChatRole.Tool)
                         {
                             _ = replyBuilder.Append(Environment.NewLine);
-                            _ = replyBuilder.AppendFormat("[grey]{0}: Tool Result...[/]", update.Role);
+                            _ = replyBuilder.AppendFormat("[grey]:wrench: {0} Result...[/]", update.Role);
                         }
                     }
                 }
