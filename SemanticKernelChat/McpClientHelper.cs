@@ -38,6 +38,8 @@ public static class McpClientHelper
                         TransportMode = HttpTransportMode.Sse,
                     });
                     break;
+                default:
+                    throw new InvalidOperationException($"Unsupported server type: {server.Type}");
             }
         }
     }
