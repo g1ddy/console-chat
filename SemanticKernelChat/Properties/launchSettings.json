@@ -1,0 +1,11 @@
+{
+  "profiles": {
+    "SemanticKernelChat": {
+      "commandName": "Project",
+      "commandLineArgs": "chat-stream",
+      "environmentVariables": {
+        "DOTNET_ENVIRONMENT": "Development"
+      }
+    }
+  }
+}

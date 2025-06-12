@@ -14,7 +14,9 @@ public sealed class TextCompletionCommand : AsyncCommand<TextCompletionCommand.S
     }
 
     private const string SystemPrompt = """
-AI CLI assistant. Default is chat. When input starts with /complete, treat the rest as a completion request and return only that text with no filler. When a tool must be called, respond with pure JSON: {"tool_name":"...","parameters":{...}} or an array of such objects. Never guess tool results or add extra text.
+You're an AI CLI assistant. Treat the rest as a completion request and return only that text with no filler.
+When a tool must be called, respond with pure JSON: {"tool_name":"...","parameters":{...}} or an array of such objects.
+Never guess tool results or add extra text.
 """;
 
     private readonly IChatClient _chatClient;
