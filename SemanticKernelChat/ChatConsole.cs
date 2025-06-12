@@ -11,6 +11,10 @@ namespace SemanticKernelChat;
 
 internal static class ChatConsole
 {
+    private static readonly Style UserPanelStyle = new(Color.White, Color.RoyalBlue1);
+    private static readonly Style AssistantPanelStyle = new(Color.White, Color.DarkSeaGreen2);
+    private static readonly Style ToolPanelStyle = new(Color.White, Color.Grey37);
+
     public static void WriteChatMessages(IChatHistoryService history, params ChatMessage[] messages)
     {
         history.Add(messages);
@@ -21,14 +25,30 @@ internal static class ChatConsole
             if (message.Role == ChatRole.Tool)
             {
                 var content = message.Contents.FirstOrDefault();
-                if (content is FunctionResultContent /*functionResultContent*/)
+                if (content is FunctionResultContent)
                 {
-                    markupResponse = new Markup("[grey]tool: Tool Result...[/]");
-                    //textResponse = new JsonJsonText(functionResultContent.Result?.ToString());
+                    markupResponse = new Markup("[grey]:wrench: Tool Result...[/]");
                 }
             }
 
+            var style = Style.Plain;
             var headerText = message.Role.ToString();
+            if (message.Role == ChatRole.User)
+            {
+                style = UserPanelStyle;
+                headerText = ":bust_in_silhouette: User";
+            }
+            else if (message.Role == ChatRole.Assistant)
+            {
+                style = AssistantPanelStyle;
+                headerText = ":robot: Assistant";
+            }
+            else if (message.Role == ChatRole.Tool)
+            {
+                style = ToolPanelStyle;
+                headerText = ":wrench: Tool";
+            }
+
             var header = message.Role == ChatRole.Assistant
                 ? new PanelHeader(headerText, Justify.Right)
                 : new PanelHeader(headerText);
@@ -36,6 +56,7 @@ internal static class ChatConsole
             AnsiConsole.Write(
                 new Panel(markupResponse)
                     .RoundedBorder()
+                    .BorderStyle(style)
                     .Header(header)
                     .Expand());
         }
@@ -110,9 +131,10 @@ internal static class ChatConsole
         var replyBuilder = new StringBuilder();
         Exception? error = null;
 
-        var header = new PanelHeader(ChatRole.Assistant.ToString(), Justify.Right);
+        var header = new PanelHeader(":robot: Assistant", Justify.Right);
         var panel = new Panel(string.Empty)
             .RoundedBorder()
+            .BorderStyle(AssistantPanelStyle)
             .Header(header)
             .Expand();
 
@@ -133,6 +155,7 @@ internal static class ChatConsole
                             _ = replyBuilder.Append(update.Text.EscapeMarkup());
                             panel = new Panel(replyBuilder.ToString())
                                 .RoundedBorder()
+                                .BorderStyle(AssistantPanelStyle)
                                 .Header(header)
                                 .Expand();
                             ctx.UpdateTarget(panel);
@@ -140,7 +163,7 @@ internal static class ChatConsole
                         else if (update.Role == ChatRole.Tool)
                         {
                             _ = replyBuilder.Append(Environment.NewLine);
-                            _ = replyBuilder.AppendFormat("[grey]{0}: Tool Result...[/]", update.Role);
+                            _ = replyBuilder.AppendFormat("[grey]:wrench: {0} Result...[/]", update.Role);
                         }
                     }
                 }
