@@ -13,24 +13,16 @@ public sealed class TypeRegistrar : ITypeRegistrar
     }
 
     public ITypeResolver Build()
-    {
-        return new TypeResolver(_services.BuildServiceProvider());
-    }
+        => new TypeResolver(_services.BuildServiceProvider());
 
     public void Register(Type service, Type implementation)
-    {
-        _services.AddSingleton(service, implementation);
-    }
+        => _services.AddSingleton(service, implementation);
 
     public void RegisterInstance(Type service, object implementation)
-    {
-        _services.AddSingleton(service, implementation);
-    }
+        => _services.AddSingleton(service, implementation);
 
     public void RegisterLazy(Type service, Func<object> factory)
-    {
-        _services.AddSingleton(service, _ => factory());
-    }
+        => _services.AddSingleton(service, _ => factory());
 
     private sealed class TypeResolver : ITypeResolver, IDisposable
     {
@@ -41,14 +33,10 @@ public sealed class TypeRegistrar : ITypeRegistrar
             _provider = provider;
         }
 
-        public object? Resolve(Type type)
-        {
-            return _provider.GetService(type);
-        }
+        public object? Resolve(Type? type)
+            => _provider.GetService(type);
 
         public void Dispose()
-        {
-            _provider.Dispose();
-        }
+            => _provider.Dispose();
     }
 }

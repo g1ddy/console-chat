@@ -15,8 +15,8 @@ jobs:
         with:
           dotnet-version: '8.0.x'
       - name: Restore
-        run: dotnet restore AiWithMcp.sln
+        run: dotnet restore ConsoleChat.sln
       - name: Build
-        run: dotnet build --no-restore AiWithMcp.sln
+        run: dotnet build --no-restore ConsoleChat.sln
       - name: Test
-        run: dotnet test --no-build AiWithMcp.sln -v minimal
+        run: dotnet test --no-build ConsoleChat.sln -v minimal

@@ -1,12 +1,6 @@
 // Entry point for the MCP server application
 // Sets up dependency injection, logging, and server transports
 
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
-
-using System.Linq;
-
 var builder = Host.CreateApplicationBuilder(args);
 
 // Configure logging to output all logs to stderr at the Trace level

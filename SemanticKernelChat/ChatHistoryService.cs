@@ -5,6 +5,8 @@ namespace SemanticKernelChat;
 public interface IChatHistoryService
 {
     IReadOnlyList<ChatMessage> Messages { get; }
+    void Add(params ChatMessage[] messages);
+    void Add(ChatResponseUpdate[] messageUpdates);
     void AddUserMessage(string text);
     void AddAssistantMessage(string text);
 }
@@ -15,19 +17,11 @@ public class ChatHistoryService : IChatHistoryService
 
     public IReadOnlyList<ChatMessage> Messages => _messages;
 
-    public void AddUserMessage(string text)
-    {
-        if (!string.IsNullOrWhiteSpace(text))
-        {
-            _messages.Add(new ChatMessage(ChatRole.User, text));
-        }
-    }
+    public void Add(params ChatMessage[] messages) => _messages.AddRange(messages);
 
-    public void AddAssistantMessage(string text)
-    {
-        if (!string.IsNullOrWhiteSpace(text))
-        {
-            _messages.Add(new ChatMessage(ChatRole.Assistant, text));
-        }
-    }
+    public void Add(ChatResponseUpdate[] messageUpdates) => _messages.AddMessages(messageUpdates);
+
+    public void AddUserMessage(string text) => Add(new ChatMessage(ChatRole.User, text));
+
+    public void AddAssistantMessage(string text) => Add(new ChatMessage(ChatRole.Assistant, text));
 }
