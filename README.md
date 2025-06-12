@@ -55,20 +55,21 @@ The client starts any configured MCP transports (by default it launches the `Mcp
 
 - `chat-stream` *(default)* – Streaming responses as they are generated.
 - `chat` – Waits for the full response before printing.
+- `text-completion` – Single-shot completion via `--query`.
+- `chat` *(default)* – Waits for the full response before printing.
+- `chat-stream` – Streaming responses as they are generated.
 
 Type `exit` on an empty line to quit.
 
 ### Spectre Console
 
 The console client relies on [Spectre.Console](https://spectreconsole.net/) for
-rich terminal output such as panels, spinners, and command parsing. Two commands
+rich terminal output such as panels, spinners, and command parsing. Three commands
 are registered with the Spectre CLI:
 
 - `chat-stream` *(default)*
 - `chat`
-
-When the application is published you can execute the binary followed by the
-desired command alias. Running without an alias starts `chat-stream`.
+desired command alias. Running without an alias starts `chat`.
 
 ```bash
 dotnet publish SemanticKernelChat -c Release -o out
