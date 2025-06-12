@@ -20,10 +20,11 @@ var app = new CommandApp(registrar);
 app.Configure(config =>
 {
     _ = config.SetExceptionHandler(ex => AnsiConsole.WriteException(ex, ExceptionFormats.ShortenTypes));
+    _ = config.AddCommand<TextCompletionCommand>("text-completion");
     _ = config.AddCommand<ChatStreamCommand>("chat-stream");
     _ = config.AddCommand<ChatCommand>("chat");
 });
 
-app.SetDefaultCommand<ChatStreamCommand>();
+app.SetDefaultCommand<ChatCommand>();
 
 return await app.RunAsync(args);
