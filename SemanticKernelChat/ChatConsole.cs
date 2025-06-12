@@ -1,16 +1,12 @@
 using System.Text;
-using System.Linq;
-using System.Threading;
-
-using Amazon.BedrockRuntime.Model;
 
 using Microsoft.Extensions.AI;
 
 using ModelContextProtocol.Client;
 
+using RadLine;
 using Spectre.Console;
 using Spectre.Console.Rendering;
-using RadLine;
 
 namespace SemanticKernelChat;
 
@@ -61,6 +57,7 @@ internal static class ChatConsole
 
         return (style, header);
     }
+
     public static void WriteChatMessages(IChatHistoryService history, params ChatMessage[] messages)
     {
         history.Add(messages);
