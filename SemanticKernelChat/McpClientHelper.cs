@@ -9,6 +9,7 @@ internal sealed record McpServerConfig
     public required string Type { get; init; }
     public required string Command { get; init; }
     public string[]? Arguments { get; init; }
+    public Dictionary<string, string?>? EnvironmentVariables { get; init; }
 }
 
 public static class McpClientHelper
@@ -21,26 +22,20 @@ public static class McpClientHelper
             switch (server.Type.ToLowerInvariant())
             {
                 case "stdio":
-                    var args = server.Arguments?.ToList() ?? new List<string>();
-                    var projectArgIndex = args.FindIndex(a => a == "--project");
-                    if (projectArgIndex >= 0 && projectArgIndex + 1 < args.Count)
-                    {
-                        args[projectArgIndex + 1] = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, args[projectArgIndex + 1]));
-                    }
-
                     yield return new StdioClientTransport(new()
                     {
+                        Name = server.Name,
                         Command = server.Command,
-                        Arguments = args,
-                        Name = server.Name
+                        Arguments = server.Arguments,
+                        EnvironmentVariables = server.EnvironmentVariables,
                     });
                     break;
                 case "sse":
                     yield return new SseClientTransport(new()
                     {
+                        Name = server.Name,
                         Endpoint = new Uri(server.Command),
                         TransportMode = HttpTransportMode.Sse,
-                        Name = server.Name
                     });
                     break;
             }
