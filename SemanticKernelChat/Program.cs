@@ -22,6 +22,7 @@ app.Configure(config =>
     _ = config.SetExceptionHandler(ex => AnsiConsole.WriteException(ex, ExceptionFormats.ShortenTypes));
     _ = config.AddCommand<ChatStreamCommand>("chat-stream");
     _ = config.AddCommand<ChatCommand>("chat");
+    _ = config.AddCommand<TextCompletionCommand>("text-completion");
 });
 
 app.SetDefaultCommand<ChatStreamCommand>();
