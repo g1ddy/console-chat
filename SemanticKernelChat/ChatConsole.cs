@@ -19,15 +19,11 @@ internal static class ChatConsole
 
     public static void Initialize(IEnumerable<McpClientTool> tools)
     {
-        if (_editor is not null)
-        {
-            return;
-        }
-
+        var completion = new CommandCompletion(tools.Select(t => t.Name));
         _editor = new LineEditor
         {
             MultiLine = true,
-            Completion = new CommandCompletion(tools.Select(t => t.Name)),
+            Completion = completion,
         };
     }
 
@@ -88,10 +84,10 @@ internal static class ChatConsole
     /// Reads user input using RadLine's multiline editor.
     /// Returns <c>null</c> when the input stream ends.
     /// </summary>
-    public static string? ReadMultilineInput()
+    public static async Task<string?> ReadMultilineInputAsync()
     {
         _editor ??= new LineEditor { MultiLine = true };
-        return _editor.ReadLine(CancellationToken.None).GetAwaiter().GetResult();
+        return await _editor.ReadLine(CancellationToken.None);
     }
 
     public static async Task SendAndDisplayAsync(

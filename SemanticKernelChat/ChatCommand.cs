@@ -34,7 +34,7 @@ public sealed class ChatCommand : AsyncCommand<ChatCommand.Settings>
         while (true)
         {
             AnsiConsole.Markup("You: ");
-            var input = ChatConsole.ReadMultilineInput();
+            var input = await ChatConsole.ReadMultilineInputAsync();
 
             if (input is null || input.Equals("exit", StringComparison.OrdinalIgnoreCase))
             {
