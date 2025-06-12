@@ -1,5 +1,4 @@
 using Microsoft.SemanticKernel;
-using ModelContextProtocol.Client;
 using System.Text.Json;
 using SemanticKernelChat;
 
@@ -21,7 +20,7 @@ public class McpIntegrationTests
         {
 #pragma warning disable SKEXP0001 // Experimental API - ok for tests
             string pluginName = $"mcp_{tool.Name}";
-            kernel.ImportPluginFromFunctions(pluginName, [tool.AsKernelFunction()]);
+            _ = kernel.ImportPluginFromFunctions(pluginName, [tool.AsKernelFunction()]);
 #pragma warning restore SKEXP0001
 
             if (tool.Name == "CurrentTime")

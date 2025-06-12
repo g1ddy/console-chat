@@ -1,5 +1,6 @@
 using ModelContextProtocol.Client;
 using Microsoft.Extensions.Configuration;
+using System.Net;
 
 namespace SemanticKernelChat;
 
@@ -21,7 +22,7 @@ public static class McpClientHelper
         {
             switch (server.Type.ToLowerInvariant())
             {
-                case "stdio":
+                case McpServerTypes.Stdio:
                     yield return new StdioClientTransport(new()
                     {
                         Name = server.Name,
@@ -30,7 +31,16 @@ public static class McpClientHelper
                         EnvironmentVariables = server.EnvironmentVariables,
                     });
                     break;
-                case "sse":
+                case McpServerTypes.Sse:
+                    using (var http = new HttpClient())
+                    {
+                        var response = http.Send(new HttpRequestMessage(HttpMethod.Head, server.Command));
+                        if (response.StatusCode is HttpStatusCode.Unauthorized or HttpStatusCode.Forbidden)
+                        {
+                            throw new InvalidOperationException($"SSE endpoint '{server.Command}' requires authentication.");
+                        }
+                    }
+
                     yield return new SseClientTransport(new()
                     {
                         Name = server.Name,
@@ -46,14 +56,13 @@ public static class McpClientHelper
 
     public static async Task<IList<McpClientTool>> GetToolsAsync(IEnumerable<IClientTransport> transports)
     {
-        var allTools = new List<McpClientTool>();
-
-        foreach (var transport in transports)
+        var tasks = transports.Select(async transport =>
         {
             await using var client = await McpClientFactory.CreateAsync(transport);
-            allTools.AddRange(await client.ListToolsAsync());
-        }
+            return await client.ListToolsAsync();
+        });
 
-        return allTools;
+        var results = await Task.WhenAll(tasks);
+        return results.SelectMany(r => r).ToList();
     }
 }

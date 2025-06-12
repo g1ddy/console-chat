@@ -1,6 +1,4 @@
 using ModelContextProtocol.Client;
-using System.Collections.Generic;
-using System.Linq;
 using Microsoft.Extensions.Configuration;
 
 namespace SemanticKernelChat;
@@ -28,11 +26,20 @@ public sealed class McpToolCollection : IAsyncDisposable
             .AddJsonFile("appsettings.json", optional: true)
             .Build();
 
-        foreach (var transport in McpClientHelper.CreateTransports(configuration))
+        var transports = McpClientHelper.CreateTransports(configuration).ToArray();
+        var tasks = transports.Select(async transport =>
         {
             var client = await McpClientFactory.CreateAsync(transport);
+            var tools = await client.ListToolsAsync();
+            return (client, tools);
+        });
+
+        var results = await Task.WhenAll(tasks);
+
+        foreach (var (client, tools) in results)
+        {
             collection._disposables.Add(client);
-            collection._tools.AddRange(await client.ListToolsAsync());
+            collection._tools.AddRange(tools);
         }
 
         return collection;
