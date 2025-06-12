@@ -67,10 +67,7 @@ are registered with the Spectre CLI:
 
 - `chat-stream` *(default)*
 - `chat`
-- `text-completion`
-
-When the application is published you can execute the binary followed by the
-desired command alias. Running without an alias starts `chat-stream`.
+desired command alias. Running without an alias starts `chat`.
 
 ```bash
 dotnet publish SemanticKernelChat -c Release -o out
