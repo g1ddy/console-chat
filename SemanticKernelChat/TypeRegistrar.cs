@@ -16,13 +16,34 @@ public sealed class TypeRegistrar : ITypeRegistrar
         => new TypeResolver(_services.BuildServiceProvider());
 
     public void Register(Type? service, Type? implementation)
-        => _services.AddSingleton(service!, implementation!);
+    {
+        if (service is null)
+            throw new ArgumentNullException(nameof(service));
+        if (implementation is null)
+            throw new ArgumentNullException(nameof(implementation));
+
+        _services.AddSingleton(service, implementation);
+    }
 
     public void RegisterInstance(Type? service, object? implementation)
-        => _services.AddSingleton(service!, implementation!);
+    {
+        if (service is null)
+            throw new ArgumentNullException(nameof(service));
+        if (implementation is null)
+            throw new ArgumentNullException(nameof(implementation));
+
+        _services.AddSingleton(service, implementation);
+    }
 
     public void RegisterLazy(Type? service, Func<object?> factory)
-        => _services.AddSingleton(service!, _ => factory());
+    {
+        if (service is null)
+            throw new ArgumentNullException(nameof(service));
+        if (factory is null)
+            throw new ArgumentNullException(nameof(factory));
+
+        _services.AddSingleton(service, _ => factory());
+    }
 
     private sealed class TypeResolver : ITypeResolver, IDisposable
     {
