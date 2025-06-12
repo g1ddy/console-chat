@@ -1,6 +1,3 @@
-using System;
-using Xunit;
-
 namespace ConsoleChat.Tests;
 
 public class McpFunctionTests
