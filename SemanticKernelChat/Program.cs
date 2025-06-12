@@ -19,9 +19,9 @@ var app = new CommandApp(registrar);
 
 app.Configure(config =>
 {
-    config.SetExceptionHandler(ex => AnsiConsole.WriteException(ex, ExceptionFormats.ShortenTypes));
-    config.AddCommand<ChatCommand>("chat");
-    config.AddCommand<ChatStreamCommand>("chat-stream");
+    _ = config.SetExceptionHandler(ex => AnsiConsole.WriteException(ex, ExceptionFormats.ShortenTypes));
+    _ = config.AddCommand<ChatStreamCommand>("chat-stream");
+    _ = config.AddCommand<ChatCommand>("chat");
 });
 
 app.SetDefaultCommand<ChatStreamCommand>();

@@ -54,5 +54,4 @@ public sealed class ChatStreamCommand : AsyncCommand<ChatCommand.Settings>
 
         return 0;
     }
-
 }

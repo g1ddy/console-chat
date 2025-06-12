@@ -1,7 +1,4 @@
-using System;
-using System.Collections.Generic;
 using System.Text;
-using System.Threading.Tasks;
 
 using Microsoft.Extensions.AI;
 
@@ -16,15 +13,15 @@ internal static class ChatConsole
 {
     public static void WriteChatMessages(IChatHistoryService history, params ChatMessage[] messages)
     {
+        history.Add(messages);
+
         foreach (var message in messages)
         {
-            history.Add(message);
-
             IRenderable markupResponse = new Markup(message.Text.EscapeMarkup());
             if (message.Role == ChatRole.Tool)
             {
                 var content = message.Contents.FirstOrDefault();
-                if (content is FunctionResultContent functionResultContent)
+                if (content is FunctionResultContent /*functionResultContent*/)
                 {
                     markupResponse = new Markup("[grey]tool: Tool Result...[/]");
                     //textResponse = new JsonJsonText(functionResultContent.Result?.ToString());
@@ -109,9 +106,10 @@ internal static class ChatConsole
         IChatHistoryService history,
         IReadOnlyList<McpClientTool> tools)
     {
+        var messageUpdates = new List<ChatResponseUpdate>();
         var replyBuilder = new StringBuilder();
         Exception? error = null;
-        var toolNames = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
         var header = new PanelHeader(ChatRole.Assistant.ToString(), Justify.Right);
         var panel = new Panel(string.Empty)
             .RoundedBorder()
@@ -128,9 +126,11 @@ internal static class ChatConsole
                         history.Messages,
                         new() { Tools = [.. tools] }))
                     {
+                        messageUpdates.Add(update);
+
                         if (update.Role == ChatRole.Assistant)
                         {
-                            replyBuilder.Append(update.Text);
+                            _ = replyBuilder.Append(update.Text.EscapeMarkup());
                             panel = new Panel(replyBuilder.ToString())
                                 .RoundedBorder()
                                 .Header(header)
@@ -139,8 +139,8 @@ internal static class ChatConsole
                         }
                         else if (update.Role == ChatRole.Tool)
                         {
-                            replyBuilder.Append(Environment.NewLine);
-                            replyBuilder.AppendFormat("[grey]{0}: Tool Result...[/]", update.Role);
+                            _ = replyBuilder.Append(Environment.NewLine);
+                            _ = replyBuilder.AppendFormat("[grey]{0}: Tool Result...[/]", update.Role);
                         }
                     }
                 }
@@ -156,8 +156,6 @@ internal static class ChatConsole
             return;
         }
 
-        var reply = replyBuilder.ToString();
-        var assistantMessage = new ChatMessage(ChatRole.Assistant, reply);
-        history.Add(assistantMessage);
+        history.Add(messageUpdates.ToArray());
     }
 }
