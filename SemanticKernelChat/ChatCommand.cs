@@ -27,6 +27,7 @@ public sealed class ChatCommand : AsyncCommand<ChatCommand.Settings>
     {
         await using var toolCollection = await McpToolCollection.CreateAsync();
         var tools = toolCollection.Tools;
+        ChatConsole.Initialize(tools);
 
         AnsiConsole.MarkupLine("Type 'exit' to quit.");
 

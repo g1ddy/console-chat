@@ -1,4 +1,6 @@
 using System.Text;
+using System.Linq;
+using System.Threading;
 
 using Microsoft.Extensions.AI;
 
@@ -6,11 +8,27 @@ using ModelContextProtocol.Client;
 
 using Spectre.Console;
 using Spectre.Console.Rendering;
+using RadLine;
 
 namespace SemanticKernelChat;
 
 internal static class ChatConsole
 {
+    private static LineEditor? _editor;
+
+    public static void Initialize(IEnumerable<McpClientTool> tools)
+    {
+        if (_editor is not null)
+        {
+            return;
+        }
+
+        _editor = new LineEditor
+        {
+            MultiLine = true,
+            Completion = new CommandCompletion(tools.Select(t => t.Name)),
+        };
+    }
     public static void WriteChatMessages(IChatHistoryService history, params ChatMessage[] messages)
     {
         history.Add(messages);
@@ -42,30 +60,13 @@ internal static class ChatConsole
     }
 
     /// <summary>
-    /// Reads user text until a blank line is entered. Returns <c>null</c> when the input stream ends.
-    /// An empty string means the user pressed Enter on an empty line.
-    /// This keeps the implementation minimal at the cost of advanced editing features.
+    /// Reads user input using RadLine's multiline editor.
+    /// Returns <c>null</c> when the input stream ends.
     /// </summary>
     public static string? ReadMultilineInput()
     {
-        var lines = new List<string>();
-        string? line;
-        while ((line = Console.ReadLine()) != null)
-        {
-            if (string.IsNullOrEmpty(line))
-            {
-                if (lines.Count > 0)
-                {
-                    break;
-                }
-
-                continue;
-            }
-
-            lines.Add(line);
-        }
-
-        return string.Join(Environment.NewLine, lines);
+        _editor ??= new LineEditor { MultiLine = true };
+        return _editor.ReadLine(CancellationToken.None).GetAwaiter().GetResult();
     }
 
     public static async Task SendAndDisplayAsync(
@@ -157,5 +158,37 @@ internal static class ChatConsole
         }
 
         history.Add(messageUpdates.ToArray());
+    }
+
+    private sealed class CommandCompletion : ITextCompletion
+    {
+        private static readonly string[] _base = new[] { "help", "exit", "enable", "disable", "toggle" };
+        private readonly List<string> _toolNames;
+
+        public CommandCompletion(IEnumerable<string> toolNames)
+        {
+            _toolNames = toolNames.Distinct(StringComparer.OrdinalIgnoreCase).ToList();
+        }
+
+        public IEnumerable<string>? GetCompletions(string prefix, string word, string suffix)
+        {
+            var tokens = (prefix + word).TrimStart().Split(' ', StringSplitOptions.RemoveEmptyEntries);
+            if (tokens.Length <= 1)
+            {
+                return _base.Concat(_toolNames).Where(c => c.StartsWith(word, StringComparison.OrdinalIgnoreCase));
+            }
+
+            var cmd = tokens[0];
+            if ((cmd.Equals("enable", StringComparison.OrdinalIgnoreCase) ||
+                cmd.Equals("disable", StringComparison.OrdinalIgnoreCase) ||
+                cmd.Equals("toggle", StringComparison.OrdinalIgnoreCase)) &&
+                tokens.Length == 2)
+            {
+                var part = tokens[1];
+                return _toolNames.Where(t => t.StartsWith(part, StringComparison.OrdinalIgnoreCase));
+            }
+
+            return null;
+        }
     }
 }
