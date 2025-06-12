@@ -56,6 +56,8 @@ The client starts any configured MCP transports (by default it launches the `Mcp
 - `chat-stream` *(default)* – Streaming responses as they are generated.
 - `chat` – Waits for the full response before printing.
 - `text-completion` – Single-shot completion via `--query`.
+- `chat` *(default)* – Waits for the full response before printing.
+- `chat-stream` – Streaming responses as they are generated.
 
 Type `exit` on an empty line to quit.
 
