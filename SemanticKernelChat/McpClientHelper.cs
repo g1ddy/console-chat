@@ -53,16 +53,4 @@ public static class McpClientHelper
             }
         }
     }
-
-    public static async Task<IList<McpClientTool>> GetToolsAsync(IEnumerable<IClientTransport> transports)
-    {
-        var tasks = transports.Select(async transport =>
-        {
-            await using var client = await McpClientFactory.CreateAsync(transport);
-            return await client.ListToolsAsync();
-        });
-
-        var results = await Task.WhenAll(tasks);
-        return results.SelectMany(r => r).ToList();
-    }
 }

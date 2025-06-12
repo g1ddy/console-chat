@@ -21,7 +21,7 @@ public sealed class McpToolCollection : IAsyncDisposable
     public static async Task<McpToolCollection> CreateAsync()
     {
         var collection = new McpToolCollection();
-        var configuration = new Microsoft.Extensions.Configuration.ConfigurationBuilder()
+        var configuration = new ConfigurationBuilder()
             .SetBasePath(AppContext.BaseDirectory)
             .AddJsonFile("appsettings.json", optional: true)
             .Build();
