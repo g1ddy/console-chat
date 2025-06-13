@@ -1,4 +1,4 @@
-namespace SemanticKernelChat;
+namespace SemanticKernelChat.Console;
 
 internal static class CliConstants
 {

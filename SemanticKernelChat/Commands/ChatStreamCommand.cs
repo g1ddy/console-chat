@@ -30,13 +30,15 @@ public sealed class ChatStreamCommand : AsyncCommand<ChatCommand.Settings>
 
         while (true)
         {
-            var (style, headerText) = ChatConsole.GetPanelConfig(ChatRole.User);
-            var rule = new Rule(headerText) { Style = style };
+            var (headerText, justify, style) = ChatConsole.GetUserStyle(ChatRole.User);
+            var rule = new Rule(headerText) { Justification = justify, Style = style };
             AnsiConsole.Write(rule);
+
             AnsiConsole.Markup("You: ");
             var input = await ChatConsole.ReadMultilineInputAsync();
 
-            if (input is null)
+            if (input is null ||
+                input.Equals("exit", StringComparison.OrdinalIgnoreCase))
             {
                 break;
             }
@@ -46,11 +48,6 @@ public sealed class ChatStreamCommand : AsyncCommand<ChatCommand.Settings>
                 continue;
             }
 
-            if (input.Equals("exit", StringComparison.OrdinalIgnoreCase))
-            {
-                break;
-            }
-
             _history.AddUserMessage(input);
 
             await ChatConsole.SendAndDisplayStreamingAsync(_chatClient, _history, tools);
@@ -58,5 +55,4 @@ public sealed class ChatStreamCommand : AsyncCommand<ChatCommand.Settings>
 
         return 0;
     }
-
 }

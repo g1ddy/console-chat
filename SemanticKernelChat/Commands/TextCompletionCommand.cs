@@ -2,9 +2,8 @@ using Microsoft.Extensions.AI;
 using Microsoft.Extensions.Logging;
 using SemanticKernelChat.Infrastructure;
 using Spectre.Console.Cli;
-using System;
 
-namespace SemanticKernelChat;
+namespace SemanticKernelChat.Commands;
 
 public sealed class TextCompletionCommand : AsyncCommand<TextCompletionCommand.Settings>
 {
@@ -50,9 +49,7 @@ Never guess tool results or add extra text.
         foreach (var message in response.Messages)
         {
             if (message.Role == ChatRole.Assistant)
-            {
                 System.Console.WriteLine(message.Text);
-            }
         }
 
         return 0;

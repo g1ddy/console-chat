@@ -1,4 +1,4 @@
-namespace SemanticKernelChat;
+namespace SemanticKernelChat.Infrastructure;
 
 internal static class McpServerTypes
 {

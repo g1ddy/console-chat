@@ -34,18 +34,15 @@ public sealed class ChatCommand : AsyncCommand<ChatCommand.Settings>
 
         while (true)
         {
-            var (style, headerText) = ChatConsole.GetPanelConfig(ChatRole.User);
-            var rule = new Rule(headerText) { Style = style };
+            var (headerText, justify, style) = ChatConsole.GetUserStyle(ChatRole.User);
+            var rule = new Rule(headerText) { Justification = justify, Style = style };
             AnsiConsole.Write(rule);
+
             AnsiConsole.Markup("You: ");
             var input = await ChatConsole.ReadMultilineInputAsync();
 
-            if (input is null)
-            {
-                break;
-            }
-
-            if (input.Equals("exit", StringComparison.OrdinalIgnoreCase))
+            if (input is null ||
+                input.Equals("exit", StringComparison.OrdinalIgnoreCase))
             {
                 break;
             }
