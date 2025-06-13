@@ -3,6 +3,7 @@ using Amazon.BedrockRuntime;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using SemanticKernelChat.Clients;
 namespace SemanticKernelChat;
 
 /// <summary>

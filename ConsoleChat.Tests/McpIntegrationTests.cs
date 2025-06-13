@@ -1,6 +1,7 @@
 using Microsoft.SemanticKernel;
 using System.Text.Json;
 using SemanticKernelChat;
+using SemanticKernelChat.Infrastructure;
 
 namespace ConsoleChat.Tests;
 
