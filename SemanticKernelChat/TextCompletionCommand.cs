@@ -1,5 +1,6 @@
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.Logging;
+using SemanticKernelChat.Infrastructure;
 using Spectre.Console.Cli;
 using System;
 
@@ -32,7 +33,7 @@ Never guess tool results or add extra text.
     {
         if (string.IsNullOrWhiteSpace(settings.Query))
         {
-            Console.Error.WriteLine("--query is required");
+            System.Console.Error.WriteLine("--query is required");
             return -1;
         }
 
@@ -50,7 +51,7 @@ Never guess tool results or add extra text.
         {
             if (message.Role == ChatRole.Assistant)
             {
-                Console.WriteLine(message.Text);
+                System.Console.WriteLine(message.Text);
             }
         }
 
