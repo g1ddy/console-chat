@@ -9,7 +9,7 @@ using RadLine;
 using Spectre.Console;
 using Spectre.Console.Rendering;
 
-namespace SemanticKernelChat;
+namespace SemanticKernelChat.Console;
 
 internal static class ChatConsole
 {

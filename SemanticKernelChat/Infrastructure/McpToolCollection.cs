@@ -1,7 +1,8 @@
 using ModelContextProtocol.Client;
 using Microsoft.Extensions.Configuration;
+using SemanticKernelChat.Helpers;
 
-namespace SemanticKernelChat;
+namespace SemanticKernelChat.Infrastructure;
 
 /// <summary>
 /// Holds MCP tools and disposes underlying transports and clients when no longer needed.

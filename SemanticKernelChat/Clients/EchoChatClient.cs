@@ -1,7 +1,7 @@
 using System.Runtime.CompilerServices;
 using Microsoft.Extensions.AI;
 
-namespace SemanticKernelChat;
+namespace SemanticKernelChat.Clients;
 
 /// <summary>
 /// Test implementation of <see cref="IChatClient"/> that echoes the user's last message.

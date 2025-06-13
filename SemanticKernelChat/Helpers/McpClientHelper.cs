@@ -2,7 +2,7 @@ using ModelContextProtocol.Client;
 using Microsoft.Extensions.Configuration;
 using System.Net;
 
-namespace SemanticKernelChat;
+namespace SemanticKernelChat.Helpers;
 
 internal sealed record McpServerConfig
 {
