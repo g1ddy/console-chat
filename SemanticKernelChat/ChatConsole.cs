@@ -1,3 +1,4 @@
+using System;
 using System.Text;
 
 using Microsoft.Extensions.AI;
@@ -27,7 +28,7 @@ internal static class ChatConsole
         };
     }
 
-    private static (Style style, PanelHeader header) GetPanelConfig(ChatRole messageRole)
+    internal static (Style style, string headerText) GetPanelConfig(ChatRole messageRole)
     {
         var style = Style.Plain;
         var headerText = messageRole.ToString();
@@ -47,11 +48,7 @@ internal static class ChatConsole
             headerText = ":wrench: Tool";
         }
 
-        var header = messageRole == ChatRole.Assistant
-            ? new PanelHeader(headerText, Justify.Right)
-            : new PanelHeader(headerText);
-
-        return (style, header);
+        return (style, headerText);
     }
 
     public static void WriteChatMessages(IChatHistoryService history, params ChatMessage[] messages)
@@ -70,12 +67,15 @@ internal static class ChatConsole
                 }
             }
 
-            var config = GetPanelConfig(message.Role);
+            var (style, headerText) = GetPanelConfig(message.Role);
+            var header = message.Role == ChatRole.Assistant
+                ? new PanelHeader(headerText, Justify.Right)
+                : new PanelHeader(headerText);
             AnsiConsole.Write(
                 new Panel(markupResponse)
                     .RoundedBorder()
-                    .BorderStyle(config.style)
-                    .Header(config.header)
+                    .BorderStyle(style)
+                    .Header(header)
                     .Expand());
         }
     }
@@ -89,6 +89,7 @@ internal static class ChatConsole
         _editor ??= new LineEditor { MultiLine = true };
         return await _editor.ReadLine(CancellationToken.None);
     }
+
 
     public static async Task SendAndDisplayAsync(
         IChatClient chatClient,
@@ -132,11 +133,12 @@ internal static class ChatConsole
         var replyBuilder = new StringBuilder();
         Exception? error = null;
 
-        var config = GetPanelConfig(ChatRole.Assistant);
+        var (style, headerText) = GetPanelConfig(ChatRole.Assistant);
+        var header = new PanelHeader(headerText, Justify.Right);
         var panel = new Panel(string.Empty)
             .RoundedBorder()
-            .BorderStyle(config.style)
-            .Header(config.header)
+            .BorderStyle(style)
+            .Header(header)
             .Expand();
 
         await AnsiConsole.Live(panel)
@@ -156,8 +158,8 @@ internal static class ChatConsole
                             _ = replyBuilder.Append(update.Text.EscapeMarkup());
                             panel = new Panel(replyBuilder.ToString())
                                 .RoundedBorder()
-                                .BorderStyle(AssistantPanelStyle)
-                                .Header(config.header)
+                                .BorderStyle(style)
+                                .Header(header)
                                 .Expand();
                             ctx.UpdateTarget(panel);
                         }

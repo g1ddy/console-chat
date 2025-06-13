@@ -25,10 +25,13 @@ public sealed class ChatStreamCommand : AsyncCommand<ChatCommand.Settings>
         var tools = toolCollection.Tools;
         ChatConsole.Initialize(tools);
 
-        AnsiConsole.MarkupLine("Type 'exit' to quit.");
+        AnsiConsole.MarkupLine(CliConstants.WelcomeMessage);
 
         while (true)
         {
+            var (style, headerText) = ChatConsole.GetPanelConfig(ChatRole.User);
+            var rule = new Rule(headerText) { Style = style };
+            AnsiConsole.Write(rule);
             AnsiConsole.Markup("You: ");
             var input = await ChatConsole.ReadMultilineInputAsync();
 
@@ -47,12 +50,12 @@ public sealed class ChatStreamCommand : AsyncCommand<ChatCommand.Settings>
                 break;
             }
 
-            var userMessage = new ChatMessage(ChatRole.User, input);
-            ChatConsole.WriteChatMessages(_history, userMessage);
+            _history.AddUserMessage(input);
 
             await ChatConsole.SendAndDisplayStreamingAsync(_chatClient, _history, tools);
         }
 
         return 0;
     }
+
 }
