@@ -38,12 +38,13 @@ public sealed class ChatCommand : AsyncCommand<ChatCommand.Settings>
             var rule = new Rule(headerText) { Justification = justify, Style = style };
             AnsiConsole.Write(rule);
 
-            AnsiConsole.Markup("You: ");
+            AnsiConsole.Markup(CliConstants.UserPrompt);
             var input = await ChatConsole.ReadMultilineInputAsync();
 
             if (input is null ||
-                input.Equals("exit", StringComparison.OrdinalIgnoreCase))
+                input.Equals(CliConstants.Commands.Exit, StringComparison.OrdinalIgnoreCase))
             {
+                AnsiConsole.MarkupLine(CliConstants.ExitMessage);
                 break;
             }
 

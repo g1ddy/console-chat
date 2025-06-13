@@ -5,6 +5,7 @@ using Microsoft.Extensions.AI;
 using ModelContextProtocol.Client;
 
 using RadLine;
+
 using Spectre.Console;
 using Spectre.Console.Rendering;
 
@@ -189,7 +190,6 @@ internal static class ChatConsole
 
     private sealed class CommandCompletion : ITextCompletion
     {
-        private static readonly string[] BaseCommands = { "help", "exit", "enable", "disable", "toggle" };
         private readonly List<string> _toolNames;
 
         public CommandCompletion(IEnumerable<string> toolNames)
@@ -202,13 +202,13 @@ internal static class ChatConsole
             var tokens = (prefix + word).TrimStart().Split(' ', StringSplitOptions.RemoveEmptyEntries);
             if (tokens.Length <= 1)
             {
-                return BaseCommands.Concat(_toolNames).Where(c => c.StartsWith(word, StringComparison.OrdinalIgnoreCase));
+                return CliConstants.Commands.All.Concat(_toolNames).Where(c => c.StartsWith(word, StringComparison.OrdinalIgnoreCase));
             }
 
             var cmd = tokens[0];
-            if ((cmd.Equals("enable", StringComparison.OrdinalIgnoreCase) ||
-                cmd.Equals("disable", StringComparison.OrdinalIgnoreCase) ||
-                cmd.Equals("toggle", StringComparison.OrdinalIgnoreCase)) &&
+            if ((cmd.Equals(CliConstants.Commands.Enable, StringComparison.OrdinalIgnoreCase) ||
+                cmd.Equals(CliConstants.Commands.Disable, StringComparison.OrdinalIgnoreCase) ||
+                cmd.Equals(CliConstants.Commands.Toggle, StringComparison.OrdinalIgnoreCase)) &&
                 tokens.Length == 2)
             {
                 var part = tokens[1];
