@@ -1,29 +1,26 @@
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.Logging;
-
+using SemanticKernelChat.Console;
+using SemanticKernelChat.Infrastructure;
 using Spectre.Console;
 using Spectre.Console.Cli;
 
-namespace SemanticKernelChat;
+namespace SemanticKernelChat.Commands;
 
-public sealed class ChatCommand : AsyncCommand<ChatCommand.Settings>
+public sealed class ChatStreamCommand : AsyncCommand<ChatCommand.Settings>
 {
     private readonly IChatClient _chatClient;
     private readonly IChatHistoryService _history;
-    private readonly ILogger<ChatCommand> _logger;
+    private readonly ILogger<ChatStreamCommand> _logger;
 
-    public sealed class Settings : CommandSettings
-    {
-    }
-
-    public ChatCommand(IChatClient chatClient, IChatHistoryService history, ILogger<ChatCommand> logger)
+    public ChatStreamCommand(IChatClient chatClient, IChatHistoryService history, ILogger<ChatStreamCommand> logger)
     {
         _chatClient = chatClient;
         _history = history;
         _logger = logger;
     }
 
-    public override async Task<int> ExecuteAsync(CommandContext context, Settings settings)
+    public override async Task<int> ExecuteAsync(CommandContext context, ChatCommand.Settings settings)
     {
         await using var toolCollection = await McpToolCollection.CreateAsync();
         var tools = toolCollection.Tools;
@@ -44,21 +41,22 @@ public sealed class ChatCommand : AsyncCommand<ChatCommand.Settings>
                 break;
             }
 
-            if (input.Equals("exit", StringComparison.OrdinalIgnoreCase))
-            {
-                break;
-            }
-
             if (string.IsNullOrWhiteSpace(input))
             {
                 continue;
             }
 
+            if (input.Equals("exit", StringComparison.OrdinalIgnoreCase))
+            {
+                break;
+            }
+
             _history.AddUserMessage(input);
 
-            await ChatConsole.SendAndDisplayAsync(_chatClient, _history, tools);
+            await ChatConsole.SendAndDisplayStreamingAsync(_chatClient, _history, tools);
         }
 
         return 0;
     }
+
 }
