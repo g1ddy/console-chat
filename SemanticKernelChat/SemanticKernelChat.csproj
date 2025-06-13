@@ -15,9 +15,9 @@
     <PackageReference Include="Microsoft.Extensions.AI.OpenAI" Version="9.5.0-preview.1.25265.7" />
     <PackageReference Include="Microsoft.Extensions.Hosting" Version="8.0.1" />
     <PackageReference Include="ModelContextProtocol" Version="0.2.0-preview.3" />
-	<PackageReference Include="RadLine" Version="0.8.0" />
-	<PackageReference Include="Spectre.Console" Version="0.48.0" />
-	<PackageReference Include="Spectre.Console.Cli" Version="0.48.0" />
+    <PackageReference Include="RadLine" Version="0.8.0" />
+    <PackageReference Include="Spectre.Console" Version="0.48.0" />
+    <PackageReference Include="Spectre.Console.Cli" Version="0.48.0" />
   </ItemGroup>
 
   <ItemGroup>

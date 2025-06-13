@@ -1,4 +1,3 @@
-using System;
 using System.Text;
 
 using Microsoft.Extensions.AI;
@@ -6,6 +5,7 @@ using Microsoft.Extensions.AI;
 using ModelContextProtocol.Client;
 
 using RadLine;
+
 using Spectre.Console;
 using Spectre.Console.Rendering;
 
@@ -14,9 +14,6 @@ namespace SemanticKernelChat.Console;
 internal static class ChatConsole
 {
     private static LineEditor? _editor;
-    private static readonly Style UserPanelStyle = new(Color.RoyalBlue1);
-    private static readonly Style AssistantPanelStyle = new(Color.DarkSeaGreen2);
-    private static readonly Style ToolPanelStyle = new(Color.Grey37);
 
     public static void Initialize(IEnumerable<McpClientTool> tools)
     {
@@ -28,27 +25,34 @@ internal static class ChatConsole
         };
     }
 
-    internal static (Style style, string headerText) GetPanelConfig(ChatRole messageRole)
+    internal static (string headerText, Justify justify, Style style) GetUserStyle(ChatRole messageRole)
     {
-        var style = Style.Plain;
         var headerText = messageRole.ToString();
+        var justify = Justify.Left;
+        var style = Style.Plain;
+
         if (messageRole == ChatRole.User)
         {
-            style = UserPanelStyle;
             headerText = ":bust_in_silhouette: User";
+            style = new(Color.RoyalBlue1);
+            justify = Justify.Left;
         }
         else if (messageRole == ChatRole.Assistant)
         {
-            style = AssistantPanelStyle;
             headerText = ":robot: Assistant";
+            style = new(Color.DarkSeaGreen2);
+            justify = Justify.Right;
         }
         else if (messageRole == ChatRole.Tool)
         {
-            style = ToolPanelStyle;
             headerText = ":wrench: Tool";
+            style = new(Color.Grey37);
+            justify = Justify.Center;
         }
 
-        return (style, headerText);
+        headerText += $" | [grey]({DateTime.Now.ToShortTimeString()})[/]";
+
+        return (headerText, justify, style);
     }
 
     public static void WriteChatMessages(IChatHistoryService history, params ChatMessage[] messages)
@@ -67,10 +71,9 @@ internal static class ChatConsole
                 }
             }
 
-            var (style, headerText) = GetPanelConfig(message.Role);
-            var header = message.Role == ChatRole.Assistant
-                ? new PanelHeader(headerText, Justify.Right)
-                : new PanelHeader(headerText);
+            var (headerText, justify, style) = GetUserStyle(message.Role);
+            var header = new PanelHeader(headerText, justify);
+
             AnsiConsole.Write(
                 new Panel(markupResponse)
                     .RoundedBorder()
@@ -89,7 +92,6 @@ internal static class ChatConsole
         _editor ??= new LineEditor { MultiLine = true };
         return await _editor.ReadLine(CancellationToken.None);
     }
-
 
     public static async Task SendAndDisplayAsync(
         IChatClient chatClient,
@@ -133,8 +135,9 @@ internal static class ChatConsole
         var replyBuilder = new StringBuilder();
         Exception? error = null;
 
-        var (style, headerText) = GetPanelConfig(ChatRole.Assistant);
-        var header = new PanelHeader(headerText, Justify.Right);
+        var (headerText, justify, style) = GetUserStyle(ChatRole.Assistant);
+        var header = new PanelHeader(headerText, justify);
+
         var panel = new Panel(string.Empty)
             .RoundedBorder()
             .BorderStyle(style)
@@ -187,7 +190,6 @@ internal static class ChatConsole
 
     private sealed class CommandCompletion : ITextCompletion
     {
-        private static readonly string[] _base = new[] { "help", "exit", "enable", "disable", "toggle" };
         private readonly List<string> _toolNames;
 
         public CommandCompletion(IEnumerable<string> toolNames)
@@ -200,13 +202,13 @@ internal static class ChatConsole
             var tokens = (prefix + word).TrimStart().Split(' ', StringSplitOptions.RemoveEmptyEntries);
             if (tokens.Length <= 1)
             {
-                return _base.Concat(_toolNames).Where(c => c.StartsWith(word, StringComparison.OrdinalIgnoreCase));
+                return CliConstants.Commands.All.Concat(_toolNames).Where(c => c.StartsWith(word, StringComparison.OrdinalIgnoreCase));
             }
 
             var cmd = tokens[0];
-            if ((cmd.Equals("enable", StringComparison.OrdinalIgnoreCase) ||
-                cmd.Equals("disable", StringComparison.OrdinalIgnoreCase) ||
-                cmd.Equals("toggle", StringComparison.OrdinalIgnoreCase)) &&
+            if ((cmd.Equals(CliConstants.Commands.Enable, StringComparison.OrdinalIgnoreCase) ||
+                cmd.Equals(CliConstants.Commands.Disable, StringComparison.OrdinalIgnoreCase) ||
+                cmd.Equals(CliConstants.Commands.Toggle, StringComparison.OrdinalIgnoreCase)) &&
                 tokens.Length == 2)
             {
                 var part = tokens[1];

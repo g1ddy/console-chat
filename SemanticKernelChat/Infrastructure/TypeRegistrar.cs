@@ -17,32 +17,28 @@ public sealed class TypeRegistrar : ITypeRegistrar
 
     public void Register(Type? service, Type? implementation)
     {
-        if (service is null)
-            throw new ArgumentNullException(nameof(service));
-        if (implementation is null)
-            throw new ArgumentNullException(nameof(implementation));
+        ArgumentNullException.ThrowIfNull(service);
+        ArgumentNullException.ThrowIfNull(implementation);
 
-        _services.AddSingleton(service, implementation);
+        _ = _services.AddSingleton(service, implementation);
     }
 
     public void RegisterInstance(Type? service, object? implementation)
     {
-        if (service is null)
-            throw new ArgumentNullException(nameof(service));
-        if (implementation is null)
-            throw new ArgumentNullException(nameof(implementation));
+        ArgumentNullException.ThrowIfNull(service);
+        ArgumentNullException.ThrowIfNull(implementation);
 
-        _services.AddSingleton(service, implementation);
+        _ = _services.AddSingleton(service, implementation);
     }
 
     public void RegisterLazy(Type? service, Func<object?> factory)
     {
-        if (service is null)
-            throw new ArgumentNullException(nameof(service));
-        if (factory is null)
-            throw new ArgumentNullException(nameof(factory));
+        ArgumentNullException.ThrowIfNull(service);
+        ArgumentNullException.ThrowIfNull(factory);
 
-        _services.AddSingleton(service, _ => factory());
+        _ = _services.AddSingleton(service, _
+            => factory() ?? throw new ArgumentNullException(nameof(factory))
+        );
     }
 
     private sealed class TypeResolver : ITypeResolver, IDisposable
@@ -55,7 +51,7 @@ public sealed class TypeRegistrar : ITypeRegistrar
         }
 
         public object? Resolve(Type? type)
-            => _provider.GetService(type);
+            => _provider.GetService(type ?? throw new ArgumentNullException());
 
         public void Dispose()
             => _provider.Dispose();

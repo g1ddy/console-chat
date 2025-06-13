@@ -4,7 +4,8 @@ using Microsoft.Extensions.AI;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using SemanticKernelChat.Clients;
-namespace SemanticKernelChat;
+
+namespace SemanticKernelChat.Infrastructure;
 
 /// <summary>
 /// Extension methods for registering the Semantic Kernel chat client
@@ -39,18 +40,14 @@ public static class SemanticKernelExtensions
         // Get provider and model configuration. If either is missing, return an echo client.
         var provider = configuration["Provider"];
         if (string.IsNullOrWhiteSpace(provider))
-        {
             return new EchoChatClient();
-        }
 
         var providerSection = configuration.GetSection(provider);
 
         // Get the model ID from the configuration
         var modelId = providerSection["ModelId"];
         if (string.IsNullOrWhiteSpace(modelId))
-        {
             return new EchoChatClient();
-        }
 
         switch (provider)
         {

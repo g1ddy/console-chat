@@ -1,6 +1,7 @@
-using ModelContextProtocol.Client;
-using Microsoft.Extensions.Configuration;
 using System.Net;
+using Microsoft.Extensions.Configuration;
+using ModelContextProtocol.Client;
+using SemanticKernelChat.Infrastructure;
 
 namespace SemanticKernelChat.Helpers;
 
