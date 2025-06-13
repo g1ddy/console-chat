@@ -3,6 +3,8 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
 using SemanticKernelChat;
+using SemanticKernelChat.Commands;
+using SemanticKernelChat.Infrastructure;
 
 using Spectre.Console;
 using Spectre.Console.Cli;
