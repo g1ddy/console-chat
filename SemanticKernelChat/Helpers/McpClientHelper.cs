@@ -1,6 +1,11 @@
+using System.Collections.Immutable;
+using System.Collections.ObjectModel;
 using System.Net;
+
 using Microsoft.Extensions.Configuration;
+
 using ModelContextProtocol.Client;
+
 using SemanticKernelChat.Infrastructure;
 
 namespace SemanticKernelChat.Helpers;
@@ -14,7 +19,7 @@ internal sealed record McpServerConfig
     [ConfigurationKeyName("args")]
     public string[]? Arguments { get; init; }
 
-    [ConfigurationKeyName("Env")]
+    [ConfigurationKeyName("env")]
     public Dictionary<string, string?>? EnvironmentVariables { get; init; }
 }
 
@@ -22,7 +27,15 @@ public static class McpClientHelper
 {
     public static IEnumerable<IClientTransport> CreateTransports(IConfiguration configuration)
     {
-        var servers = configuration.GetSection("McpServers").Get<Dictionary<string, McpServerConfig>>() ?? [];
+        var servers = configuration.GetSection("McpServers")
+            .Get<Dictionary<string, McpServerConfig>>();
+
+        if (servers is null || servers.Count == 0)
+        {
+            System.Console.WriteLine("No MCP servers configured. Please check your configuration.");
+            yield break;
+        }
+
         foreach (var server in servers)
         {
             var serverName = server.Key;
@@ -63,6 +76,8 @@ public static class McpClientHelper
                         TransportMode = HttpTransportMode.Sse,
                     });
                     break;
+                default:
+                    throw new InvalidOperationException($"Unsupported server type: {serverConfig.TransportType}");
             }
         }
     }
