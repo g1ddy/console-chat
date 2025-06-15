@@ -9,6 +9,7 @@ internal sealed record McpServerConfig
 {
     public required string Command { get; init; }
     public string? TransportType { get; init; }
+    public bool Disabled { get; init; } = false;
 
     [ConfigurationKeyName("args")]
     public string[]? Arguments { get; init; }
@@ -27,6 +28,12 @@ public static class McpClientHelper
             var serverName = server.Key;
             var serverConfig = server.Value ?? throw new InvalidOperationException($"Server configuration for '{serverName}' is missing.");
             var transportType = serverConfig.TransportType ?? McpServerTypes.Stdio; // Default to Stdio if not specified
+
+            if (serverConfig.Disabled)
+            {
+                System.Console.WriteLine($"Skipping disabled MCP server: {serverName}");
+                continue;
+            }
 
             switch (transportType.ToLowerInvariant())
             {
