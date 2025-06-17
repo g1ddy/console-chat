@@ -77,6 +77,16 @@ dotnet publish SemanticKernelChat -c Release -o out
 ./out/SemanticKernelChat
 ```
 
+### Architecture and Clean Code
+
+The console application follows a simple Model-View-Controller pattern.
+`ChatConsole` is responsible purely for rendering chat messages and
+reading user input (the **View**). All orchestration logic that calls
+the AI client lives in `ChatController` (the **Controller**), which
+interacts with `IChatHistoryService` as the **Model**. This separation
+makes the UI independent of the underlying chat provider and keeps each
+class focused on a single responsibility.
+
 ### Configuration
 
 `SemanticKernelChat` uses the standard .NET configuration system. Place an `appsettings.json` file next to the executable or in the project directory to configure the underlying chat provider. When no provider is configured an echo bot is used.

@@ -93,52 +93,29 @@ internal static class ChatConsole
         return await _editor.ReadLine(CancellationToken.None);
     }
 
-    public static async Task SendAndDisplayAsync(
-        IChatClient chatClient,
-        IChatHistoryService history,
-        IReadOnlyList<McpClientTool> tools)
+    public static async Task DisplayThinkingIndicator(Func<Task> action)
     {
-        List<ChatMessage> responses = [];
-        Exception? error = null;
         await AnsiConsole.Status()
             .Spinner(Spinner.Known.Monkey)
-            .StartAsync("Thinking...", async _ =>
-            {
-                try
-                {
-                    var response = await chatClient.GetResponseAsync(
-                        history.Messages,
-                        new() { Tools = [.. tools] });
-                    responses.AddRange(response.Messages);
-                }
-                catch (Exception ex)
-                {
-                    error = ex;
-                }
-            });
-
-        if (error is not null)
-        {
-            AnsiConsole.WriteException(error, ExceptionFormats.ShortenEverything);
-            return;
-        }
-
-        WriteChatMessages(history, responses.ToArray());
+            .StartAsync("Thinking...", async _ => await action());
     }
 
-    public static async Task SendAndDisplayStreamingAsync(
-        IChatClient chatClient,
-        IChatHistoryService history,
-        IReadOnlyList<McpClientTool> tools)
+    public static void DisplayError(Exception ex)
+    {
+        AnsiConsole.WriteException(ex, ExceptionFormats.ShortenEverything);
+    }
+
+    public static async Task<IReadOnlyList<ChatMessage>> DisplayStreamingUpdatesAsync(
+        IAsyncEnumerable<ChatResponseUpdate> updates,
+        IChatHistoryService history)
     {
         var messageUpdates = new List<ChatResponseUpdate>();
-        var replyBuilder = new StringBuilder();
-        Exception? error = null;
+        var paragraph = new Paragraph(string.Empty);
 
         var (headerText, justify, style) = GetUserStyle(ChatRole.Assistant);
         var header = new PanelHeader(headerText, justify);
 
-        var panel = new Panel(string.Empty)
+        var panel = new Panel(paragraph)
             .RoundedBorder()
             .BorderStyle(style)
             .Header(header)
@@ -148,45 +125,40 @@ internal static class ChatConsole
             .AutoClear(false)
             .StartAsync(async ctx =>
             {
-                try
+                await foreach (var update in updates)
                 {
-                    await foreach (var update in chatClient.GetStreamingResponseAsync(
-                        history.Messages,
-                        new() { Tools = [.. tools] }))
-                    {
-                        messageUpdates.Add(update);
+                    messageUpdates.Add(update);
 
-                        if (update.Role == ChatRole.Assistant)
-                        {
-                            _ = replyBuilder.Append(update.Text.EscapeMarkup());
-                            panel = new Panel(replyBuilder.ToString())
-                                .RoundedBorder()
-                                .BorderStyle(style)
-                                .Header(header)
-                                .Expand();
-                            ctx.UpdateTarget(panel);
-                        }
-                        else if (update.Role == ChatRole.Tool)
-                        {
-                            _ = replyBuilder.Append(Environment.NewLine);
-                            _ = replyBuilder.AppendFormat("[grey]:wrench: {0} Result...[/]", update.Role);
-                        }
+                    if (update.Role == ChatRole.Assistant)
+                    {
+                        _ = paragraph.Append(update.Text.EscapeMarkup());
                     }
-                }
-                catch (Exception ex)
-                {
-                    error = ex;
+                    else if (update.Role == ChatRole.Tool)
+                    {
+                        _ = paragraph.Append("\n");
+                        _ = paragraph.Append($"[grey]:wrench: {update.Role} Result...[/]");
+                    }
+
+                    ctx.Refresh();
                 }
             });
 
-        if (error is not null)
-        {
-            AnsiConsole.WriteException(error, ExceptionFormats.ShortenEverything);
-            return;
-        }
-
         history.Add(messageUpdates.ToArray());
+        var response = Microsoft.Extensions.AI.ChatResponseExtensions.ToChatResponse(messageUpdates);
+        return [.. response.Messages];
     }
+
+    public static Task SendAndDisplayAsync(
+        IChatClient chatClient,
+        IChatHistoryService history,
+        IReadOnlyList<McpClientTool> tools) =>
+        ChatController.SendAndDisplayAsync(chatClient, history, tools);
+
+    public static Task SendAndDisplayStreamingAsync(
+        IChatClient chatClient,
+        IChatHistoryService history,
+        IReadOnlyList<McpClientTool> tools) =>
+        ChatController.SendAndDisplayStreamingAsync(chatClient, history, tools);
 
     private sealed class CommandCompletion : ITextCompletion
     {

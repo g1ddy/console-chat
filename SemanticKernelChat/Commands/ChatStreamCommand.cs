@@ -51,7 +51,7 @@ public sealed class ChatStreamCommand : AsyncCommand<ChatCommand.Settings>
 
             _history.AddUserMessage(input);
 
-            await ChatConsole.SendAndDisplayStreamingAsync(_chatClient, _history, tools);
+            await ChatController.SendAndDisplayStreamingAsync(_chatClient, _history, tools);
         }
 
         return 0;
