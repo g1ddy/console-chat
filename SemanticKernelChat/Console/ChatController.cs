@@ -33,6 +33,7 @@ internal static class ChatController
             return;
         }
 
+        history.Add(responses);
         ChatConsole.WriteChatMessages(history, responses);
     }
 

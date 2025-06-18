@@ -57,7 +57,6 @@ internal static class ChatConsole
 
     public static void WriteChatMessages(IChatHistoryService history, params ChatMessage[] messages)
     {
-        history.Add(messages);
 
         foreach (var message in messages)
         {
@@ -146,17 +145,7 @@ internal static class ChatConsole
         return [.. response.Messages];
     }
 
-    public static Task SendAndDisplayAsync(
-        IChatClient chatClient,
-        IChatHistoryService history,
-        IReadOnlyList<McpClientTool> tools) =>
-        ChatController.SendAndDisplayAsync(chatClient, history, tools);
 
-    public static Task SendAndDisplayStreamingAsync(
-        IChatClient chatClient,
-        IChatHistoryService history,
-        IReadOnlyList<McpClientTool> tools) =>
-        ChatController.SendAndDisplayStreamingAsync(chatClient, history, tools);
 
     private sealed class CommandCompletion : ITextCompletion
     {
