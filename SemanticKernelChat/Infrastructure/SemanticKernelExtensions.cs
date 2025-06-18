@@ -15,12 +15,12 @@ public static class SemanticKernelExtensions
     /// <summary>
     /// Registers the Semantic Kernel chat client and related services.
     /// </summary>
-    public static IServiceCollection AddSemanticKernelChatClient(
+    public static async Task<IServiceCollection> AddSemanticKernelChatClient(
         this IServiceCollection services,
         IConfiguration configuration)
     {
         // Create the chat client using configuration
-        IChatClient chatClient = CreateChatClient(configuration);
+        IChatClient chatClient = await CreateChatClientAsync(configuration).ConfigureAwait(false);
 
         // Register the chat client with function invocation support
         _ = services.AddChatClient(_ =>
@@ -35,7 +35,7 @@ public static class SemanticKernelExtensions
     /// <summary>
     /// Creates an IChatClient based on the configured provider (AwsBedrock or OpenAI).
     /// </summary>
-    private static IChatClient CreateChatClient(IConfiguration configuration)
+    private static async Task<IChatClient> CreateChatClientAsync(IConfiguration configuration)
     {
         // Get provider and model configuration. If either is missing, return an echo client.
         var provider = configuration["Provider"];
@@ -53,7 +53,7 @@ public static class SemanticKernelExtensions
         {
             case "AwsBedrock":
                 // Create Bedrock runtime client and wrap as IChatClient
-                var bedrockRuntime = Helpers.BedrockHelper.GetBedrockRuntimeAsync(providerSection).GetAwaiter().GetResult();
+                AmazonBedrockRuntimeClient bedrockRuntime = await Helpers.BedrockHelper.GetBedrockRuntimeAsync(providerSection).ConfigureAwait(false);
                 return bedrockRuntime.AsIChatClient(
                     modelId
                 );
