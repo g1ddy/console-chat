@@ -22,11 +22,15 @@ public abstract class ChatCommandBase : AsyncCommand<ChatCommandBase.Settings>
 
     private readonly IChatClient _chatClient;
     private readonly IChatHistoryService _history;
+    protected IChatController Controller { get; }
+    private readonly IChatConsole _console;
 
-    protected ChatCommandBase(IChatClient chatClient, IChatHistoryService history)
+    protected ChatCommandBase(IChatClient chatClient, IChatHistoryService history, IChatController controller, IChatConsole console)
     {
         _chatClient = chatClient;
         _history = history;
+        Controller = controller;
+        _console = console;
     }
 
     /// <summary>
@@ -41,7 +45,7 @@ public abstract class ChatCommandBase : AsyncCommand<ChatCommandBase.Settings>
     {
         await using var toolCollection = await McpToolCollection.CreateAsync();
         var tools = toolCollection.Tools;
-        ChatConsole.Initialize(tools);
+        _console.Initialize(tools);
 
         AnsiConsole.MarkupLine(CliConstants.WelcomeMessage);
 
@@ -52,7 +56,7 @@ public abstract class ChatCommandBase : AsyncCommand<ChatCommandBase.Settings>
             AnsiConsole.Write(rule);
 
             AnsiConsole.Markup(CliConstants.UserPrompt);
-            var input = await ChatConsole.ReadMultilineInputAsync();
+            var input = await _console.ReadMultilineInputAsync();
 
             if (input is null ||
                 input.Equals(CliConstants.Commands.Exit, StringComparison.OrdinalIgnoreCase))

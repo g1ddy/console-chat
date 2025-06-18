@@ -8,8 +8,12 @@ namespace SemanticKernelChat.Commands;
 
 public sealed class ChatStreamCommand : ChatCommandBase
 {
-    public ChatStreamCommand(IChatClient chatClient, IChatHistoryService history)
-        : base(chatClient, history)
+    public ChatStreamCommand(
+        IChatClient chatClient,
+        IChatHistoryService history,
+        IChatController controller,
+        IChatConsole console)
+        : base(chatClient, history, controller, console)
     {
     }
 
@@ -17,5 +21,5 @@ public sealed class ChatStreamCommand : ChatCommandBase
         IChatClient chatClient,
         IChatHistoryService history,
         IReadOnlyList<McpClientTool> tools) =>
-        ChatController.SendAndDisplayStreamingAsync(chatClient, history, tools);
+        Controller.SendAndDisplayStreamingAsync(chatClient, history, tools);
 }

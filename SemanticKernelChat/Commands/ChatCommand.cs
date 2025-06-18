@@ -8,8 +8,12 @@ namespace SemanticKernelChat.Commands;
 
 public sealed class ChatCommand : ChatCommandBase
 {
-    public ChatCommand(IChatClient chatClient, IChatHistoryService history)
-        : base(chatClient, history)
+    public ChatCommand(
+        IChatClient chatClient,
+        IChatHistoryService history,
+        IChatController controller,
+        IChatConsole console)
+        : base(chatClient, history, controller, console)
     {
     }
 
@@ -17,5 +21,5 @@ public sealed class ChatCommand : ChatCommandBase
         IChatClient chatClient,
         IChatHistoryService history,
         IReadOnlyList<McpClientTool> tools) =>
-        ChatController.SendAndDisplayAsync(chatClient, history, tools);
+        Controller.SendAndDisplayAsync(chatClient, history, tools);
 }
