@@ -1,6 +1,10 @@
 using System.Collections.Immutable;
 using System.Collections.ObjectModel;
 using System.Net;
+using System.Collections.Generic;
+using System.Threading.Tasks;
+using System.Threading;
+using System.Runtime.CompilerServices;
 
 using Microsoft.Extensions.Configuration;
 
@@ -25,9 +29,10 @@ internal sealed record McpServerConfig
 
 public static class McpClientHelper
 {
-    public static IEnumerable<IClientTransport> CreateTransports(
+    public static async IAsyncEnumerable<IClientTransport> CreateTransportsAsync(
         IConfiguration configuration,
-        IHttpClientFactory? httpClientFactory = null)
+        IHttpClientFactory? httpClientFactory = null,
+        [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         var servers = configuration.GetSection("McpServers")
             .Get<Dictionary<string, McpServerConfig>>();
@@ -65,8 +70,9 @@ public static class McpClientHelper
                     var http = httpClientFactory?.CreateClient() ?? new HttpClient();
                     try
                     {
-                        var response = http.SendAsync(new HttpRequestMessage(HttpMethod.Head, serverConfig.Command))
-                            .GetAwaiter().GetResult();
+                        var response = await http.SendAsync(
+                            new HttpRequestMessage(HttpMethod.Head, serverConfig.Command),
+                            cancellationToken);
                         if (response.StatusCode is HttpStatusCode.Unauthorized or HttpStatusCode.Forbidden)
                         {
                             throw new InvalidOperationException($"SSE endpoint '{serverConfig.Command}' requires authentication.");

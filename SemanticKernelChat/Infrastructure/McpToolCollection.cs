@@ -20,7 +20,7 @@ public sealed class McpToolCollection : IAsyncDisposable
     /// <summary>
     /// Launches MCP servers, retrieves tools, and returns a disposable collection.
     /// </summary>
-    public static async Task<McpToolCollection> CreateAsync()
+    public static async Task<McpToolCollection> CreateAsync(CancellationToken cancellationToken = default)
     {
         var collection = new McpToolCollection();
         var configuration = new ConfigurationBuilder()
@@ -33,7 +33,11 @@ public sealed class McpToolCollection : IAsyncDisposable
         using var provider = services.BuildServiceProvider();
         var httpClientFactory = provider.GetRequiredService<IHttpClientFactory>();
 
-        var transports = McpClientHelper.CreateTransports(configuration, httpClientFactory).ToArray();
+        var transports = new List<IClientTransport>();
+        await foreach (var transport in McpClientHelper.CreateTransportsAsync(configuration, httpClientFactory, cancellationToken))
+        {
+            transports.Add(transport);
+        }
         var tasks = transports.Select(async transport =>
         {
             var client = await McpClientFactory.CreateAsync(transport);
