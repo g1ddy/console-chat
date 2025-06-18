@@ -34,7 +34,7 @@ internal static class ChatController
         }
 
         history.Add(responses);
-        ChatConsole.WriteChatMessages(history, responses);
+        ChatConsole.WriteChatMessages(responses);
     }
 
     public static async Task SendAndDisplayStreamingAsync(

@@ -55,7 +55,7 @@ internal static class ChatConsole
         return (headerText, justify, style);
     }
 
-    public static void WriteChatMessages(IChatHistoryService history, params ChatMessage[] messages)
+    public static void WriteChatMessages(params ChatMessage[] messages)
     {
 
         foreach (var message in messages)

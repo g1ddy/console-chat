@@ -65,7 +65,7 @@ public class ChatConsoleTests
         AnsiConsole.Console = testConsole;
 
         var msg = new ChatMessage(ChatRole.User, "hello");
-        SemanticKernelChat.Console.ChatConsole.WriteChatMessages(history, msg);
+        SemanticKernelChat.Console.ChatConsole.WriteChatMessages(msg);
 
         Assert.Empty(history.Messages);
         Assert.Contains("hello", testConsole.Output);
