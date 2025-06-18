@@ -1,5 +1,4 @@
 using Microsoft.Extensions.AI;
-using Microsoft.Extensions.Logging;
 using SemanticKernelChat.Console;
 using SemanticKernelChat.Infrastructure;
 using Spectre.Console;
@@ -11,17 +10,15 @@ public sealed class ChatCommand : AsyncCommand<ChatCommand.Settings>
 {
     private readonly IChatClient _chatClient;
     private readonly IChatHistoryService _history;
-    private readonly ILogger<ChatCommand> _logger;
 
     public sealed class Settings : CommandSettings
     {
     }
 
-    public ChatCommand(IChatClient chatClient, IChatHistoryService history, ILogger<ChatCommand> logger)
+    public ChatCommand(IChatClient chatClient, IChatHistoryService history)
     {
         _chatClient = chatClient;
         _history = history;
-        _logger = logger;
     }
 
     public override async Task<int> ExecuteAsync(CommandContext context, Settings settings)

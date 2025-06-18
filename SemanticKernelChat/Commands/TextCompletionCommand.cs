@@ -1,5 +1,4 @@
 using Microsoft.Extensions.AI;
-using Microsoft.Extensions.Logging;
 using SemanticKernelChat.Infrastructure;
 using Spectre.Console.Cli;
 
@@ -20,12 +19,10 @@ Never guess tool results or add extra text.
 """;
 
     private readonly IChatClient _chatClient;
-    private readonly ILogger<TextCompletionCommand> _logger;
 
-    public TextCompletionCommand(IChatClient chatClient, ILogger<TextCompletionCommand> logger)
+    public TextCompletionCommand(IChatClient chatClient)
     {
         _chatClient = chatClient;
-        _logger = logger;
     }
 
     public override async Task<int> ExecuteAsync(CommandContext context, Settings settings)
