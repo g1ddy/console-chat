@@ -1,5 +1,6 @@
 using ModelContextProtocol.Client;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 using SemanticKernelChat.Helpers;
 
 namespace SemanticKernelChat.Infrastructure;
@@ -27,7 +28,12 @@ public sealed class McpToolCollection : IAsyncDisposable
             .AddJsonFile("appsettings.json", optional: true)
             .Build();
 
-        var transports = McpClientHelper.CreateTransports(configuration).ToArray();
+        var services = new ServiceCollection();
+        _ = services.AddHttpClient();
+        using var provider = services.BuildServiceProvider();
+        var httpClientFactory = provider.GetRequiredService<IHttpClientFactory>();
+
+        var transports = McpClientHelper.CreateTransports(configuration, httpClientFactory).ToArray();
         var tasks = transports.Select(async transport =>
         {
             var client = await McpClientFactory.CreateAsync(transport);

@@ -25,7 +25,9 @@ internal sealed record McpServerConfig
 
 public static class McpClientHelper
 {
-    public static IEnumerable<IClientTransport> CreateTransports(IConfiguration configuration)
+    public static IEnumerable<IClientTransport> CreateTransports(
+        IConfiguration configuration,
+        IHttpClientFactory? httpClientFactory = null)
     {
         var servers = configuration.GetSection("McpServers")
             .Get<Dictionary<string, McpServerConfig>>();
@@ -60,12 +62,21 @@ public static class McpClientHelper
                     });
                     break;
                 case McpServerTypes.Sse:
-                    using (var http = new HttpClient())
+                    var http = httpClientFactory?.CreateClient() ?? new HttpClient();
+                    try
                     {
-                        var response = http.Send(new HttpRequestMessage(HttpMethod.Head, serverConfig.Command));
+                        var response = http.SendAsync(new HttpRequestMessage(HttpMethod.Head, serverConfig.Command))
+                            .GetAwaiter().GetResult();
                         if (response.StatusCode is HttpStatusCode.Unauthorized or HttpStatusCode.Forbidden)
                         {
                             throw new InvalidOperationException($"SSE endpoint '{serverConfig.Command}' requires authentication.");
+                        }
+                    }
+                    finally
+                    {
+                        if (httpClientFactory is null)
+                        {
+                            http.Dispose();
                         }
                     }
 
