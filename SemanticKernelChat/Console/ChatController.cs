@@ -3,16 +3,23 @@ using ModelContextProtocol.Client;
 
 namespace SemanticKernelChat.Console;
 
-internal static class ChatController
+internal class ChatController : IChatController
 {
-    public static async Task SendAndDisplayAsync(
+    private readonly IChatConsole _console;
+
+    public ChatController(IChatConsole console)
+    {
+        _console = console;
+    }
+
+    public async Task SendAndDisplayAsync(
         IChatClient chatClient,
         IChatHistoryService history,
         IReadOnlyList<McpClientTool> tools)
     {
         ChatMessage[] responses = [];
         Exception? error = null;
-        await ChatConsole.DisplayThinkingIndicator(async () =>
+        await _console.DisplayThinkingIndicator(async () =>
         {
             try
             {
@@ -29,14 +36,15 @@ internal static class ChatController
 
         if (error is not null)
         {
-            ChatConsole.DisplayError(error);
+            _console.DisplayError(error);
             return;
         }
 
-        ChatConsole.WriteChatMessages(history, responses);
+        history.Add(responses);
+        _console.WriteChatMessages(responses);
     }
 
-    public static async Task SendAndDisplayStreamingAsync(
+    public async Task SendAndDisplayStreamingAsync(
         IChatClient chatClient,
         IChatHistoryService history,
         IReadOnlyList<McpClientTool> tools,
@@ -50,7 +58,7 @@ internal static class ChatController
 
         try
         {
-            messages = await ChatConsole.DisplayStreamingUpdatesAsync(updates, history);
+            messages = await _console.DisplayStreamingUpdatesAsync(updates);
         }
         catch (Exception ex)
         {
@@ -59,9 +67,11 @@ internal static class ChatController
 
         if (error is not null)
         {
-            ChatConsole.DisplayError(error);
+            _console.DisplayError(error);
             return;
         }
+
+        history.Add([..messages]);
 
         finalCallback?.Invoke(messages);
     }

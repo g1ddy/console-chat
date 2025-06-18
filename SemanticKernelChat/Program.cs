@@ -5,6 +5,7 @@ using Microsoft.Extensions.Logging;
 using SemanticKernelChat;
 using SemanticKernelChat.Commands;
 using SemanticKernelChat.Infrastructure;
+using SemanticKernelChat.Console;
 
 using Spectre.Console;
 using Spectre.Console.Cli;
@@ -15,6 +16,8 @@ builder.Logging.AddConsole();
 
 await builder.Services.AddSemanticKernelChatClient(builder.Configuration);
 builder.Services.AddSingleton<IChatHistoryService, ChatHistoryService>();
+builder.Services.AddSingleton<IChatConsole, ChatConsole>();
+builder.Services.AddSingleton<IChatController, ChatController>();
 
 var registrar = new TypeRegistrar(builder.Services);
 var app = new CommandApp(registrar);

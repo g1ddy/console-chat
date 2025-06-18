@@ -58,16 +58,17 @@ public class ChatConsoleTests
     }
 
     [Fact]
-    public void WriteChatMessages_Writes_To_History_And_Console()
+    public void WriteChatMessages_Writes_To_Console()
     {
         var history = new ChatHistoryService();
         var testConsole = new TestConsole();
         AnsiConsole.Console = testConsole;
 
         var msg = new ChatMessage(ChatRole.User, "hello");
-        SemanticKernelChat.Console.ChatConsole.WriteChatMessages(history, msg);
+        var console = new SemanticKernelChat.Console.ChatConsole();
+        console.WriteChatMessages(msg);
 
-        Assert.Contains(msg, history.Messages);
+        Assert.Empty(history.Messages);
         Assert.Contains("hello", testConsole.Output);
     }
 
@@ -81,7 +82,9 @@ public class ChatConsoleTests
         AnsiConsole.Console = testConsole;
 
         var client = new FakeChatClient { Response = new(new ChatMessage(ChatRole.Assistant, "done")) };
-        await SemanticKernelChat.Console.ChatConsole.SendAndDisplayAsync(client, history, Array.Empty<McpClientTool>());
+        var console = new SemanticKernelChat.Console.ChatConsole();
+        var controller = new SemanticKernelChat.Console.ChatController(console);
+        await controller.SendAndDisplayAsync(client, history, Array.Empty<McpClientTool>());
 
         Assert.Equal(2, history.Messages.Count);
         Assert.Contains("done", testConsole.Output);
@@ -100,7 +103,9 @@ public class ChatConsoleTests
         client.StreamingUpdates.Add(new ChatResponseUpdate(ChatRole.Assistant, "A"));
         client.StreamingUpdates.Add(new ChatResponseUpdate(ChatRole.Assistant, "B"));
 
-        await SemanticKernelChat.Console.ChatConsole.SendAndDisplayStreamingAsync(client, history, Array.Empty<McpClientTool>());
+        var console = new SemanticKernelChat.Console.ChatConsole();
+        var controller = new SemanticKernelChat.Console.ChatController(console);
+        await controller.SendAndDisplayStreamingAsync(client, history, Array.Empty<McpClientTool>());
 
         Assert.Equal(2, history.Messages.Count);
         Assert.Contains("AB", history.Messages.Last().Text);

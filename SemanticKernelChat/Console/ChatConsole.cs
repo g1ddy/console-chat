@@ -11,11 +11,11 @@ using Spectre.Console.Rendering;
 
 namespace SemanticKernelChat.Console;
 
-internal static class ChatConsole
+internal class ChatConsole : IChatConsole
 {
-    private static LineEditor? _editor;
+    private LineEditor? _editor;
 
-    public static void Initialize(IEnumerable<McpClientTool> tools)
+    public void Initialize(IEnumerable<McpClientTool> tools)
     {
         var completion = new CommandCompletion(tools.Select(t => t.Name));
         _editor = new LineEditor
@@ -55,9 +55,8 @@ internal static class ChatConsole
         return (headerText, justify, style);
     }
 
-    public static void WriteChatMessages(IChatHistoryService history, params ChatMessage[] messages)
+    public void WriteChatMessages(params ChatMessage[] messages)
     {
-        history.Add(messages);
 
         foreach (var message in messages)
         {
@@ -87,27 +86,26 @@ internal static class ChatConsole
     /// Reads user input using RadLine's multiline editor.
     /// Returns <c>null</c> when the input stream ends.
     /// </summary>
-    public static async Task<string?> ReadMultilineInputAsync()
+    public async Task<string?> ReadMultilineInputAsync()
     {
         _editor ??= new LineEditor { MultiLine = true };
         return await _editor.ReadLine(CancellationToken.None);
     }
 
-    public static async Task DisplayThinkingIndicator(Func<Task> action)
+    public async Task DisplayThinkingIndicator(Func<Task> action)
     {
         await AnsiConsole.Status()
             .Spinner(Spinner.Known.Monkey)
             .StartAsync("Thinking...", async _ => await action());
     }
 
-    public static void DisplayError(Exception ex)
+    public void DisplayError(Exception ex)
     {
         AnsiConsole.WriteException(ex, ExceptionFormats.ShortenEverything);
     }
 
-    public static async Task<IReadOnlyList<ChatMessage>> DisplayStreamingUpdatesAsync(
-        IAsyncEnumerable<ChatResponseUpdate> updates,
-        IChatHistoryService history)
+     public async Task<IReadOnlyList<ChatMessage>> DisplayStreamingUpdatesAsync(
+        IAsyncEnumerable<ChatResponseUpdate> updates)
     {
         var messageUpdates = new List<ChatResponseUpdate>();
         var paragraph = new Paragraph(string.Empty);
@@ -141,24 +139,13 @@ internal static class ChatConsole
 
                     ctx.Refresh();
                 }
-            });
+        });
 
-        history.Add(messageUpdates.ToArray());
         var response = Microsoft.Extensions.AI.ChatResponseExtensions.ToChatResponse(messageUpdates);
         return [.. response.Messages];
     }
 
-    public static Task SendAndDisplayAsync(
-        IChatClient chatClient,
-        IChatHistoryService history,
-        IReadOnlyList<McpClientTool> tools) =>
-        ChatController.SendAndDisplayAsync(chatClient, history, tools);
 
-    public static Task SendAndDisplayStreamingAsync(
-        IChatClient chatClient,
-        IChatHistoryService history,
-        IReadOnlyList<McpClientTool> tools) =>
-        ChatController.SendAndDisplayStreamingAsync(chatClient, history, tools);
 
     private sealed class CommandCompletion : ITextCompletion
     {
