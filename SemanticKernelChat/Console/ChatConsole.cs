@@ -106,8 +106,7 @@ internal static class ChatConsole
     }
 
     public static async Task<IReadOnlyList<ChatMessage>> DisplayStreamingUpdatesAsync(
-        IAsyncEnumerable<ChatResponseUpdate> updates,
-        IChatHistoryService history)
+        IAsyncEnumerable<ChatResponseUpdate> updates)
     {
         var messageUpdates = new List<ChatResponseUpdate>();
         var paragraph = new Paragraph(string.Empty);
@@ -141,9 +140,8 @@ internal static class ChatConsole
 
                     ctx.Refresh();
                 }
-            });
+        });
 
-        history.Add(messageUpdates.ToArray());
         var response = Microsoft.Extensions.AI.ChatResponseExtensions.ToChatResponse(messageUpdates);
         return [.. response.Messages];
     }

@@ -1,60 +1,21 @@
 using Microsoft.Extensions.AI;
-using SemanticKernelChat.Console;
+using ModelContextProtocol.Client;
 using SemanticKernelChat.Infrastructure;
-using Spectre.Console;
+using SemanticKernelChat.Console;
 using Spectre.Console.Cli;
 
 namespace SemanticKernelChat.Commands;
 
-public sealed class ChatCommand : AsyncCommand<ChatCommand.Settings>
+public sealed class ChatCommand : ChatCommandBase
 {
-    private readonly IChatClient _chatClient;
-    private readonly IChatHistoryService _history;
-
-    public sealed class Settings : CommandSettings
-    {
-    }
-
     public ChatCommand(IChatClient chatClient, IChatHistoryService history)
+        : base(chatClient, history)
     {
-        _chatClient = chatClient;
-        _history = history;
     }
 
-    public override async Task<int> ExecuteAsync(CommandContext context, Settings settings)
-    {
-        await using var toolCollection = await McpToolCollection.CreateAsync();
-        var tools = toolCollection.Tools;
-        ChatConsole.Initialize(tools);
-
-        AnsiConsole.MarkupLine(CliConstants.WelcomeMessage);
-
-        while (true)
-        {
-            var (headerText, justify, style) = ChatConsole.GetUserStyle(ChatRole.User);
-            var rule = new Rule(headerText) { Justification = justify, Style = style };
-            AnsiConsole.Write(rule);
-
-            AnsiConsole.Markup(CliConstants.UserPrompt);
-            var input = await ChatConsole.ReadMultilineInputAsync();
-
-            if (input is null ||
-                input.Equals(CliConstants.Commands.Exit, StringComparison.OrdinalIgnoreCase))
-            {
-                AnsiConsole.MarkupLine(CliConstants.ExitMessage);
-                break;
-            }
-
-            if (string.IsNullOrWhiteSpace(input))
-            {
-                continue;
-            }
-
-            _history.AddUserMessage(input);
-
-            await ChatController.SendAndDisplayAsync(_chatClient, _history, tools);
-        }
-
-        return 0;
-    }
+    protected override Task SendAndDisplayAsync(
+        IChatClient chatClient,
+        IChatHistoryService history,
+        IReadOnlyList<McpClientTool> tools) =>
+        ChatController.SendAndDisplayAsync(chatClient, history, tools);
 }

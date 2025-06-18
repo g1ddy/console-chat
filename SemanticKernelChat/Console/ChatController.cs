@@ -50,7 +50,7 @@ internal static class ChatController
 
         try
         {
-            messages = await ChatConsole.DisplayStreamingUpdatesAsync(updates, history);
+            messages = await ChatConsole.DisplayStreamingUpdatesAsync(updates);
         }
         catch (Exception ex)
         {
@@ -62,6 +62,8 @@ internal static class ChatController
             ChatConsole.DisplayError(error);
             return;
         }
+
+        history.Add([..messages]);
 
         finalCallback?.Invoke(messages);
     }
