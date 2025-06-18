@@ -13,7 +13,7 @@ var builder = Host.CreateApplicationBuilder(args);
 
 builder.Logging.AddConsole();
 
-builder.Services.AddSemanticKernelChatClient(builder.Configuration);
+await builder.Services.AddSemanticKernelChatClient(builder.Configuration);
 builder.Services.AddSingleton<IChatHistoryService, ChatHistoryService>();
 
 var registrar = new TypeRegistrar(builder.Services);
