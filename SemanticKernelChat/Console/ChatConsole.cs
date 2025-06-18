@@ -1,4 +1,6 @@
 using System.Text;
+using System;
+using System.Diagnostics.CodeAnalysis;
 
 using Microsoft.Extensions.AI;
 
@@ -55,19 +57,32 @@ internal class ChatConsole : IChatConsole
         return (headerText, justify, style);
     }
 
+    private static bool TryGetContent<TContent>(IEnumerable<AIContent> contents, [NotNullWhen(true)] out TContent? content)
+        where TContent : AIContent
+    {
+        foreach (var item in contents)
+        {
+            if (item is TContent match)
+            {
+                content = match;
+                return true;
+            }
+        }
+
+        content = null;
+        return false;
+    }
+
     public void WriteChatMessages(params ChatMessage[] messages)
     {
 
         foreach (var message in messages)
         {
             IRenderable markupResponse = new Markup(message.Text.EscapeMarkup());
-            if (message.Role == ChatRole.Tool)
+            if (message.Role == ChatRole.Tool &&
+                TryGetContent<FunctionResultContent>(message.Contents, out _))
             {
-                var content = message.Contents.FirstOrDefault();
-                if (content is FunctionResultContent)
-                {
-                    markupResponse = new Markup("[grey]:wrench: Tool Result...[/]");
-                }
+                markupResponse = new Markup("[grey]:wrench: Tool Result...[/]");
             }
 
             var (headerText, justify, style) = GetUserStyle(message.Role);
@@ -119,6 +134,8 @@ internal class ChatConsole : IChatConsole
             .Header(header)
             .Expand();
 
+        var callNames = new Dictionary<string, string>();
+
         await AnsiConsole.Live(panel)
             .AutoClear(false)
             .StartAsync(async ctx =>
@@ -127,14 +144,33 @@ internal class ChatConsole : IChatConsole
                 {
                     messageUpdates.Add(update);
 
+                    var contents = update.Contents ?? Array.Empty<AIContent>();
+
                     if (update.Role == ChatRole.Assistant)
                     {
+                        if (TryGetContent<FunctionCallContent>(contents, out var call) &&
+                            !string.IsNullOrEmpty(call.CallId) &&
+                            !string.IsNullOrEmpty(call.Name))
+                        {
+                            callNames[call.CallId] = call.Name;
+                        }
+
                         _ = paragraph.Append(update.Text.EscapeMarkup());
                     }
                     else if (update.Role == ChatRole.Tool)
                     {
                         _ = paragraph.Append("\n");
-                        _ = paragraph.Append($"[grey]:wrench: {update.Role} Result...[/]");
+                        string toolName = update.Role.GetValueOrDefault().ToString();
+                        if (TryGetContent<FunctionResultContent>(contents, out var result))
+                        {
+                            var id = result.CallId;
+                            if (!string.IsNullOrEmpty(id) && callNames.TryGetValue(id, out var nameFound))
+                            {
+                                toolName = nameFound;
+                            }
+                        }
+
+                        _ = paragraph.Append($"[grey]:wrench: {toolName} Result...[/]");
                     }
 
                     ctx.Refresh();
