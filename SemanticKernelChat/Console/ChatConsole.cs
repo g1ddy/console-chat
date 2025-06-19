@@ -14,7 +14,7 @@ using Spectre.Console.Rendering;
 
 namespace SemanticKernelChat.Console;
 
-internal class ChatConsole : IChatConsole
+public class ChatConsole : IChatConsole
 {
     private LineEditor? _editor;
 
@@ -28,7 +28,7 @@ internal class ChatConsole : IChatConsole
         };
     }
 
-    internal static (string headerText, Justify justify, Style style) GetUserStyle(ChatRole messageRole)
+    public static (string headerText, Justify justify, Style style) GetUserStyle(ChatRole messageRole)
     {
         var headerText = messageRole.ToString();
         var justify = Justify.Left;

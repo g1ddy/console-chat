@@ -3,7 +3,7 @@ using ModelContextProtocol.Client;
 
 namespace SemanticKernelChat.Console;
 
-internal class ChatController : IChatController
+public class ChatController : IChatController
 {
     private readonly IChatConsole _console;
 
