@@ -5,6 +5,7 @@ using Spectre.Console;
 using Spectre.Console.Testing;
 using SemanticKernelChat;
 using System.Collections.Generic;
+using RadLine;
 
 namespace ConsoleChat.Tests;
 
@@ -66,7 +67,7 @@ public class ChatConsoleTests
         AnsiConsole.Console = testConsole;
 
         var msg = new ChatMessage(ChatRole.User, "hello");
-        var console = new SemanticKernelChat.Console.ChatConsole();
+        var console = new SemanticKernelChat.Console.ChatConsole(new RadLine.LineEditor { MultiLine = true });
         console.WriteChatMessages(msg);
 
         Assert.Empty(history.Messages);
@@ -83,7 +84,7 @@ public class ChatConsoleTests
         AnsiConsole.Console = testConsole;
 
         var client = new FakeChatClient { Response = new(new ChatMessage(ChatRole.Assistant, "done")) };
-        var console = new SemanticKernelChat.Console.ChatConsole();
+        var console = new SemanticKernelChat.Console.ChatConsole(new RadLine.LineEditor { MultiLine = true });
         var controller = new SemanticKernelChat.Console.ChatController(console);
         await controller.SendAndDisplayAsync(client, history, Array.Empty<McpClientTool>());
 
@@ -104,7 +105,7 @@ public class ChatConsoleTests
         client.StreamingUpdates.Add(new ChatResponseUpdate(ChatRole.Assistant, "A"));
         client.StreamingUpdates.Add(new ChatResponseUpdate(ChatRole.Assistant, "B"));
 
-        var console = new SemanticKernelChat.Console.ChatConsole();
+        var console = new SemanticKernelChat.Console.ChatConsole(new RadLine.LineEditor { MultiLine = true });
         var controller = new SemanticKernelChat.Console.ChatController(console);
         await controller.SendAndDisplayStreamingAsync(client, history, Array.Empty<McpClientTool>());
 
@@ -136,7 +137,7 @@ public class ChatConsoleTests
             new ChatResponseUpdate(ChatRole.Tool, resultContents)
         ]);
 
-        var console = new SemanticKernelChat.Console.ChatConsole();
+        var console = new SemanticKernelChat.Console.ChatConsole(new RadLine.LineEditor { MultiLine = true });
         _ = await console.DisplayStreamingUpdatesAsync(updates);
 
         Assert.Contains("First", testConsole.Output);

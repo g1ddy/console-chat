@@ -16,16 +16,19 @@ namespace SemanticKernelChat.Console;
 
 public class ChatConsole : IChatConsole
 {
-    private LineEditor? _editor;
+    private readonly LineEditor _editor;
+
+    public ChatConsole(LineEditor editor)
+    {
+        _editor = editor;
+    }
 
     public void Initialize(IEnumerable<McpClientTool> tools)
     {
         var completion = new CommandCompletion(tools.Select(t => t.Name));
-        _editor = new LineEditor
-        {
-            MultiLine = true,
-            Completion = completion,
-        };
+        typeof(LineEditor)
+            .GetProperty(nameof(LineEditor.Completion))!
+            .SetValue(_editor, completion);
     }
 
     public static (string headerText, Justify justify, Style style) GetUserStyle(ChatRole messageRole)
@@ -104,7 +107,6 @@ public class ChatConsole : IChatConsole
     /// </summary>
     public async Task<string?> ReadMultilineInputAsync()
     {
-        _editor ??= new LineEditor { MultiLine = true };
         return await _editor.ReadLine(CancellationToken.None);
     }
 
