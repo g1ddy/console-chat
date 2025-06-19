@@ -4,6 +4,7 @@ using ModelContextProtocol.Client;
 using Spectre.Console;
 using Spectre.Console.Testing;
 using SemanticKernelChat;
+using System.Collections.Generic;
 
 namespace ConsoleChat.Tests;
 
@@ -110,5 +111,44 @@ public class ChatConsoleTests
         Assert.Equal(2, history.Messages.Count);
         Assert.Contains("AB", history.Messages.Last().Text);
         Assert.Contains("AB", testConsole.Output);
+    }
+
+    [Fact]
+    public async Task DisplayStreamingUpdatesAsync_Logs_Multiple_Tool_Results()
+    {
+        var testConsole = new TestConsole();
+        AnsiConsole.Console = testConsole;
+
+        var callContents = new List<AIContent>
+        {
+            new FunctionCallContent("1", "First", new Dictionary<string, object?>()),
+            new FunctionCallContent("2", "Second", new Dictionary<string, object?>())
+        };
+
+        var resultContents = new List<AIContent>
+        {
+            new FunctionResultContent("1", "r1"),
+            new FunctionResultContent("2", "r2")
+        };
+
+        var updates = AsAsyncEnumerable([
+            new ChatResponseUpdate(ChatRole.Assistant, callContents),
+            new ChatResponseUpdate(ChatRole.Tool, resultContents)
+        ]);
+
+        var console = new SemanticKernelChat.Console.ChatConsole();
+        _ = await console.DisplayStreamingUpdatesAsync(updates);
+
+        Assert.Contains("First", testConsole.Output);
+        Assert.Contains("Second", testConsole.Output);
+    }
+
+    private static async IAsyncEnumerable<ChatResponseUpdate> AsAsyncEnumerable(IEnumerable<ChatResponseUpdate> updates)
+    {
+        foreach (var update in updates)
+        {
+            yield return update;
+            await Task.Yield();
+        }
     }
 }

@@ -1,6 +1,7 @@
 using System.Text;
 using System;
 using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 
 using Microsoft.Extensions.AI;
 
@@ -148,26 +149,25 @@ internal class ChatConsole : IChatConsole
 
                     if (update.Role == ChatRole.Assistant)
                     {
-                        if (TryGetContent<FunctionCallContent>(contents, out var call) &&
-                            !string.IsNullOrEmpty(call.CallId) &&
-                            !string.IsNullOrEmpty(call.Name))
+                        foreach (var call in contents.OfType<FunctionCallContent>())
                         {
-                            callNames[call.CallId] = call.Name;
+                            if (!string.IsNullOrEmpty(call.CallId) && !string.IsNullOrEmpty(call.Name))
+                            {
+                                callNames[call.CallId] = call.Name;
+                            }
                         }
 
                         _ = paragraph.Append(update.Text.EscapeMarkup());
                     }
-                    else if (update.Role == ChatRole.Tool)
+
+                    foreach (var result in contents.OfType<FunctionResultContent>())
                     {
                         _ = paragraph.Append("\n");
-                        string toolName = update.Role.GetValueOrDefault().ToString();
-                        if (TryGetContent<FunctionResultContent>(contents, out var result))
+                        string toolName = update.AuthorName ?? update.Role.GetValueOrDefault().ToString();
+                        var id = result.CallId;
+                        if (!string.IsNullOrEmpty(id) && callNames.TryGetValue(id, out var nameFound))
                         {
-                            var id = result.CallId;
-                            if (!string.IsNullOrEmpty(id) && callNames.TryGetValue(id, out var nameFound))
-                            {
-                                toolName = nameFound;
-                            }
+                            toolName = nameFound;
                         }
 
                         _ = paragraph.Append($"[grey]:wrench: {toolName} Result...[/]");
