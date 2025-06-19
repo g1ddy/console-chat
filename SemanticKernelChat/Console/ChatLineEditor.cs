@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.SemanticKernel;
 using RadLine;
 
 namespace SemanticKernelChat.Console;
@@ -10,24 +11,27 @@ namespace SemanticKernelChat.Console;
 public interface IChatLineEditor
 {
     Task<string?> ReadLine(CancellationToken cancellationToken);
-    void ConfigureCompletion(IEnumerable<string> toolNames);
+    void ConfigureCompletion(IEnumerable<string>? pluginNames = null);
 }
 
 public sealed class ChatLineEditor : IChatLineEditor
 {
     private readonly LineEditor _editor;
+    private readonly Kernel _kernel;
 
-    public ChatLineEditor()
+    public ChatLineEditor(Kernel kernel)
     {
+        _kernel = kernel;
         _editor = new LineEditor { MultiLine = true };
     }
 
     public Task<string?> ReadLine(CancellationToken cancellationToken) =>
         _editor.ReadLine(cancellationToken);
 
-    public void ConfigureCompletion(IEnumerable<string> toolNames)
+    public void ConfigureCompletion(IEnumerable<string>? pluginNames = null)
     {
-        var completion = new CommandCompletion(toolNames);
+        pluginNames ??= _kernel.Plugins.Select(p => p.Name);
+        var completion = new CommandCompletion(pluginNames);
         typeof(LineEditor)
             .GetProperty(nameof(LineEditor.Completion))!
             .SetValue(_editor, completion);

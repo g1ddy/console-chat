@@ -2,6 +2,7 @@ using Microsoft.Extensions.AI;
 using ModelContextProtocol.Client;
 using SemanticKernelChat.Console;
 using SemanticKernelChat.Infrastructure;
+using Microsoft.SemanticKernel;
 using Spectre.Console;
 using Spectre.Console.Cli;
 
@@ -22,15 +23,17 @@ public abstract class ChatCommandBase : AsyncCommand<ChatCommandBase.Settings>
 
     private readonly IChatClient _chatClient;
     private readonly IChatHistoryService _history;
+    private readonly Kernel _kernel;
     protected IChatController Controller { get; }
     private readonly IChatConsole _console;
 
-    protected ChatCommandBase(IChatClient chatClient, IChatHistoryService history, IChatController controller, IChatConsole console)
+    protected ChatCommandBase(IChatClient chatClient, IChatHistoryService history, IChatController controller, IChatConsole console, Kernel kernel)
     {
         _chatClient = chatClient;
         _history = history;
         Controller = controller;
         _console = console;
+        _kernel = kernel;
     }
 
     /// <summary>
@@ -44,8 +47,14 @@ public abstract class ChatCommandBase : AsyncCommand<ChatCommandBase.Settings>
     public override async Task<int> ExecuteAsync(CommandContext context, Settings settings)
     {
         await using var toolCollection = await McpToolCollection.CreateAsync();
+        foreach (var (name, pluginTools) in toolCollection.Plugins)
+        {
+#pragma warning disable SKEXP0001 // Experimental API
+            _ = _kernel.ImportPluginFromFunctions(name, pluginTools.Select(t => t.AsKernelFunction()));
+#pragma warning restore SKEXP0001
+        }
         var tools = toolCollection.Tools;
-        _console.Initialize(tools);
+        _console.Initialize(toolCollection.Plugins.Keys);
 
         AnsiConsole.MarkupLine(CliConstants.WelcomeMessage);
 

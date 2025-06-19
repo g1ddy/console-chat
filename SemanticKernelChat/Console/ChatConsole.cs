@@ -23,9 +23,9 @@ public class ChatConsole : IChatConsole
         _editor = editor;
     }
 
-    public void Initialize(IEnumerable<McpClientTool> tools)
+    public void Initialize(IEnumerable<string> pluginNames)
     {
-        _editor.ConfigureCompletion(tools.Select(t => t.Name));
+        _editor.ConfigureCompletion(pluginNames);
     }
 
     public static (string headerText, Justify justify, Style style) GetUserStyle(ChatRole messageRole)

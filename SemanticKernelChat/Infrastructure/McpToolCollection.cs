@@ -11,9 +11,11 @@ namespace SemanticKernelChat.Infrastructure;
 public sealed class McpToolCollection : IAsyncDisposable
 {
     private readonly List<McpClientTool> _tools = new();
+    private readonly Dictionary<string, IList<McpClientTool>> _plugins = new();
     private readonly List<IAsyncDisposable> _disposables = new();
 
     public IReadOnlyList<McpClientTool> Tools => _tools;
+    public IReadOnlyDictionary<string, IList<McpClientTool>> Plugins => _plugins;
 
     private McpToolCollection() { }
 
@@ -42,15 +44,16 @@ public sealed class McpToolCollection : IAsyncDisposable
         {
             var client = await McpClientFactory.CreateAsync(transport);
             var tools = await client.ListToolsAsync();
-            return (client, tools);
+            return (client, transport.Name, tools);
         });
 
         var results = await Task.WhenAll(tasks);
 
-        foreach (var (client, tools) in results)
+        foreach (var (client, name, tools) in results)
         {
             collection._disposables.Add(client);
             collection._tools.AddRange(tools);
+            collection._plugins[name] = tools;
         }
 
         return collection;
