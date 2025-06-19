@@ -17,7 +17,7 @@ builder.Logging.AddConsole();
 
 await builder.Services.AddSemanticKernelChatClient(builder.Configuration);
 builder.Services.AddSingleton<IChatHistoryService, ChatHistoryService>();
-builder.Services.AddSingleton(_ => new LineEditor { MultiLine = true });
+builder.Services.AddSingleton<IChatLineEditor, ChatLineEditor>();
 builder.Services.AddSingleton<IChatConsole, ChatConsole>();
 builder.Services.AddSingleton<IChatController, ChatController>();
 

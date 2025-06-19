@@ -16,19 +16,16 @@ namespace SemanticKernelChat.Console;
 
 public class ChatConsole : IChatConsole
 {
-    private readonly LineEditor _editor;
+    private readonly IChatLineEditor _editor;
 
-    public ChatConsole(LineEditor editor)
+    public ChatConsole(IChatLineEditor editor)
     {
         _editor = editor;
     }
 
     public void Initialize(IEnumerable<McpClientTool> tools)
     {
-        var completion = new CommandCompletion(tools.Select(t => t.Name));
-        typeof(LineEditor)
-            .GetProperty(nameof(LineEditor.Completion))!
-            .SetValue(_editor, completion);
+        _editor.ConfigureCompletion(tools.Select(t => t.Name));
     }
 
     public static (string headerText, Justify justify, Style style) GetUserStyle(ChatRole messageRole)
@@ -185,34 +182,4 @@ public class ChatConsole : IChatConsole
 
 
 
-    private sealed class CommandCompletion : ITextCompletion
-    {
-        private readonly List<string> _toolNames;
-
-        public CommandCompletion(IEnumerable<string> toolNames)
-        {
-            _toolNames = toolNames.Distinct(StringComparer.OrdinalIgnoreCase).ToList();
-        }
-
-        public IEnumerable<string>? GetCompletions(string prefix, string word, string suffix)
-        {
-            var tokens = (prefix + word).TrimStart().Split(' ', StringSplitOptions.RemoveEmptyEntries);
-            if (tokens.Length <= 1)
-            {
-                return CliConstants.Commands.All.Concat(_toolNames).Where(c => c.StartsWith(word, StringComparison.OrdinalIgnoreCase));
-            }
-
-            var cmd = tokens[0];
-            if ((cmd.Equals(CliConstants.Commands.Enable, StringComparison.OrdinalIgnoreCase) ||
-                cmd.Equals(CliConstants.Commands.Disable, StringComparison.OrdinalIgnoreCase) ||
-                cmd.Equals(CliConstants.Commands.Toggle, StringComparison.OrdinalIgnoreCase)) &&
-                tokens.Length == 2)
-            {
-                var part = tokens[1];
-                return _toolNames.Where(t => t.StartsWith(part, StringComparison.OrdinalIgnoreCase));
-            }
-
-            return null;
-        }
-    }
 }
