@@ -16,13 +16,13 @@ public interface IChatLineEditor
 
 public sealed class ChatLineEditor : IChatLineEditor
 {
-    private readonly LineEditor _editor;
+    private LineEditor _editor = default!;
     private readonly Kernel _kernel;
 
     public ChatLineEditor(Kernel kernel)
     {
         _kernel = kernel;
-        _editor = new LineEditor { MultiLine = true };
+        ConfigureCompletion();
     }
 
     public Task<string?> ReadLine(CancellationToken cancellationToken) =>
@@ -32,9 +32,11 @@ public sealed class ChatLineEditor : IChatLineEditor
     {
         pluginNames ??= _kernel.Plugins.Select(p => p.Name);
         var completion = new CommandCompletion(pluginNames);
-        typeof(LineEditor)
-            .GetProperty(nameof(LineEditor.Completion))!
-            .SetValue(_editor, completion);
+        _editor = new LineEditor
+        {
+            MultiLine = true,
+            Completion = completion,
+        };
     }
 
     private sealed class CommandCompletion : ITextCompletion
