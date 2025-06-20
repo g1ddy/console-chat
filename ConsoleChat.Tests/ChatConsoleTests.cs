@@ -79,6 +79,28 @@ public class ChatConsoleTests
     }
 
     [Fact]
+    public void WriteChatMessages_Shows_Tool_Names_For_Results()
+    {
+        var testConsole = new TestConsole();
+        AnsiConsole.Console = testConsole;
+
+        var callMessage = new ChatMessage(ChatRole.Assistant, new AIContent[]
+        {
+            new FunctionCallContent("1", "First", new Dictionary<string, object?>())
+        });
+
+        var resultMessage = new ChatMessage(ChatRole.Tool, new AIContent[]
+        {
+            new FunctionResultContent("1", "r1")
+        });
+
+        var console = new ChatConsole(new ChatLineEditor(new McpToolCollection()));
+        console.WriteChatMessages(callMessage, resultMessage);
+
+        Assert.Contains("First", testConsole.Output);
+    }
+
+    [Fact]
     public async Task SendAndDisplayAsync_Writes_Response()
     {
         var history = new ChatHistoryService();

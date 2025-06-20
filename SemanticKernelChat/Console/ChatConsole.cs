@@ -62,16 +62,40 @@ public class ChatConsole : IChatConsole
         return false;
     }
 
+    private static Dictionary<string, string> CollectFunctionCallNames(IEnumerable<ChatMessage> messages)
+    {
+        var callNames = new Dictionary<string, string>();
+        foreach (var message in messages)
+        {
+            foreach (var call in message.Contents.OfType<FunctionCallContent>())
+            {
+                if (!string.IsNullOrEmpty(call.CallId) && !string.IsNullOrEmpty(call.Name))
+                {
+                    callNames[call.CallId] = call.Name;
+                }
+            }
+        }
+
+        return callNames;
+    }
+
     public void WriteChatMessages(params ChatMessage[] messages)
     {
+        var callNames = CollectFunctionCallNames(messages);
 
         foreach (var message in messages)
         {
             IRenderable markupResponse = new Markup(message.Text.EscapeMarkup());
             if (message.Role == ChatRole.Tool &&
-                TryGetContent<FunctionResultContent>(message.Contents, out _))
+                TryGetContent<FunctionResultContent>(message.Contents, out var result))
             {
-                markupResponse = new Markup("[grey]:wrench: Tool Result...[/]");
+                string toolName = message.AuthorName ?? message.Role.ToString();
+                var id = result.CallId;
+                if (!string.IsNullOrEmpty(id) && callNames.TryGetValue(id, out var nameFound))
+                {
+                    toolName = nameFound;
+                }
+                markupResponse = new Markup($"[grey]:wrench: {toolName} Result...[/]");
             }
 
             var (headerText, justify, style) = GetUserStyle(message.Role);
@@ -122,8 +146,6 @@ public class ChatConsole : IChatConsole
             .Header(header)
             .Expand();
 
-        var callNames = new Dictionary<string, string>();
-
         await AnsiConsole.Live(panel)
             .AutoClear(false)
             .StartAsync(async ctx =>
@@ -132,25 +154,20 @@ public class ChatConsole : IChatConsole
                 {
                     messageUpdates.Add(update);
 
+                    var responseSoFar = Microsoft.Extensions.AI.ChatResponseExtensions.ToChatResponse(messageUpdates);
+                    var callNames = CollectFunctionCallNames(responseSoFar.Messages);
+
                     var contents = update.Contents ?? Array.Empty<AIContent>();
 
                     if (update.Role == ChatRole.Assistant)
                     {
-                        foreach (var call in contents.OfType<FunctionCallContent>())
-                        {
-                            if (!string.IsNullOrEmpty(call.CallId) && !string.IsNullOrEmpty(call.Name))
-                            {
-                                callNames[call.CallId] = call.Name;
-                            }
-                        }
-
                         _ = paragraph.Append(update.Text.EscapeMarkup());
                     }
 
                     foreach (var result in contents.OfType<FunctionResultContent>())
                     {
                         _ = paragraph.Append("\n");
-                        string toolName = update.AuthorName ?? update.Role.GetValueOrDefault().ToString();
+                        string toolName = update.AuthorName ?? update.Role.ToString();
                         var id = result.CallId;
                         if (!string.IsNullOrEmpty(id) && callNames.TryGetValue(id, out var nameFound))
                         {
