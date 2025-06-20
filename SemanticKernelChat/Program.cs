@@ -6,8 +6,7 @@ using SemanticKernelChat;
 using SemanticKernelChat.Commands;
 using SemanticKernelChat.Infrastructure;
 using SemanticKernelChat.Console;
-using RadLine;
-using Microsoft.SemanticKernel;
+using ModelContextProtocol.Client;
 
 using Spectre.Console;
 using Spectre.Console.Cli;
@@ -18,8 +17,10 @@ builder.Logging.AddConsole();
 
 await builder.Services.AddSemanticKernelChatClient(builder.Configuration);
 builder.Services.AddSingleton<IChatHistoryService, ChatHistoryService>();
-builder.Services.AddSingleton<Kernel>(_ => Kernel.CreateBuilder().Build());
-builder.Services.AddSingleton<IChatLineEditor, ChatLineEditor>();
+var toolCollection = await McpToolCollection.CreateAsync();
+builder.Services.AddSingleton(toolCollection);
+builder.Services.AddSingleton<IEnumerable<McpClientTool>>(toolCollection.Tools);
+builder.Services.AddSingleton<IChatLineEditor>(_ => new ChatLineEditor(toolCollection.Plugins.Keys));
 builder.Services.AddSingleton<IChatConsole, ChatConsole>();
 builder.Services.AddSingleton<IChatController, ChatController>();
 

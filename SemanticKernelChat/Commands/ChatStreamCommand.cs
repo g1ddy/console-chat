@@ -1,8 +1,6 @@
 using Microsoft.Extensions.AI;
 using ModelContextProtocol.Client;
-using SemanticKernelChat.Infrastructure;
 using SemanticKernelChat.Console;
-using Microsoft.SemanticKernel;
 using Spectre.Console.Cli;
 
 namespace SemanticKernelChat.Commands;
@@ -14,8 +12,8 @@ public sealed class ChatStreamCommand : ChatCommandBase
         IChatHistoryService history,
         IChatController controller,
         IChatConsole console,
-        Kernel kernel)
-        : base(chatClient, history, controller, console, kernel)
+        IEnumerable<McpClientTool> tools)
+        : base(chatClient, history, controller, console, tools)
     {
     }
 

@@ -5,7 +5,6 @@ using Spectre.Console;
 using Spectre.Console.Testing;
 using SemanticKernelChat;
 using System.Collections.Generic;
-using Microsoft.SemanticKernel;
 
 namespace ConsoleChat.Tests;
 
@@ -67,8 +66,7 @@ public class ChatConsoleTests
         AnsiConsole.Console = testConsole;
 
         var msg = new AI.ChatMessage(AI.ChatRole.User, "hello");
-        var kernel = Kernel.CreateBuilder().Build();
-        var console = new SemanticKernelChat.Console.ChatConsole(new SemanticKernelChat.Console.ChatLineEditor(kernel));
+        var console = new SemanticKernelChat.Console.ChatConsole(new SemanticKernelChat.Console.ChatLineEditor(Array.Empty<string>()));
         console.WriteChatMessages(msg);
 
         Assert.Empty(history.Messages);
@@ -85,8 +83,7 @@ public class ChatConsoleTests
         AnsiConsole.Console = testConsole;
 
         var client = new FakeChatClient { Response = new(new AI.ChatMessage(AI.ChatRole.Assistant, "done")) };
-        var kernel2 = Kernel.CreateBuilder().Build();
-        var console = new SemanticKernelChat.Console.ChatConsole(new SemanticKernelChat.Console.ChatLineEditor(kernel2));
+        var console = new SemanticKernelChat.Console.ChatConsole(new SemanticKernelChat.Console.ChatLineEditor(Array.Empty<string>()));
         var controller = new SemanticKernelChat.Console.ChatController(console);
         await controller.SendAndDisplayAsync(client, history, Array.Empty<McpClientTool>());
 
@@ -107,8 +104,7 @@ public class ChatConsoleTests
         client.StreamingUpdates.Add(new AI.ChatResponseUpdate(AI.ChatRole.Assistant, "A"));
         client.StreamingUpdates.Add(new AI.ChatResponseUpdate(AI.ChatRole.Assistant, "B"));
 
-        var kernel3 = Kernel.CreateBuilder().Build();
-        var console = new SemanticKernelChat.Console.ChatConsole(new SemanticKernelChat.Console.ChatLineEditor(kernel3));
+        var console = new SemanticKernelChat.Console.ChatConsole(new SemanticKernelChat.Console.ChatLineEditor(Array.Empty<string>()));
         var controller = new SemanticKernelChat.Console.ChatController(console);
         await controller.SendAndDisplayStreamingAsync(client, history, Array.Empty<McpClientTool>());
 
@@ -140,8 +136,7 @@ public class ChatConsoleTests
             new AI.ChatResponseUpdate(AI.ChatRole.Tool, resultContents)
         ]);
 
-        var kernel4 = Kernel.CreateBuilder().Build();
-        var console = new SemanticKernelChat.Console.ChatConsole(new SemanticKernelChat.Console.ChatLineEditor(kernel4));
+        var console = new SemanticKernelChat.Console.ChatConsole(new SemanticKernelChat.Console.ChatLineEditor(Array.Empty<string>()));
         _ = await console.DisplayStreamingUpdatesAsync(updates);
 
         Assert.Contains("First", testConsole.Output);
