@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using RadLine;
+using SemanticKernelChat.Infrastructure;
 
 namespace SemanticKernelChat.Console;
 
@@ -15,6 +16,11 @@ public interface IChatLineEditor
 public sealed class ChatLineEditor : IChatLineEditor
 {
     private LineEditor _editor = default!;
+
+    public ChatLineEditor(McpToolCollection tools)
+        : this(tools.Plugins.Keys)
+    {
+    }
 
     public ChatLineEditor(IEnumerable<string> pluginNames)
     {
