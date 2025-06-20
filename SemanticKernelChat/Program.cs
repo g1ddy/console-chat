@@ -18,7 +18,7 @@ await builder.Services.AddSemanticKernelChatClient(builder.Configuration);
 builder.Services.AddSingleton<IChatHistoryService, ChatHistoryService>();
 var toolCollection = await McpToolCollection.CreateAsync();
 builder.Services.AddSingleton(toolCollection);
-builder.Services.AddSingleton<IChatLineEditor>(_ => new ChatLineEditor(toolCollection));
+builder.Services.AddSingleton<IChatLineEditor, ChatLineEditor>();
 builder.Services.AddSingleton<IChatConsole, ChatConsole>();
 builder.Services.AddSingleton<IChatController, ChatController>();
 
@@ -28,6 +28,7 @@ var app = new CommandApp(registrar);
 app.Configure(config =>
 {
     _ = config.SetExceptionHandler(ex => AnsiConsole.WriteException(ex, ExceptionFormats.ShortenTypes));
+    _ = config.AddCommand<TextCompletionTestCommand>("text-completion-test");
     _ = config.AddCommand<TextCompletionCommand>("text-completion");
     _ = config.AddCommand<ChatStreamCommand>("chat-stream");
     _ = config.AddCommand<ChatCommand>("chat");
