@@ -1,9 +1,5 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
 using RadLine;
+
 using SemanticKernelChat.Infrastructure;
 
 namespace SemanticKernelChat.Console;
@@ -18,17 +14,13 @@ public sealed class ChatLineEditor : IChatLineEditor
     private LineEditor _editor = default!;
 
     public ChatLineEditor(McpToolCollection tools)
-        : this(tools.Plugins.Keys)
     {
-    }
-
-    public ChatLineEditor(IEnumerable<string> pluginNames)
-    {
+        var pluginNames = tools.Plugins.Keys;
         ConfigureCompletion(pluginNames);
     }
 
-    public Task<string?> ReadLine(CancellationToken cancellationToken) =>
-        _editor.ReadLine(cancellationToken);
+    public Task<string?> ReadLine(CancellationToken cancellationToken)
+        => _editor.ReadLine(cancellationToken);
 
     private void ConfigureCompletion(IEnumerable<string> pluginNames)
     {

@@ -1,7 +1,10 @@
 using Microsoft.Extensions.AI;
+
 using ModelContextProtocol.Client;
+
 using SemanticKernelChat.Console;
 using SemanticKernelChat.Infrastructure;
+
 using Spectre.Console;
 using Spectre.Console.Cli;
 
@@ -78,4 +81,3 @@ public abstract class ChatCommandBase : AsyncCommand<ChatCommandBase.Settings>
         return 0;
     }
 }
-

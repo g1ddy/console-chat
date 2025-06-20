@@ -1,13 +1,6 @@
-using System.Text;
-using System;
 using System.Diagnostics.CodeAnalysis;
-using System.Linq;
 
 using Microsoft.Extensions.AI;
-
-using ModelContextProtocol.Client;
-
-using RadLine;
 
 using Spectre.Console;
 using Spectre.Console.Rendering;
@@ -114,8 +107,8 @@ public class ChatConsole : IChatConsole
         AnsiConsole.WriteException(ex, ExceptionFormats.ShortenEverything);
     }
 
-     public async Task<IReadOnlyList<ChatMessage>> DisplayStreamingUpdatesAsync(
-        IAsyncEnumerable<ChatResponseUpdate> updates)
+    public async Task<IReadOnlyList<ChatMessage>> DisplayStreamingUpdatesAsync(
+       IAsyncEnumerable<ChatResponseUpdate> updates)
     {
         var messageUpdates = new List<ChatResponseUpdate>();
         var paragraph = new Paragraph(string.Empty);
@@ -169,12 +162,9 @@ public class ChatConsole : IChatConsole
 
                     ctx.Refresh();
                 }
-        });
+            });
 
         var response = Microsoft.Extensions.AI.ChatResponseExtensions.ToChatResponse(messageUpdates);
         return [.. response.Messages];
     }
-
-
-
 }
