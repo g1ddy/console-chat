@@ -54,7 +54,6 @@ public abstract class ChatCommandBase : AsyncCommand<ChatCommandBase.Settings>
 #pragma warning restore SKEXP0001
         }
         var tools = toolCollection.Tools;
-        _console.Initialize(toolCollection.Plugins.Keys);
 
         AnsiConsole.MarkupLine(CliConstants.WelcomeMessage);
 

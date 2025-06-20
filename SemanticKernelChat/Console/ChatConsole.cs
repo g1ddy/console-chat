@@ -23,11 +23,6 @@ public class ChatConsole : IChatConsole
         _editor = editor;
     }
 
-    public void Initialize(IEnumerable<string> pluginNames)
-    {
-        _editor.ConfigureCompletion(pluginNames);
-    }
-
     public static (string headerText, Justify justify, Style style) GetUserStyle(ChatRole messageRole)
     {
         var headerText = messageRole.ToString();

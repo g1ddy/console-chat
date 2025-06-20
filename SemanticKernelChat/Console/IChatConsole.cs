@@ -5,7 +5,6 @@ namespace SemanticKernelChat.Console;
 
 public interface IChatConsole
 {
-    void Initialize(IEnumerable<string> pluginNames);
     void WriteChatMessages(params ChatMessage[] messages);
     Task<string?> ReadMultilineInputAsync();
     Task DisplayThinkingIndicator(Func<Task> action);

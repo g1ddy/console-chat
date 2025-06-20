@@ -11,7 +11,6 @@ namespace SemanticKernelChat.Console;
 public interface IChatLineEditor
 {
     Task<string?> ReadLine(CancellationToken cancellationToken);
-    void ConfigureCompletion(IEnumerable<string>? pluginNames = null);
 }
 
 public sealed class ChatLineEditor : IChatLineEditor
@@ -22,15 +21,14 @@ public sealed class ChatLineEditor : IChatLineEditor
     public ChatLineEditor(Kernel kernel)
     {
         _kernel = kernel;
-        ConfigureCompletion();
+        ConfigureCompletion(_kernel.Plugins.Select(p => p.Name));
     }
 
     public Task<string?> ReadLine(CancellationToken cancellationToken) =>
         _editor.ReadLine(cancellationToken);
 
-    public void ConfigureCompletion(IEnumerable<string>? pluginNames = null)
+    private void ConfigureCompletion(IEnumerable<string> pluginNames)
     {
-        pluginNames ??= _kernel.Plugins.Select(p => p.Name);
         var completion = new CommandCompletion(pluginNames);
         _editor = new LineEditor
         {
