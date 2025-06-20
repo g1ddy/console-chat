@@ -25,6 +25,9 @@ This repository contains a console chat application and an example Model Context
   ```bash
   dotnet run --project SemanticKernelChat
   ```
-  You can also invoke command aliases like `chat-stream` or `text-completion`.
+  Run the `text-completion-test` command to verify the console UI:
+  ```bash
+  dotnet run --project SemanticKernelChat text-completion-test
+  ```
 
 These commands should work cross-platform and mirror the steps used in the GitHub workflow (`.github/workflows/dotnet-build.yml`).

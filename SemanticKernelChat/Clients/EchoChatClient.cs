@@ -11,10 +11,34 @@ public sealed class EchoChatClient : IChatClient
     /// <inheritdoc />
     public async Task<ChatResponse> GetResponseAsync(IEnumerable<ChatMessage> messages, ChatOptions? options = null, CancellationToken cancellationToken = default)
     {
-        var text = messages.Last().Text;
         // Simulate a response delay like a real AI model would have
         await Task.Delay(TimeSpan.FromSeconds(2), cancellationToken);
-        var responseMessage = new ChatMessage(ChatRole.Assistant, text);
+
+        var responseContents = new List<AIContent>();
+        var lastMessage = messages.Last();
+
+        if (lastMessage.Role == ChatRole.User)
+        {
+            responseContents.Add(new TextContent("I need to call some tools!"));
+            responseContents.Add(new FunctionCallContent("tool_call_time", "CurrentTime"));
+            responseContents.Add(new FunctionCallContent("tool_call_echo", "ReverseEcho", new Dictionary<string, object?>
+            {
+                { "message", lastMessage.Text }
+            }));
+        }
+        else if (lastMessage.Role == ChatRole.Tool)
+        {
+            // If the last message was a tool response, we assume it has a function result
+            responseContents.Add(new TextContent("I got what I need!" + Environment.NewLine));
+            foreach (var result in lastMessage.Contents.OfType<FunctionResultContent>())
+            {
+                responseContents.Add(new TextContent($"Tool id: {result.CallId}" + Environment.NewLine));
+                responseContents.Add(new TextContent($"Tool result: {result.Result}" + Environment.NewLine));
+
+            }
+        }
+
+        var responseMessage = new ChatMessage(ChatRole.Assistant, responseContents);
         return new ChatResponse(responseMessage);
     }
 

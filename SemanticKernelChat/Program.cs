@@ -25,6 +25,7 @@ var app = new CommandApp(registrar);
 app.Configure(config =>
 {
     _ = config.SetExceptionHandler(ex => AnsiConsole.WriteException(ex, ExceptionFormats.ShortenTypes));
+    _ = config.AddCommand<TextCompletionTestCommand>("text-completion-test");
     _ = config.AddCommand<TextCompletionCommand>("text-completion");
     _ = config.AddCommand<ChatStreamCommand>("chat-stream");
     _ = config.AddCommand<ChatCommand>("chat");
