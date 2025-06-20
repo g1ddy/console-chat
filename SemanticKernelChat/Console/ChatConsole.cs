@@ -62,18 +62,23 @@ public class ChatConsole : IChatConsole
         return false;
     }
 
+    private static void CollectFunctionCallNames(IEnumerable<AIContent> contents, Dictionary<string, string> callNames)
+    {
+        foreach (var call in contents.OfType<FunctionCallContent>())
+        {
+            if (!string.IsNullOrEmpty(call.CallId) && !string.IsNullOrEmpty(call.Name))
+            {
+                callNames[call.CallId] = call.Name;
+            }
+        }
+    }
+
     private static Dictionary<string, string> CollectFunctionCallNames(IEnumerable<ChatMessage> messages)
     {
         var callNames = new Dictionary<string, string>();
         foreach (var message in messages)
         {
-            foreach (var call in message.Contents.OfType<FunctionCallContent>())
-            {
-                if (!string.IsNullOrEmpty(call.CallId) && !string.IsNullOrEmpty(call.Name))
-                {
-                    callNames[call.CallId] = call.Name;
-                }
-            }
+            CollectFunctionCallNames(message.Contents, callNames);
         }
 
         return callNames;
@@ -146,6 +151,7 @@ public class ChatConsole : IChatConsole
             .Header(header)
             .Expand();
 
+        var callNames = new Dictionary<string, string>();
         await AnsiConsole.Live(panel)
             .AutoClear(false)
             .StartAsync(async ctx =>
@@ -154,10 +160,8 @@ public class ChatConsole : IChatConsole
                 {
                     messageUpdates.Add(update);
 
-                    var responseSoFar = Microsoft.Extensions.AI.ChatResponseExtensions.ToChatResponse(messageUpdates);
-                    var callNames = CollectFunctionCallNames(responseSoFar.Messages);
-
                     var contents = update.Contents ?? Array.Empty<AIContent>();
+                    CollectFunctionCallNames(contents, callNames);
 
                     if (update.Role == ChatRole.Assistant)
                     {

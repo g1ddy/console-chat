@@ -1,4 +1,5 @@
 using System.Runtime.CompilerServices;
+using System.Collections.Generic;
 using Microsoft.Extensions.AI;
 
 namespace SemanticKernelChat.Clients;
@@ -45,11 +46,64 @@ public sealed class EchoChatClient : IChatClient
     /// <inheritdoc />
     public async IAsyncEnumerable<ChatResponseUpdate> GetStreamingResponseAsync(IEnumerable<ChatMessage> messages, ChatOptions? options = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        var text = messages.Last().Text;
-        foreach (char c in text)
+        var lastMessage = messages.Last();
+
+        if (lastMessage.Role == ChatRole.User)
         {
+            var text = "I need to call some tools!";
+            foreach (char c in text)
+            {
+                await Task.Delay(100, cancellationToken);
+                yield return new ChatResponseUpdate(ChatRole.Assistant, c.ToString());
+            }
+
+            var callContents = new List<AIContent>
+            {
+                new FunctionCallContent("tool_call_time", "CurrentTime"),
+                new FunctionCallContent("tool_call_echo", "ReverseEcho", new Dictionary<string, object?>
+                {
+                    { "message", lastMessage.Text }
+                })
+            };
+
             await Task.Delay(100, cancellationToken);
-            yield return new ChatResponseUpdate(ChatRole.Assistant, c.ToString());
+            yield return new ChatResponseUpdate(ChatRole.Assistant, callContents);
+        }
+        else if (lastMessage.Role == ChatRole.Tool)
+        {
+            var text = "I got what I need!" + Environment.NewLine;
+            foreach (char c in text)
+            {
+                await Task.Delay(100, cancellationToken);
+                yield return new ChatResponseUpdate(ChatRole.Assistant, c.ToString());
+            }
+
+            foreach (var result in lastMessage.Contents.OfType<FunctionResultContent>())
+            {
+                var lines = new[]
+                {
+                    $"Tool id: {result.CallId}" + Environment.NewLine,
+                    $"Tool result: {result.Result}" + Environment.NewLine
+                };
+
+                foreach (var line in lines)
+                {
+                    foreach (char c in line)
+                    {
+                        await Task.Delay(100, cancellationToken);
+                        yield return new ChatResponseUpdate(ChatRole.Assistant, c.ToString());
+                    }
+                }
+            }
+        }
+        else
+        {
+            var text = lastMessage.Text;
+            foreach (char c in text)
+            {
+                await Task.Delay(100, cancellationToken);
+                yield return new ChatResponseUpdate(ChatRole.Assistant, c.ToString());
+            }
         }
     }
 
