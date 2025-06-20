@@ -33,17 +33,27 @@ public sealed class TextCompletionTestCommand : AsyncCommand
     {
         var tools = _toolCollection.Tools;
 
+        // Non-streaming chat demo
         var (headerText, justify, style) = ChatConsole.GetUserStyle(ChatRole.User);
         var rule = new Rule(headerText) { Justification = justify, Style = style };
         AnsiConsole.Write(rule);
         AnsiConsole.Markup(CliConstants.UserPrompt);
 
-        var input = "include ipsum loren text";
-        _history.AddUserMessage(input);
+        var inputNonStreaming = "This is a demo of non-streaming chat!";
+        _history.AddUserMessage(inputNonStreaming);
 
         await _controller.SendAndDisplayAsync(_chatClient, _history, tools);
+
+        // Streaming chat demo
+        AnsiConsole.Write(rule);
+        AnsiConsole.Markup(CliConstants.UserPrompt);
+
+        var inputStreaming = "This is a demo of non-streaming chat!";
+        _history.AddUserMessage(inputStreaming);
+
         await _controller.SendAndDisplayStreamingAsync(_chatClient, _history, tools);
 
+        // Fin
         return 0;
     }
 }
