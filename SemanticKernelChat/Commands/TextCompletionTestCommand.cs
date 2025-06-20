@@ -1,4 +1,3 @@
-using Microsoft.SemanticKernel;
 using Microsoft.Extensions.AI;
 using ModelContextProtocol.Client;
 using SemanticKernelChat.Infrastructure;
@@ -14,7 +13,6 @@ public sealed class TextCompletionTestCommand : AsyncCommand
     private readonly IChatHistoryService _history;
     private readonly IChatController _controller;
     private readonly IChatConsole _console;
-    private readonly Kernel _kernel;
 
     public TextCompletionTestCommand(
         IChatClient chatClient,
@@ -26,18 +24,11 @@ public sealed class TextCompletionTestCommand : AsyncCommand
         _history = history;
         _controller = controller;
         _console = console;
-        _kernel = Kernel.CreateBuilder().Build();
     }
 
     public override async Task<int> ExecuteAsync(CommandContext context)
     {
         await using var toolCollection = await McpToolCollection.CreateAsync();
-
-#pragma warning disable SKEXP0001 // Experimental API
-        _ = _kernel.ImportPluginFromFunctions(
-            "mcp",
-            toolCollection.Tools.Select(t => t.AsKernelFunction()));
-#pragma warning restore SKEXP0001
 
         var tools = toolCollection.Tools;
         _console.Initialize(tools);
