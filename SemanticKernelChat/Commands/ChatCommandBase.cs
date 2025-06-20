@@ -1,7 +1,10 @@
 using Microsoft.Extensions.AI;
+
 using ModelContextProtocol.Client;
+
 using SemanticKernelChat.Console;
 using SemanticKernelChat.Infrastructure;
+
 using Spectre.Console;
 using Spectre.Console.Cli;
 
@@ -22,15 +25,17 @@ public abstract class ChatCommandBase : AsyncCommand<ChatCommandBase.Settings>
 
     private readonly IChatClient _chatClient;
     private readonly IChatHistoryService _history;
+    private readonly McpToolCollection _toolCollection;
     protected IChatController Controller { get; }
     private readonly IChatConsole _console;
 
-    protected ChatCommandBase(IChatClient chatClient, IChatHistoryService history, IChatController controller, IChatConsole console)
+    protected ChatCommandBase(IChatClient chatClient, IChatHistoryService history, IChatController controller, IChatConsole console, McpToolCollection toolCollection)
     {
         _chatClient = chatClient;
         _history = history;
         Controller = controller;
         _console = console;
+        _toolCollection = toolCollection;
     }
 
     /// <summary>
@@ -43,9 +48,7 @@ public abstract class ChatCommandBase : AsyncCommand<ChatCommandBase.Settings>
 
     public override async Task<int> ExecuteAsync(CommandContext context, Settings settings)
     {
-        await using var toolCollection = await McpToolCollection.CreateAsync();
-        var tools = toolCollection.Tools;
-        _console.Initialize(tools);
+        var tools = _toolCollection.Tools;
 
         AnsiConsole.MarkupLine(CliConstants.WelcomeMessage);
 
@@ -78,4 +81,3 @@ public abstract class ChatCommandBase : AsyncCommand<ChatCommandBase.Settings>
         return 0;
     }
 }
-

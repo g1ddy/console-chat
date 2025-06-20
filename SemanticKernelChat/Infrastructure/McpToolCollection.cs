@@ -1,6 +1,8 @@
-using ModelContextProtocol.Client;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+
+using ModelContextProtocol.Client;
+
 using SemanticKernelChat.Helpers;
 
 namespace SemanticKernelChat.Infrastructure;
@@ -11,11 +13,11 @@ namespace SemanticKernelChat.Infrastructure;
 public sealed class McpToolCollection : IAsyncDisposable
 {
     private readonly List<McpClientTool> _tools = new();
+    private readonly Dictionary<string, IList<McpClientTool>> _plugins = new();
     private readonly List<IAsyncDisposable> _disposables = new();
 
     public IReadOnlyList<McpClientTool> Tools => _tools;
-
-    private McpToolCollection() { }
+    public IReadOnlyDictionary<string, IList<McpClientTool>> Plugins => _plugins;
 
     /// <summary>
     /// Launches MCP servers, retrieves tools, and returns a disposable collection.
@@ -38,19 +40,21 @@ public sealed class McpToolCollection : IAsyncDisposable
         {
             transports.Add(transport);
         }
+
         var tasks = transports.Select(async transport =>
         {
             var client = await McpClientFactory.CreateAsync(transport);
             var tools = await client.ListToolsAsync();
-            return (client, tools);
+            return (client, transport.Name, tools);
         });
 
         var results = await Task.WhenAll(tasks);
 
-        foreach (var (client, tools) in results)
+        foreach (var (client, name, tools) in results)
         {
             collection._disposables.Add(client);
             collection._tools.AddRange(tools);
+            collection._plugins[name] = tools;
         }
 
         return collection;

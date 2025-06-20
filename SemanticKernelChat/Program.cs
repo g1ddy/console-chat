@@ -16,6 +16,9 @@ builder.Logging.AddConsole();
 
 await builder.Services.AddSemanticKernelChatClient(builder.Configuration);
 builder.Services.AddSingleton<IChatHistoryService, ChatHistoryService>();
+var toolCollection = await McpToolCollection.CreateAsync();
+builder.Services.AddSingleton(toolCollection);
+builder.Services.AddSingleton<IChatLineEditor, ChatLineEditor>();
 builder.Services.AddSingleton<IChatConsole, ChatConsole>();
 builder.Services.AddSingleton<IChatController, ChatController>();
 

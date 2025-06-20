@@ -1,13 +1,6 @@
-using System.Text;
-using System;
 using System.Diagnostics.CodeAnalysis;
-using System.Linq;
 
 using Microsoft.Extensions.AI;
-
-using ModelContextProtocol.Client;
-
-using RadLine;
 
 using Spectre.Console;
 using Spectre.Console.Rendering;
@@ -16,16 +9,11 @@ namespace SemanticKernelChat.Console;
 
 public class ChatConsole : IChatConsole
 {
-    private LineEditor? _editor;
+    private readonly IChatLineEditor _editor;
 
-    public void Initialize(IEnumerable<McpClientTool> tools)
+    public ChatConsole(IChatLineEditor editor)
     {
-        var completion = new CommandCompletion(tools.Select(t => t.Name));
-        _editor = new LineEditor
-        {
-            MultiLine = true,
-            Completion = completion,
-        };
+        _editor = editor;
     }
 
     public static (string headerText, Justify justify, Style style) GetUserStyle(ChatRole messageRole)
@@ -104,7 +92,6 @@ public class ChatConsole : IChatConsole
     /// </summary>
     public async Task<string?> ReadMultilineInputAsync()
     {
-        _editor ??= new LineEditor { MultiLine = true };
         return await _editor.ReadLine(CancellationToken.None);
     }
 
@@ -120,8 +107,8 @@ public class ChatConsole : IChatConsole
         AnsiConsole.WriteException(ex, ExceptionFormats.ShortenEverything);
     }
 
-     public async Task<IReadOnlyList<ChatMessage>> DisplayStreamingUpdatesAsync(
-        IAsyncEnumerable<ChatResponseUpdate> updates)
+    public async Task<IReadOnlyList<ChatMessage>> DisplayStreamingUpdatesAsync(
+       IAsyncEnumerable<ChatResponseUpdate> updates)
     {
         var messageUpdates = new List<ChatResponseUpdate>();
         var paragraph = new Paragraph(string.Empty);
@@ -175,42 +162,9 @@ public class ChatConsole : IChatConsole
 
                     ctx.Refresh();
                 }
-        });
+            });
 
         var response = Microsoft.Extensions.AI.ChatResponseExtensions.ToChatResponse(messageUpdates);
         return [.. response.Messages];
-    }
-
-
-
-    private sealed class CommandCompletion : ITextCompletion
-    {
-        private readonly List<string> _toolNames;
-
-        public CommandCompletion(IEnumerable<string> toolNames)
-        {
-            _toolNames = toolNames.Distinct(StringComparer.OrdinalIgnoreCase).ToList();
-        }
-
-        public IEnumerable<string>? GetCompletions(string prefix, string word, string suffix)
-        {
-            var tokens = (prefix + word).TrimStart().Split(' ', StringSplitOptions.RemoveEmptyEntries);
-            if (tokens.Length <= 1)
-            {
-                return CliConstants.Commands.All.Concat(_toolNames).Where(c => c.StartsWith(word, StringComparison.OrdinalIgnoreCase));
-            }
-
-            var cmd = tokens[0];
-            if ((cmd.Equals(CliConstants.Commands.Enable, StringComparison.OrdinalIgnoreCase) ||
-                cmd.Equals(CliConstants.Commands.Disable, StringComparison.OrdinalIgnoreCase) ||
-                cmd.Equals(CliConstants.Commands.Toggle, StringComparison.OrdinalIgnoreCase)) &&
-                tokens.Length == 2)
-            {
-                var part = tokens[1];
-                return _toolNames.Where(t => t.StartsWith(part, StringComparison.OrdinalIgnoreCase));
-            }
-
-            return null;
-        }
     }
 }
