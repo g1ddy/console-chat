@@ -14,6 +14,10 @@ This repository contains a console chat application and an example Model Context
   ```bash
   dotnet test ConsoleChat.sln -v minimal
   ```
+- After running the tests, verify the console UI:
+  ```bash
+  dotnet run --project SemanticKernelChat text-completion-test
+  ```
 - Always run the test suite after making any changes.
 
 ## Running

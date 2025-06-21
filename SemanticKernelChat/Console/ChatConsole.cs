@@ -1,4 +1,5 @@
 using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
 
 using Microsoft.Extensions.AI;
 
@@ -10,10 +11,12 @@ namespace SemanticKernelChat.Console;
 public class ChatConsole : IChatConsole
 {
     private readonly IChatLineEditor _editor;
+    private readonly IAnsiConsole _console;
 
-    public ChatConsole(IChatLineEditor editor)
+    public ChatConsole(IChatLineEditor editor, IAnsiConsole console)
     {
         _editor = editor;
+        _console = console;
     }
 
     public static (string headerText, Justify justify, Style style) GetUserStyle(ChatRole messageRole)
@@ -94,7 +97,8 @@ public class ChatConsole : IChatConsole
             if (message.Role == ChatRole.Tool &&
                 TryGetContent<FunctionResultContent>(message.Contents, out var result))
             {
-                string toolName = message.AuthorName ?? message.Role.ToString();
+                string toolName = message.AuthorName ??
+                    CultureInfo.InvariantCulture.TextInfo.ToTitleCase(message.Role.ToString()!);
                 var id = result.CallId;
                 if (!string.IsNullOrEmpty(id) && callNames.TryGetValue(id, out var nameFound))
                 {
@@ -106,7 +110,7 @@ public class ChatConsole : IChatConsole
             var (headerText, justify, style) = GetUserStyle(message.Role);
             var header = new PanelHeader(headerText, justify);
 
-            AnsiConsole.Write(
+            _console.Write(
                 new Panel(markupResponse)
                     .RoundedBorder()
                     .BorderStyle(style)
@@ -126,66 +130,77 @@ public class ChatConsole : IChatConsole
 
     public async Task DisplayThinkingIndicator(Func<Task> action)
     {
-        await AnsiConsole.Status()
+        await _console.Status()
             .Spinner(Spinner.Known.Monkey)
             .StartAsync("Thinking...", async _ => await action());
     }
 
     public void DisplayError(Exception ex)
     {
-        AnsiConsole.WriteException(ex, ExceptionFormats.ShortenEverything);
+        _console.WriteException(ex, ExceptionFormats.ShortenEverything);
     }
 
     public async Task<IReadOnlyList<ChatMessage>> DisplayStreamingUpdatesAsync(
-       IAsyncEnumerable<ChatResponseUpdate> updates)
+        IAsyncEnumerable<ChatResponseUpdate> updates)
     {
         var messageUpdates = new List<ChatResponseUpdate>();
         var paragraph = new Paragraph(string.Empty);
-
-        var (headerText, justify, style) = GetUserStyle(ChatRole.Assistant);
-        var header = new PanelHeader(headerText, justify);
-
-        var panel = new Panel(paragraph)
-            .RoundedBorder()
-            .BorderStyle(style)
-            .Header(header)
-            .Expand();
+        var panel = CreateAssistantPanel(paragraph);
 
         var callNames = new Dictionary<string, string>();
-        await AnsiConsole.Live(panel)
+        await _console.Live(panel)
             .AutoClear(false)
             .StartAsync(async ctx =>
             {
                 await foreach (var update in updates)
                 {
                     messageUpdates.Add(update);
-
-                    var contents = update.Contents ?? Array.Empty<AIContent>();
-                    CollectFunctionCallNames(contents, callNames);
-
-                    if (update.Role == ChatRole.Assistant)
-                    {
-                        _ = paragraph.Append(update.Text.EscapeMarkup());
-                    }
-
-                    foreach (var result in contents.OfType<FunctionResultContent>())
-                    {
-                        _ = paragraph.Append("\n");
-                        string toolName = update.AuthorName ?? update.Role.ToString();
-                        var id = result.CallId;
-                        if (!string.IsNullOrEmpty(id) && callNames.TryGetValue(id, out var nameFound))
-                        {
-                            toolName = nameFound;
-                        }
-
-                        _ = paragraph.Append($"[grey]:wrench: {toolName} Result...[/]");
-                    }
-
+                    AppendUpdate(paragraph, callNames, update);
                     ctx.Refresh();
                 }
             });
 
         var response = Microsoft.Extensions.AI.ChatResponseExtensions.ToChatResponse(messageUpdates);
         return [.. response.Messages];
+    }
+
+    private static Panel CreateAssistantPanel(Paragraph paragraph)
+    {
+        var (headerText, justify, style) = GetUserStyle(ChatRole.Assistant);
+        var header = new PanelHeader(headerText, justify);
+
+        return new Panel(paragraph)
+            .RoundedBorder()
+            .BorderStyle(style)
+            .Header(header)
+            .Expand();
+    }
+
+    private static void AppendUpdate(
+        Paragraph paragraph,
+        Dictionary<string, string> callNames,
+        ChatResponseUpdate update)
+    {
+        var contents = update.Contents ?? Array.Empty<AIContent>();
+        CollectFunctionCallNames(contents, callNames);
+
+        if (update.Role == ChatRole.Assistant)
+        {
+            _ = paragraph.Append(update.Text.EscapeMarkup());
+        }
+
+        foreach (var result in contents.OfType<FunctionResultContent>())
+        {
+            _ = paragraph.Append("\n");
+            string toolName = update.AuthorName ??
+                CultureInfo.InvariantCulture.TextInfo.ToTitleCase(update.Role.ToString()!);
+            var id = result.CallId;
+            if (!string.IsNullOrEmpty(id) && callNames.TryGetValue(id, out var nameFound))
+            {
+                toolName = nameFound;
+            }
+
+            _ = paragraph.Append($"[grey]:wrench: {toolName} Result...[/]");
+        }
     }
 }
