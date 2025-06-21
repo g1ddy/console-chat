@@ -64,6 +64,7 @@ public static class McpClientHelper
                         Command = serverConfig.Command,
                         Arguments = serverConfig.Arguments,
                         EnvironmentVariables = serverConfig.EnvironmentVariables,
+                        WorkingDirectory = AppContext.BaseDirectory,
                     });
                     break;
                 case McpServerTypes.Sse:
