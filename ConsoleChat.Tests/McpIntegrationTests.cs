@@ -33,4 +33,23 @@ public class McpIntegrationTests
             }
         }
     }
+
+    [Fact]
+    public async Task Tools_Are_Exposed_From_McpServer_From_Arbitrary_Cwd()
+    {
+        var original = Environment.CurrentDirectory;
+        var tempDir = Directory.CreateTempSubdirectory();
+        Environment.CurrentDirectory = tempDir.FullName;
+
+        try
+        {
+            await using var toolCollection = await McpToolCollection.CreateAsync();
+            Assert.True(toolCollection.Tools.Count >= 5);
+        }
+        finally
+        {
+            Environment.CurrentDirectory = original;
+            tempDir.Delete(recursive: true);
+        }
+    }
 }
