@@ -1,12 +1,10 @@
-using System.Runtime.CompilerServices;
-
 using Microsoft.Extensions.AI;
-
-using ModelContextProtocol.Client;
 
 using SemanticKernelChat;
 using SemanticKernelChat.Console;
 using SemanticKernelChat.Infrastructure;
+
+using ConsoleChat.Tests.TestUtilities;
 
 using Spectre.Console;
 using Spectre.Console.Testing;
@@ -15,26 +13,6 @@ namespace ConsoleChat.Tests;
 
 public class ChatConsoleTests
 {
-    private sealed class FakeChatClient : IChatClient
-    {
-        public ChatResponse Response { get; set; } = new(new ChatMessage(ChatRole.Assistant, "reply"));
-        public List<ChatResponseUpdate> StreamingUpdates { get; } = new();
-
-        public Task<ChatResponse> GetResponseAsync(IEnumerable<ChatMessage> messages, ChatOptions? options = null, CancellationToken cancellationToken = default)
-            => Task.FromResult(Response);
-
-        public async IAsyncEnumerable<ChatResponseUpdate> GetStreamingResponseAsync(IEnumerable<ChatMessage> messages, ChatOptions? options = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
-        {
-            foreach (var update in StreamingUpdates)
-            {
-                yield return update;
-                await Task.Yield();
-            }
-        }
-
-        public object? GetService(Type serviceType, object? serviceKey) => null;
-        public void Dispose() { }
-    }
 
     [Fact]
     public void GetUserStyle_Returns_Values_For_User()

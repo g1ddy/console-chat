@@ -1,11 +1,11 @@
 using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.CompilerServices;
 using Microsoft.Extensions.AI;
 using SemanticKernelChat;
 using SemanticKernelChat.Commands;
 using SemanticKernelChat.Console;
 using SemanticKernelChat.Infrastructure;
+using ConsoleChat.Tests.TestUtilities;
 using Spectre.Console.Testing;
 using Spectre.Console.Cli;
 
@@ -28,23 +28,6 @@ public class ChatCommandTests
         }
     }
 
-    private sealed class FakeChatClient : IChatClient
-    {
-        public ChatResponse Response { get; set; } = new(new ChatMessage(ChatRole.Assistant, "reply"));
-
-        public Task<ChatResponse> GetResponseAsync(IEnumerable<ChatMessage> messages, ChatOptions? options = null, CancellationToken cancellationToken = default)
-            => Task.FromResult(Response);
-
-        public async IAsyncEnumerable<ChatResponseUpdate> GetStreamingResponseAsync(IEnumerable<ChatMessage> messages, ChatOptions? options = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
-        {
-            await Task.Yield();
-            yield break;
-        }
-
-        public object? GetService(Type serviceType, object? serviceKey) => null;
-
-        public void Dispose() { }
-    }
 
     private sealed class FakeRemainingArguments : IRemainingArguments
     {
