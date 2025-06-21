@@ -166,7 +166,7 @@ public class ChatConsoleTests
         var console = new ChatConsole(new ChatLineEditor(new McpToolCollection()), testConsole);
         _ = await console.DisplayStreamingUpdatesAsync(updates);
 
-        Assert.Contains("tool Result", testConsole.Output);
+        Assert.Contains("Tool Result", testConsole.Output);
     }
 
     private static async IAsyncEnumerable<ChatResponseUpdate> AsAsyncEnumerable(IEnumerable<ChatResponseUpdate> updates)
