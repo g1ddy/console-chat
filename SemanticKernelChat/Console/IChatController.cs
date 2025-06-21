@@ -1,10 +1,10 @@
 using Microsoft.Extensions.AI;
-using ModelContextProtocol.Client;
+using SemanticKernelChat;
 
 namespace SemanticKernelChat.Console;
 
 public interface IChatController
 {
-    Task SendAndDisplayAsync(IChatClient chatClient, IChatHistoryService history, IReadOnlyList<McpClientTool> tools);
-    Task SendAndDisplayStreamingAsync(IChatClient chatClient, IChatHistoryService history, IReadOnlyList<McpClientTool> tools, Action<IReadOnlyList<ChatMessage>>? finalCallback = null);
+    Task SendAndDisplayAsync(IChatHistoryService history);
+    Task SendAndDisplayStreamingAsync(IChatHistoryService history, Action<IReadOnlyList<ChatMessage>>? finalCallback = null);
 }

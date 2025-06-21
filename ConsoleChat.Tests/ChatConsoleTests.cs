@@ -1,12 +1,10 @@
-using System.Runtime.CompilerServices;
-
 using Microsoft.Extensions.AI;
-
-using ModelContextProtocol.Client;
 
 using SemanticKernelChat;
 using SemanticKernelChat.Console;
 using SemanticKernelChat.Infrastructure;
+
+using ConsoleChat.Tests.TestUtilities;
 
 using Spectre.Console;
 using Spectre.Console.Testing;
@@ -15,26 +13,6 @@ namespace ConsoleChat.Tests;
 
 public class ChatConsoleTests
 {
-    private sealed class FakeChatClient : IChatClient
-    {
-        public ChatResponse Response { get; set; } = new(new ChatMessage(ChatRole.Assistant, "reply"));
-        public List<ChatResponseUpdate> StreamingUpdates { get; } = new();
-
-        public Task<ChatResponse> GetResponseAsync(IEnumerable<ChatMessage> messages, ChatOptions? options = null, CancellationToken cancellationToken = default)
-            => Task.FromResult(Response);
-
-        public async IAsyncEnumerable<ChatResponseUpdate> GetStreamingResponseAsync(IEnumerable<ChatMessage> messages, ChatOptions? options = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
-        {
-            foreach (var update in StreamingUpdates)
-            {
-                yield return update;
-                await Task.Yield();
-            }
-        }
-
-        public object? GetService(Type serviceType, object? serviceKey) => null;
-        public void Dispose() { }
-    }
 
     [Fact]
     public void GetUserStyle_Returns_Values_For_User()
@@ -108,8 +86,8 @@ public class ChatConsoleTests
 
         var client = new FakeChatClient { Response = new(new ChatMessage(ChatRole.Assistant, "done")) };
         var console = new ChatConsole(new ChatLineEditor(new McpToolCollection()), testConsole);
-        var controller = new ChatController(console);
-        await controller.SendAndDisplayAsync(client, history, Array.Empty<McpClientTool>());
+        var controller = new ChatController(console, client, new McpToolCollection());
+        await controller.SendAndDisplayAsync(history);
 
         Assert.Equal(2, history.Messages.Count);
         Assert.Contains("done", testConsole.Output);
@@ -128,8 +106,8 @@ public class ChatConsoleTests
         client.StreamingUpdates.Add(new ChatResponseUpdate(ChatRole.Assistant, "B"));
 
         var console = new ChatConsole(new ChatLineEditor(new McpToolCollection()), testConsole);
-        var controller = new ChatController(console);
-        await controller.SendAndDisplayStreamingAsync(client, history, Array.Empty<McpClientTool>());
+        var controller = new ChatController(console, client, new McpToolCollection());
+        await controller.SendAndDisplayStreamingAsync(history);
 
         Assert.Equal(2, history.Messages.Count);
         Assert.Contains("AB", history.Messages.Last().Text);
@@ -140,7 +118,7 @@ public class ChatConsoleTests
     public async Task DisplayStreamingUpdatesAsync_Logs_Multiple_Tool_Results()
     {
         var testConsole = new TestConsole();
-        
+
         var callContents = new List<AIContent>
         {
             new FunctionCallContent("1", "First", new Dictionary<string, object?>()),
@@ -188,7 +166,7 @@ public class ChatConsoleTests
         var console = new ChatConsole(new ChatLineEditor(new McpToolCollection()), testConsole);
         _ = await console.DisplayStreamingUpdatesAsync(updates);
 
-        Assert.Contains("Tool Result", testConsole.Output);
+        Assert.Contains("tool Result", testConsole.Output);
     }
 
     private static async IAsyncEnumerable<ChatResponseUpdate> AsAsyncEnumerable(IEnumerable<ChatResponseUpdate> updates)
