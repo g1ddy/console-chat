@@ -68,10 +68,9 @@ public class ChatConsoleTests
     {
         var history = new ChatHistoryService();
         var testConsole = new TestConsole();
-        AnsiConsole.Console = testConsole;
 
         var msg = new ChatMessage(ChatRole.User, "hello");
-        var console = new ChatConsole(new ChatLineEditor(new McpToolCollection()));
+        var console = new ChatConsole(new ChatLineEditor(new McpToolCollection()), testConsole);
         console.WriteChatMessages(msg);
 
         Assert.Empty(history.Messages);
@@ -82,7 +81,6 @@ public class ChatConsoleTests
     public void WriteChatMessages_Shows_Tool_Names_For_Results()
     {
         var testConsole = new TestConsole();
-        AnsiConsole.Console = testConsole;
 
         var callMessage = new ChatMessage(ChatRole.Assistant, new AIContent[]
         {
@@ -94,7 +92,7 @@ public class ChatConsoleTests
             new FunctionResultContent("1", "r1")
         });
 
-        var console = new ChatConsole(new ChatLineEditor(new McpToolCollection()));
+        var console = new ChatConsole(new ChatLineEditor(new McpToolCollection()), testConsole);
         console.WriteChatMessages(callMessage, resultMessage);
 
         Assert.Contains("First", testConsole.Output);
@@ -107,10 +105,9 @@ public class ChatConsoleTests
         history.AddUserMessage("hi");
 
         var testConsole = new TestConsole();
-        AnsiConsole.Console = testConsole;
 
         var client = new FakeChatClient { Response = new(new ChatMessage(ChatRole.Assistant, "done")) };
-        var console = new ChatConsole(new ChatLineEditor(new McpToolCollection()));
+        var console = new ChatConsole(new ChatLineEditor(new McpToolCollection()), testConsole);
         var controller = new ChatController(console);
         await controller.SendAndDisplayAsync(client, history, Array.Empty<McpClientTool>());
 
@@ -125,13 +122,12 @@ public class ChatConsoleTests
         history.AddUserMessage("hi");
 
         var testConsole = new TestConsole();
-        AnsiConsole.Console = testConsole;
 
         var client = new FakeChatClient();
         client.StreamingUpdates.Add(new ChatResponseUpdate(ChatRole.Assistant, "A"));
         client.StreamingUpdates.Add(new ChatResponseUpdate(ChatRole.Assistant, "B"));
 
-        var console = new ChatConsole(new ChatLineEditor(new McpToolCollection()));
+        var console = new ChatConsole(new ChatLineEditor(new McpToolCollection()), testConsole);
         var controller = new ChatController(console);
         await controller.SendAndDisplayStreamingAsync(client, history, Array.Empty<McpClientTool>());
 
@@ -144,8 +140,7 @@ public class ChatConsoleTests
     public async Task DisplayStreamingUpdatesAsync_Logs_Multiple_Tool_Results()
     {
         var testConsole = new TestConsole();
-        AnsiConsole.Console = testConsole;
-
+        
         var callContents = new List<AIContent>
         {
             new FunctionCallContent("1", "First", new Dictionary<string, object?>()),
@@ -163,11 +158,37 @@ public class ChatConsoleTests
             new ChatResponseUpdate(ChatRole.Tool, resultContents)
         ]);
 
-        var console = new ChatConsole(new ChatLineEditor(new McpToolCollection()));
+        var console = new ChatConsole(new ChatLineEditor(new McpToolCollection()), testConsole);
         _ = await console.DisplayStreamingUpdatesAsync(updates);
 
         Assert.Contains("First", testConsole.Output);
         Assert.Contains("Second", testConsole.Output);
+    }
+
+    [Fact]
+    public void DisplayError_Writes_Exception_Message()
+    {
+        var testConsole = new TestConsole();
+        var console = new ChatConsole(new ChatLineEditor(new McpToolCollection()), testConsole);
+
+        console.DisplayError(new InvalidOperationException("fail"));
+
+        Assert.Contains("fail", testConsole.Output);
+    }
+
+    [Fact]
+    public async Task DisplayStreamingUpdatesAsync_Shows_Default_Tool_Name()
+    {
+        var testConsole = new TestConsole();
+
+        var updates = AsAsyncEnumerable([
+            new ChatResponseUpdate(ChatRole.Tool, new[] { new FunctionResultContent("id", "r") })
+        ]);
+
+        var console = new ChatConsole(new ChatLineEditor(new McpToolCollection()), testConsole);
+        _ = await console.DisplayStreamingUpdatesAsync(updates);
+
+        Assert.Contains("tool Result", testConsole.Output);
     }
 
     private static async IAsyncEnumerable<ChatResponseUpdate> AsAsyncEnumerable(IEnumerable<ChatResponseUpdate> updates)
