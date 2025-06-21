@@ -58,10 +58,19 @@ public static class McpClientHelper
             switch (transportType.ToLowerInvariant())
             {
                 case McpServerTypes.Stdio:
+                    string command = serverConfig.Command;
+                    if (!Path.IsPathFullyQualified(command) &&
+                        (command.Contains(Path.DirectorySeparatorChar) ||
+                         command.Contains(Path.AltDirectorySeparatorChar) ||
+                         Path.HasExtension(command)))
+                    {
+                        command = Path.GetFullPath(command, AppContext.BaseDirectory);
+                    }
+
                     yield return new StdioClientTransport(new()
                     {
                         Name = serverName,
-                        Command = serverConfig.Command,
+                        Command = command,
                         Arguments = serverConfig.Arguments,
                         EnvironmentVariables = serverConfig.EnvironmentVariables,
                         WorkingDirectory = AppContext.BaseDirectory,
