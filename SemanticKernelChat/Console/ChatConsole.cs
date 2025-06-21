@@ -1,4 +1,5 @@
 using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
 
 using Microsoft.Extensions.AI;
 
@@ -96,7 +97,8 @@ public class ChatConsole : IChatConsole
             if (message.Role == ChatRole.Tool &&
                 TryGetContent<FunctionResultContent>(message.Contents, out var result))
             {
-                string toolName = message.AuthorName ?? message.Role.ToString();
+                string toolName = message.AuthorName ??
+                    CultureInfo.InvariantCulture.TextInfo.ToTitleCase(message.Role.ToString()!);
                 var id = result.CallId;
                 if (!string.IsNullOrEmpty(id) && callNames.TryGetValue(id, out var nameFound))
                 {
@@ -205,7 +207,7 @@ public class ChatConsole : IChatConsole
         foreach (var result in contents.OfType<FunctionResultContent>())
         {
             _ = paragraph.Append("\n");
-            string toolName = update.AuthorName ?? update.Role.ToString();
+            string? toolName = update.AuthorName ?? update.Role?.ToString();
             string? id = result.CallId;
             if (!string.IsNullOrEmpty(id) && callNames.TryGetValue(id, out var nameFound))
             {

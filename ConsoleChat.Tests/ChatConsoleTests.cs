@@ -118,7 +118,7 @@ public class ChatConsoleTests
     public async Task DisplayStreamingUpdatesAsync_Logs_Multiple_Tool_Results()
     {
         var testConsole = new TestConsole();
-        
+
         var callContents = new List<AIContent>
         {
             new FunctionCallContent("1", "First", new Dictionary<string, object?>()),
