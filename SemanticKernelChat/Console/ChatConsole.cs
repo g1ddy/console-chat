@@ -87,6 +87,20 @@ public class ChatConsole : IChatConsole
         return callNames;
     }
 
+    private static string GetToolName(
+        Dictionary<string, string> callNames,
+        string? callId,
+        string? authorName,
+        ChatRole? role)
+    {
+        var defaultName = authorName ??
+            CultureInfo.InvariantCulture.TextInfo.ToTitleCase(role?.ToString() ?? string.Empty);
+
+        return (!string.IsNullOrEmpty(callId) && callNames.TryGetValue(callId, out var nameFound))
+            ? nameFound
+            : defaultName;
+    }
+
     public void WriteChatMessages(params ChatMessage[] messages)
     {
         var callNames = CollectFunctionCallNames(messages);
@@ -97,13 +111,7 @@ public class ChatConsole : IChatConsole
             if (message.Role == ChatRole.Tool &&
                 TryGetContent<FunctionResultContent>(message.Contents, out var result))
             {
-                string toolName = message.AuthorName ??
-                    CultureInfo.InvariantCulture.TextInfo.ToTitleCase(message.Role.ToString()!);
-                var id = result.CallId;
-                if (!string.IsNullOrEmpty(id) && callNames.TryGetValue(id, out var nameFound))
-                {
-                    toolName = nameFound;
-                }
+                string toolName = GetToolName(callNames, result.CallId, message.AuthorName, message.Role);
                 markupResponse = new Markup($"[grey]:wrench: {toolName} Result...[/]");
             }
 
@@ -207,12 +215,7 @@ public class ChatConsole : IChatConsole
         foreach (var result in contents.OfType<FunctionResultContent>())
         {
             _ = paragraph.Append("\n");
-            string? toolName = update.AuthorName ?? update.Role?.ToString();
-            string? id = result.CallId;
-            if (!string.IsNullOrEmpty(id) && callNames.TryGetValue(id, out var nameFound))
-            {
-                toolName = nameFound;
-            }
+            string toolName = GetToolName(callNames, result.CallId, update.AuthorName, update.Role);
 
             _ = paragraph.Append($"[grey]:wrench: {toolName} Result...[/]");
         }
