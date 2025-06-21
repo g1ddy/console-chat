@@ -191,7 +191,7 @@ public class ChatConsole : IChatConsole
         {
             _ = paragraph.Append("\n");
             string toolName = update.AuthorName ?? update.Role.ToString();
-            var id = result.CallId;
+            string? id = result.CallId;
             if (!string.IsNullOrEmpty(id) && callNames.TryGetValue(id, out var nameFound))
             {
                 toolName = nameFound;
