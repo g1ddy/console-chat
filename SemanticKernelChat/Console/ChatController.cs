@@ -1,21 +1,22 @@
 using Microsoft.Extensions.AI;
-using ModelContextProtocol.Client;
+using SemanticKernelChat.Infrastructure;
 
 namespace SemanticKernelChat.Console;
 
 public class ChatController : IChatController
 {
     private readonly IChatConsole _console;
+    private readonly IChatClient _chatClient;
+    private readonly McpToolCollection _toolCollection;
 
-    public ChatController(IChatConsole console)
+    public ChatController(IChatConsole console, IChatClient chatClient, McpToolCollection toolCollection)
     {
         _console = console;
+        _chatClient = chatClient;
+        _toolCollection = toolCollection;
     }
 
-    public async Task SendAndDisplayAsync(
-        IChatClient chatClient,
-        IChatHistoryService history,
-        IReadOnlyList<McpClientTool> tools)
+    public async Task SendAndDisplayAsync(IChatHistoryService history)
     {
         ChatMessage[] responses = [];
         Exception? error = null;
@@ -23,9 +24,9 @@ public class ChatController : IChatController
         {
             try
             {
-                var response = await chatClient.GetResponseAsync(
+                var response = await _chatClient.GetResponseAsync(
                     history.Messages,
-                    new() { Tools = [.. tools] });
+                    new() { Tools = [.. _toolCollection.Tools] });
                 responses = [.. response.Messages];
             }
             catch (Exception ex)
@@ -45,14 +46,12 @@ public class ChatController : IChatController
     }
 
     public async Task SendAndDisplayStreamingAsync(
-        IChatClient chatClient,
         IChatHistoryService history,
-        IReadOnlyList<McpClientTool> tools,
         Action<IReadOnlyList<ChatMessage>>? finalCallback = null)
     {
-        var updates = chatClient.GetStreamingResponseAsync(
+        var updates = _chatClient.GetStreamingResponseAsync(
             history.Messages,
-            new() { Tools = [.. tools] });
+            new() { Tools = [.. _toolCollection.Tools] });
         Exception? error = null;
         IReadOnlyList<ChatMessage> messages = [];
 

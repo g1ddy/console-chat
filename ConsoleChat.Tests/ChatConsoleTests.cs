@@ -108,8 +108,8 @@ public class ChatConsoleTests
 
         var client = new FakeChatClient { Response = new(new ChatMessage(ChatRole.Assistant, "done")) };
         var console = new ChatConsole(new ChatLineEditor(new McpToolCollection()), testConsole);
-        var controller = new ChatController(console);
-        await controller.SendAndDisplayAsync(client, history, Array.Empty<McpClientTool>());
+        var controller = new ChatController(console, client, new McpToolCollection());
+        await controller.SendAndDisplayAsync(history);
 
         Assert.Equal(2, history.Messages.Count);
         Assert.Contains("done", testConsole.Output);
@@ -128,8 +128,8 @@ public class ChatConsoleTests
         client.StreamingUpdates.Add(new ChatResponseUpdate(ChatRole.Assistant, "B"));
 
         var console = new ChatConsole(new ChatLineEditor(new McpToolCollection()), testConsole);
-        var controller = new ChatController(console);
-        await controller.SendAndDisplayStreamingAsync(client, history, Array.Empty<McpClientTool>());
+        var controller = new ChatController(console, client, new McpToolCollection());
+        await controller.SendAndDisplayStreamingAsync(history);
 
         Assert.Equal(2, history.Messages.Count);
         Assert.Contains("AB", history.Messages.Last().Text);

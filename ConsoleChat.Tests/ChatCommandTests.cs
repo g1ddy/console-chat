@@ -2,7 +2,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using Microsoft.Extensions.AI;
-using ModelContextProtocol.Client;
 using SemanticKernelChat;
 using SemanticKernelChat.Commands;
 using SemanticKernelChat.Console;
@@ -59,11 +58,10 @@ public class ChatCommandTests
         var testConsole = new TestConsole();
         var lineEditor = new FakeLineEditor(new[] { "hi", null });
         var chatConsole = new ChatConsole(lineEditor, testConsole);
-        var controller = new ChatController(chatConsole);
-        var history = new ChatHistoryService();
         var client = new FakeChatClient { Response = new(new ChatMessage(ChatRole.Assistant, "done")) };
-        var tools = new McpToolCollection();
-        var command = new ChatCommand(client, history, controller, chatConsole, testConsole, tools);
+        var controller = new ChatController(chatConsole, client, new McpToolCollection());
+        var history = new ChatHistoryService();
+        var command = new ChatCommand(history, controller, chatConsole);
 
         var context = new CommandContext(new FakeRemainingArguments(), "chat", new object());
 
