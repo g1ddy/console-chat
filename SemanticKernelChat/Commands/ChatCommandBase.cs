@@ -28,13 +28,21 @@ public abstract class ChatCommandBase : AsyncCommand<ChatCommandBase.Settings>
     private readonly McpToolCollection _toolCollection;
     protected IChatController Controller { get; }
     private readonly IChatConsole _console;
+    private readonly IAnsiConsole _ansiConsole;
 
-    protected ChatCommandBase(IChatClient chatClient, IChatHistoryService history, IChatController controller, IChatConsole console, McpToolCollection toolCollection)
+    protected ChatCommandBase(
+        IChatClient chatClient,
+        IChatHistoryService history,
+        IChatController controller,
+        IChatConsole console,
+        IAnsiConsole ansiConsole,
+        McpToolCollection toolCollection)
     {
         _chatClient = chatClient;
         _history = history;
         Controller = controller;
         _console = console;
+        _ansiConsole = ansiConsole;
         _toolCollection = toolCollection;
     }
 
@@ -50,21 +58,21 @@ public abstract class ChatCommandBase : AsyncCommand<ChatCommandBase.Settings>
     {
         var tools = _toolCollection.Tools;
 
-        AnsiConsole.MarkupLine(CliConstants.WelcomeMessage);
+        _ansiConsole.MarkupLine(CliConstants.WelcomeMessage);
 
         while (true)
         {
             var (headerText, justify, style) = ChatConsole.GetUserStyle(ChatRole.User);
             var rule = new Rule(headerText) { Justification = justify, Style = style };
-            AnsiConsole.Write(rule);
+            _ansiConsole.Write(rule);
 
-            AnsiConsole.Markup(CliConstants.UserPrompt);
+            _ansiConsole.Markup(CliConstants.UserPrompt);
             var input = await _console.ReadMultilineInputAsync();
 
             if (input is null ||
                 input.Equals(CliConstants.Commands.Exit, StringComparison.OrdinalIgnoreCase))
             {
-                AnsiConsole.MarkupLine(CliConstants.ExitMessage);
+                _ansiConsole.MarkupLine(CliConstants.ExitMessage);
                 break;
             }
 

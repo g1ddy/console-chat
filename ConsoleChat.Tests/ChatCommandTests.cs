@@ -1,0 +1,76 @@
+using System.Collections.Generic;
+using System.Linq;
+using System.Runtime.CompilerServices;
+using Microsoft.Extensions.AI;
+using ModelContextProtocol.Client;
+using SemanticKernelChat;
+using SemanticKernelChat.Commands;
+using SemanticKernelChat.Console;
+using SemanticKernelChat.Infrastructure;
+using Spectre.Console.Testing;
+using Spectre.Console.Cli;
+
+namespace ConsoleChat.Tests;
+
+public class ChatCommandTests
+{
+    private sealed class FakeLineEditor : IChatLineEditor
+    {
+        private readonly Queue<string?> _inputs;
+
+        public FakeLineEditor(IEnumerable<string?> inputs)
+        {
+            _inputs = new Queue<string?>(inputs);
+        }
+
+        public Task<string?> ReadLine(CancellationToken cancellationToken)
+        {
+            return Task.FromResult(_inputs.Count > 0 ? _inputs.Dequeue() : null);
+        }
+    }
+
+    private sealed class FakeChatClient : IChatClient
+    {
+        public ChatResponse Response { get; set; } = new(new ChatMessage(ChatRole.Assistant, "reply"));
+
+        public Task<ChatResponse> GetResponseAsync(IEnumerable<ChatMessage> messages, ChatOptions? options = null, CancellationToken cancellationToken = default)
+            => Task.FromResult(Response);
+
+        public async IAsyncEnumerable<ChatResponseUpdate> GetStreamingResponseAsync(IEnumerable<ChatMessage> messages, ChatOptions? options = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+        {
+            await Task.Yield();
+            yield break;
+        }
+
+        public object? GetService(Type serviceType, object? serviceKey) => null;
+
+        public void Dispose() { }
+    }
+
+    private sealed class FakeRemainingArguments : IRemainingArguments
+    {
+        public ILookup<string, string?> Parsed { get; } = Array.Empty<(string, string?)>().ToLookup(t => t.Item1, t => t.Item2);
+        public IReadOnlyList<string> Raw { get; } = Array.Empty<string>();
+    }
+
+    [Fact]
+    public async Task ExecuteAsync_Writes_Welcome_And_Response()
+    {
+        var testConsole = new TestConsole();
+        var lineEditor = new FakeLineEditor(new[] { "hi", null });
+        var chatConsole = new ChatConsole(lineEditor, testConsole);
+        var controller = new ChatController(chatConsole);
+        var history = new ChatHistoryService();
+        var client = new FakeChatClient { Response = new(new ChatMessage(ChatRole.Assistant, "done")) };
+        var tools = new McpToolCollection();
+        var command = new ChatCommand(client, history, controller, chatConsole, testConsole, tools);
+
+        var context = new CommandContext(new FakeRemainingArguments(), "chat", new object());
+
+        _ = await command.ExecuteAsync(context, new ChatCommandBase.Settings());
+
+        Assert.Contains("Welcome to ConsoleChat", testConsole.Output);
+        Assert.Contains("done", testConsole.Output);
+    }
+}
+
