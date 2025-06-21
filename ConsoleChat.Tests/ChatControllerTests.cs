@@ -1,34 +1,15 @@
-using System.Runtime.CompilerServices;
 using Microsoft.Extensions.AI;
-using ModelContextProtocol.Client;
 using NSubstitute;
 using SemanticKernelChat;
 using SemanticKernelChat.Console;
+using SemanticKernelChat.Infrastructure;
+
+using ConsoleChat.Tests.TestUtilities;
 
 namespace ConsoleChat.Tests;
 
 public class ChatControllerTests
 {
-    private sealed class FakeChatClient : IChatClient
-    {
-        public ChatResponse Response { get; set; } = new(new ChatMessage(ChatRole.Assistant, "reply"));
-        public List<ChatResponseUpdate> StreamingUpdates { get; } = new();
-
-        public Task<ChatResponse> GetResponseAsync(IEnumerable<ChatMessage> messages, ChatOptions? options = null, CancellationToken cancellationToken = default)
-            => Task.FromResult(Response);
-
-        public async IAsyncEnumerable<ChatResponseUpdate> GetStreamingResponseAsync(IEnumerable<ChatMessage> messages, ChatOptions? options = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
-        {
-            foreach (var update in StreamingUpdates)
-            {
-                yield return update;
-                await Task.Yield();
-            }
-        }
-
-        public object? GetService(Type serviceType, object? serviceKey) => null;
-        public void Dispose() { }
-    }
 
     [Fact]
     public async Task SendAndDisplayAsync_Adds_To_History_And_Writes_To_Console()
@@ -41,9 +22,9 @@ public class ChatControllerTests
             .Returns(call => ((Func<Task>)call[0])());
 
         var client = new FakeChatClient { Response = new(new ChatMessage(ChatRole.Assistant, "done")) };
-        var controller = new ChatController(console);
+        var controller = new ChatController(console, client, new McpToolCollection());
 
-        await controller.SendAndDisplayAsync(client, history, Array.Empty<McpClientTool>());
+        await controller.SendAndDisplayAsync(history);
 
         Assert.Equal(2, history.Messages.Count);
         await console.Received(1).DisplayThinkingIndicator(Arg.Any<Func<Task>>());
@@ -66,9 +47,9 @@ public class ChatControllerTests
             .GetResponseAsync(Arg.Any<IEnumerable<ChatMessage>>(), Arg.Any<ChatOptions?>(), Arg.Any<CancellationToken>())
             .Returns(call => Task.FromException<ChatResponse>(new InvalidOperationException("fail")));
 
-        var controller = new ChatController(console);
+        var controller = new ChatController(console, client, new McpToolCollection());
 
-        await controller.SendAndDisplayAsync(client, history, Array.Empty<McpClientTool>());
+        await controller.SendAndDisplayAsync(history);
 
         await console.Received(1).DisplayThinkingIndicator(Arg.Any<Func<Task>>());
         console.Received(1).DisplayError(Arg.Any<Exception>());
@@ -90,10 +71,10 @@ public class ChatControllerTests
         console.DisplayStreamingUpdatesAsync(Arg.Any<IAsyncEnumerable<ChatResponseUpdate>>())
             .Returns(Task.FromResult<IReadOnlyList<ChatMessage>>(new[] { new ChatMessage(ChatRole.Assistant, "AB") }));
 
-        var controller = new ChatController(console);
+        var controller = new ChatController(console, client, new McpToolCollection());
         IReadOnlyList<ChatMessage>? finalMessages = null;
 
-        await controller.SendAndDisplayStreamingAsync(client, history, Array.Empty<McpClientTool>(), msgs => finalMessages = msgs);
+        await controller.SendAndDisplayStreamingAsync(history, msgs => finalMessages = msgs);
 
         _ = await console.Received(1).DisplayStreamingUpdatesAsync(Arg.Any<IAsyncEnumerable<ChatResponseUpdate>>());
         console.DidNotReceive().DisplayError(Arg.Any<Exception>());
@@ -116,9 +97,9 @@ public class ChatControllerTests
             .DisplayStreamingUpdatesAsync(Arg.Any<IAsyncEnumerable<ChatResponseUpdate>>())
             .Returns(call => Task.FromException<IReadOnlyList<ChatMessage>>(new InvalidOperationException("fail")));
 
-        var controller = new ChatController(console);
+        var controller = new ChatController(console, client, new McpToolCollection());
 
-        await controller.SendAndDisplayStreamingAsync(client, history, Array.Empty<McpClientTool>());
+        await controller.SendAndDisplayStreamingAsync(history);
 
         _ = await console.Received(1).DisplayStreamingUpdatesAsync(Arg.Any<IAsyncEnumerable<ChatResponseUpdate>>());
         console.Received(1).DisplayError(Arg.Any<Exception>());

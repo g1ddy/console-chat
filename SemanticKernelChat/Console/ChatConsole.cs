@@ -117,6 +117,21 @@ public class ChatConsole : IChatConsole
         }
     }
 
+    public void WriteWelcomeMessage() => _console.MarkupLine(CliConstants.WelcomeMessage);
+
+    public void WriteExitMessage() => _console.MarkupLine(CliConstants.ExitMessage);
+
+    public void WriteHeader(ChatRole role)
+    {
+        var (headerText, justify, style) = GetUserStyle(role);
+        var rule = new Rule(headerText) { Justification = justify, Style = style };
+        _console.Write(rule);
+    }
+
+    public void WriteUserPrompt() => _console.Markup(CliConstants.UserPrompt);
+
+    public void WriteLine(string text) => _console.WriteLine(text);
+
     /// <summary>
     /// Reads user input using RadLine's multiline editor.
     /// Returns <c>null</c> when the input stream ends.
