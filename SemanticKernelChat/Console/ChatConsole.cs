@@ -217,7 +217,7 @@ public class ChatConsole : IChatConsole
             _ = paragraph.Append("\n");
             string toolName = GetToolName(callNames, result.CallId, update.AuthorName, update.Role);
 
-            _ = paragraph.Append($"🔧 {toolName} Result...", new Style(Color.Grey));
+            _ = paragraph.Append($":wrench: {toolName.EscapeMarkup()} Result...", new Style(Color.Grey));
         }
     }
 }
