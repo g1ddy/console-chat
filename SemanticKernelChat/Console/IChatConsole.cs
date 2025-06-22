@@ -15,4 +15,5 @@ public interface IChatConsole
     Task DisplayThinkingIndicator(Func<Task> action);
     void DisplayError(Exception ex);
     Task<IReadOnlyList<ChatMessage>> DisplayStreamingUpdatesAsync(IAsyncEnumerable<ChatResponseUpdate> updates);
+    IReadOnlyList<string> PromptMultiSelection(string title, IEnumerable<(string Name, bool Selected)> items);
 }

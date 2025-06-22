@@ -56,7 +56,6 @@ public static class McpClientHelper
 
         if (servers is null || servers.Count == 0)
         {
-            System.Console.WriteLine("No MCP servers configured. Please check your configuration.");
             yield break;
         }
 
@@ -68,7 +67,6 @@ public static class McpClientHelper
 
             if (serverConfig.Disabled)
             {
-                System.Console.WriteLine($"Skipping disabled MCP server: {serverName}");
                 continue;
             }
 

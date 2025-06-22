@@ -12,12 +12,29 @@ namespace SemanticKernelChat.Infrastructure;
 /// </summary>
 public sealed class McpToolCollection : IAsyncDisposable
 {
-    private readonly List<McpClientTool> _tools = new();
     private readonly Dictionary<string, IList<McpClientTool>> _plugins = new();
+    private readonly HashSet<string> _enabledServers = new(StringComparer.OrdinalIgnoreCase);
     private readonly List<IAsyncDisposable> _disposables = new();
 
-    public IReadOnlyList<McpClientTool> Tools => _tools;
     public IReadOnlyDictionary<string, IList<McpClientTool>> Plugins => _plugins;
+    public IReadOnlyCollection<string> Servers => _plugins.Keys;
+
+    public IReadOnlyList<McpClientTool> Tools =>
+        _plugins.Where(p => _enabledServers.Contains(p.Key)).SelectMany(p => p.Value).ToList();
+
+    public bool IsServerEnabled(string name) => _enabledServers.Contains(name);
+
+    public void SetServerEnabled(string name, bool enabled)
+    {
+        if (enabled)
+        {
+            _enabledServers.Add(name);
+        }
+        else
+        {
+            _enabledServers.Remove(name);
+        }
+    }
 
     /// <summary>
     /// Launches MCP servers, retrieves tools, and returns a disposable collection.
@@ -53,8 +70,8 @@ public sealed class McpToolCollection : IAsyncDisposable
         foreach (var (client, name, tools) in results)
         {
             collection._disposables.Add(client);
-            collection._tools.AddRange(tools);
             collection._plugins[name] = tools;
+            collection._enabledServers.Add(name);
         }
 
         return collection;
