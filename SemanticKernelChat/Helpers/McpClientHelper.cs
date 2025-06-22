@@ -29,6 +29,23 @@ internal sealed record McpServerConfig
 
 public static class McpClientHelper
 {
+    public static string ResolveCommandPath(string command)
+    {
+        if (Path.IsPathFullyQualified(command))
+        {
+            return command;
+        }
+
+        if (command.Contains(Path.DirectorySeparatorChar) ||
+            command.Contains(Path.AltDirectorySeparatorChar) ||
+            Path.HasExtension(command))
+        {
+            return Path.GetFullPath(command, AppContext.BaseDirectory);
+        }
+
+        return command;
+    }
+
     public static async IAsyncEnumerable<IClientTransport> CreateTransportsAsync(
         IConfiguration configuration,
         IHttpClientFactory? httpClientFactory = null,
@@ -58,10 +75,12 @@ public static class McpClientHelper
             switch (transportType.ToLowerInvariant())
             {
                 case McpServerTypes.Stdio:
+                    string command = ResolveCommandPath(serverConfig.Command);
+
                     yield return new StdioClientTransport(new()
                     {
                         Name = serverName,
-                        Command = serverConfig.Command,
+                        Command = command,
                         Arguments = serverConfig.Arguments,
                         EnvironmentVariables = serverConfig.EnvironmentVariables,
                         WorkingDirectory = AppContext.BaseDirectory,
