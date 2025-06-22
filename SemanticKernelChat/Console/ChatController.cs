@@ -9,6 +9,8 @@ public class ChatController : IChatController
     private readonly IChatClient _chatClient;
     private readonly McpToolCollection _toolCollection;
 
+    public McpToolCollection ToolCollection => _toolCollection;
+
     public ChatController(IChatConsole console, IChatClient chatClient, McpToolCollection toolCollection)
     {
         _console = console;
