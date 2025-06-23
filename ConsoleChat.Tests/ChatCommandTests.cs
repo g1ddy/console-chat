@@ -44,7 +44,7 @@ public class ChatCommandTests
         var client = new FakeChatClient { Response = new(new ChatMessage(ChatRole.Assistant, "done")) };
         var controller = new ChatController(chatConsole, client, new McpToolCollection());
         var history = new ChatHistoryService();
-        var command = new ChatCommand(history, controller, chatConsole);
+        var command = new ChatCommand(history, controller, chatConsole, Enumerable.Empty<IChatCommandStrategy>());
 
         var context = new CommandContext(new FakeRemainingArguments(), "chat", new object());
 

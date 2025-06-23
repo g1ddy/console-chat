@@ -1,5 +1,6 @@
 using SemanticKernelChat;
 using SemanticKernelChat.Console;
+using System.Collections.Generic;
 using Spectre.Console.Cli;
 
 namespace SemanticKernelChat.Commands;
@@ -9,8 +10,9 @@ public sealed class ChatCommand : ChatCommandBase
     public ChatCommand(
         IChatHistoryService history,
         IChatController controller,
-        IChatConsole console)
-        : base(history, controller, console)
+        IChatConsole console,
+        IEnumerable<IChatCommandStrategy> strategies)
+        : base(history, controller, console, strategies)
     {
     }
 

@@ -1,6 +1,9 @@
 using RadLine;
 
 using SemanticKernelChat.Infrastructure;
+using SemanticKernelChat.Console;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace SemanticKernelChat.Console;
 
@@ -12,9 +15,11 @@ public interface IChatLineEditor
 public sealed class ChatLineEditor : IChatLineEditor
 {
     private LineEditor _editor = default!;
+    private readonly List<IChatCommandStrategy> _commands;
 
-    public ChatLineEditor(McpToolCollection tools)
+    public ChatLineEditor(McpToolCollection tools, IEnumerable<IChatCommandStrategy> commands)
     {
+        _commands = commands.ToList();
         var pluginNames = tools.Plugins.Keys;
         ConfigureCompletion(pluginNames);
     }
@@ -24,7 +29,7 @@ public sealed class ChatLineEditor : IChatLineEditor
 
     private void ConfigureCompletion(IEnumerable<string> pluginNames)
     {
-        var completion = new CommandCompletion(pluginNames);
+        var completion = new CommandCompletion(pluginNames, _commands);
         _editor = new LineEditor
         {
             MultiLine = true,
@@ -35,52 +40,32 @@ public sealed class ChatLineEditor : IChatLineEditor
     private sealed class CommandCompletion : ITextCompletion
     {
         private readonly List<string> _toolNames;
+        private readonly List<IChatCommandStrategy> _commands;
 
-        public CommandCompletion(IEnumerable<string> toolNames)
+        public CommandCompletion(IEnumerable<string> toolNames, IEnumerable<IChatCommandStrategy> commands)
         {
             _toolNames = toolNames.Distinct(StringComparer.OrdinalIgnoreCase).ToList();
+            _commands = commands.ToList();
         }
 
         public IEnumerable<string>? GetCompletions(string prefix, string word, string suffix)
         {
             var tokens = (prefix + word).TrimStart().Split(' ', StringSplitOptions.RemoveEmptyEntries);
+            var results = new List<string>();
+
+            foreach (var cmd in _commands)
+            {
+                var comps = cmd.GetCompletions(prefix, word, suffix);
+                if (comps is not null)
+                    results.AddRange(comps);
+            }
+
             if (tokens.Length <= 1)
             {
-                return CliConstants.Commands.All.Concat(_toolNames).Where(c => c.StartsWith(word, StringComparison.OrdinalIgnoreCase));
+                results.AddRange(_toolNames.Where(t => t.StartsWith(word, StringComparison.OrdinalIgnoreCase)));
             }
 
-            var cmd = tokens[0];
-            if (cmd.Equals(CliConstants.Commands.Enable, StringComparison.OrdinalIgnoreCase) ||
-                cmd.Equals(CliConstants.Commands.Disable, StringComparison.OrdinalIgnoreCase))
-            {
-                if (tokens.Length == 2)
-                {
-                    var part = tokens[1];
-                    var option = CliConstants.Options.Mcp;
-                    return option.StartsWith(part, StringComparison.OrdinalIgnoreCase)
-                        ? new[] { option }
-                        : Array.Empty<string>();
-                }
-                else if (tokens.Length == 3 && tokens[1].Equals(CliConstants.Options.Mcp, StringComparison.OrdinalIgnoreCase))
-                {
-                    var part = tokens[2];
-                    return _toolNames.Where(t => t.StartsWith(part, StringComparison.OrdinalIgnoreCase));
-                }
-            }
-
-            if (cmd.Equals(CliConstants.Commands.Toggle, StringComparison.OrdinalIgnoreCase))
-            {
-                if (tokens.Length == 2)
-                {
-                    var part = tokens[1];
-                    var option = CliConstants.Options.Mcp;
-                    return option.StartsWith(part, StringComparison.OrdinalIgnoreCase)
-                        ? new[] { option }
-                        : Array.Empty<string>();
-                }
-            }
-
-            return null;
+            return results.Count > 0 ? results.Distinct(StringComparer.OrdinalIgnoreCase) : null;
         }
     }
 }
