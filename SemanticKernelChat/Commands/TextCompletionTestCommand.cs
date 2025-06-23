@@ -34,7 +34,7 @@ public sealed class TextCompletionTestCommand : AsyncCommand
         // Streaming chat demo
         _console.WriteHeader(ChatRole.User);
         _console.WriteUserPrompt();
-        var inputStreaming = "This is a demo of non-streaming chat!";
+        var inputStreaming = "This is a demo of streaming chat!";
         _console.WriteLine(inputStreaming);
 
         _history.AddUserMessage(inputStreaming);

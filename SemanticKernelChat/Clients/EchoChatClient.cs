@@ -13,7 +13,7 @@ public sealed class EchoChatClient : IChatClient
     public async Task<ChatResponse> GetResponseAsync(IEnumerable<ChatMessage> messages, ChatOptions? options = null, CancellationToken cancellationToken = default)
     {
         // Simulate a response delay like a real AI model would have
-        await Task.Delay(TimeSpan.FromSeconds(2), cancellationToken);
+        await Task.Delay(500, cancellationToken);
 
         var responseContents = new List<AIContent>();
         var lastMessage = messages.Last();
@@ -88,11 +88,8 @@ public sealed class EchoChatClient : IChatClient
 
                 foreach (var line in lines)
                 {
-                    foreach (char c in line)
-                    {
-                        await Task.Delay(100, cancellationToken);
-                        yield return new ChatResponseUpdate(ChatRole.Assistant, c.ToString());
-                    }
+                    await Task.Delay(200, cancellationToken);
+                    yield return new ChatResponseUpdate(ChatRole.Assistant, line);
                 }
             }
         }
