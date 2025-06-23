@@ -78,11 +78,6 @@ public sealed class ChatLineEditor : IChatLineEditor
                         ? new[] { option }
                         : Array.Empty<string>();
                 }
-                else if (tokens.Length == 3 && tokens[1].Equals(CliConstants.Options.Mcp, StringComparison.OrdinalIgnoreCase))
-                {
-                    var part = tokens[2];
-                    return _toolNames.Where(t => t.StartsWith(part, StringComparison.OrdinalIgnoreCase));
-                }
             }
 
             return null;
