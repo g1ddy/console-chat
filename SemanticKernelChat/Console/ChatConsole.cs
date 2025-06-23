@@ -1,5 +1,6 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
+using System.Text;
 
 using Microsoft.Extensions.AI;
 
@@ -112,7 +113,7 @@ public class ChatConsole : IChatConsole
                 TryGetContent<FunctionResultContent>(message.Contents, out var result))
             {
                 string toolName = GetToolName(callNames, result.CallId, message.AuthorName, message.Role);
-                markupResponse = new Markup($"[grey]:wrench: {toolName} Result...[/]");
+                markupResponse = new Markup($"[grey]:wrench: {toolName.EscapeMarkup()} Result...[/]");
             }
 
             var (headerText, justify, style) = GetUserStyle(message.Role);
@@ -167,8 +168,8 @@ public class ChatConsole : IChatConsole
         IAsyncEnumerable<ChatResponseUpdate> updates)
     {
         var messageUpdates = new List<ChatResponseUpdate>();
-        var paragraph = new Paragraph(string.Empty);
-        var panel = CreateAssistantPanel(paragraph);
+        var builder = new StringBuilder();
+        var panel = CreateAssistantPanel(new Markup(builder.ToString()));
 
         var callNames = new Dictionary<string, string>();
         await _console.Live(panel)
@@ -178,7 +179,9 @@ public class ChatConsole : IChatConsole
                 await foreach (var update in updates)
                 {
                     messageUpdates.Add(update);
-                    AppendUpdate(paragraph, callNames, update);
+                    AppendUpdate(builder, callNames, update);
+                    panel = CreateAssistantPanel(new Markup(builder.ToString()));
+                    ctx.UpdateTarget(panel);
                     ctx.Refresh();
                 }
             });
@@ -187,12 +190,12 @@ public class ChatConsole : IChatConsole
         return [.. response.Messages];
     }
 
-    private static Panel CreateAssistantPanel(Paragraph paragraph)
+    private static Panel CreateAssistantPanel(IRenderable content)
     {
         var (headerText, justify, style) = GetUserStyle(ChatRole.Assistant);
         var header = new PanelHeader(headerText, justify);
 
-        return new Panel(paragraph)
+        return new Panel(content)
             .RoundedBorder()
             .BorderStyle(style)
             .Header(header)
@@ -200,7 +203,7 @@ public class ChatConsole : IChatConsole
     }
 
     private static void AppendUpdate(
-        Paragraph paragraph,
+        StringBuilder builder,
         Dictionary<string, string> callNames,
         ChatResponseUpdate update)
     {
@@ -209,16 +212,15 @@ public class ChatConsole : IChatConsole
 
         if (update.Role == ChatRole.Assistant)
         {
-            _ = paragraph.Append(update.Text.EscapeMarkup());
+            _ = builder.Append(update.Text.EscapeMarkup());
         }
 
         foreach (var result in contents.OfType<FunctionResultContent>())
         {
-            _ = paragraph.Append("\n");
+            _ = builder.Append('\n');
             string toolName = GetToolName(callNames, result.CallId, update.AuthorName, update.Role);
 
-            string wrench = Emoji.Replace(":wrench:");
-            _ = paragraph.Append($"{wrench} {toolName.EscapeMarkup()} Result...", new Style(Color.Grey));
+            _ = builder.Append($"[grey]:wrench: {toolName.EscapeMarkup()} Result...[/]");
         }
     }
 }
