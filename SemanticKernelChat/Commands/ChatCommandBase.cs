@@ -64,15 +64,28 @@ public abstract class ChatCommandBase : AsyncCommand<ChatCommandBase.Settings>
             if (input.StartsWith(CliConstants.Commands.Toggle, StringComparison.OrdinalIgnoreCase))
             {
                 var tokens = input.Split(' ', StringSplitOptions.RemoveEmptyEntries);
-                if (tokens.Length == 2 && tokens[1].Equals("mcp", StringComparison.OrdinalIgnoreCase))
+                if (tokens.Length == 2 && tokens[1].Equals(CliConstants.Options.Mcp, StringComparison.OrdinalIgnoreCase))
                 {
                     var tools = Controller.ToolCollection;
                     var choices = tools.Servers.Select(n => (Name: n, Selected: tools.IsServerEnabled(n)));
-                    var selected = _console.PromptMultiSelection("Toggle MCP servers", choices);
+                    var selected = _console.PromptMultiSelection("Toggle MCP servers", choices).ToHashSet(StringComparer.OrdinalIgnoreCase);
                     foreach (var name in tools.Servers)
                     {
                         tools.SetServerEnabled(name, selected.Contains(name));
                     }
+                    continue;
+                }
+            }
+
+            if (input.StartsWith(CliConstants.Commands.Enable, StringComparison.OrdinalIgnoreCase) ||
+                input.StartsWith(CliConstants.Commands.Disable, StringComparison.OrdinalIgnoreCase))
+            {
+                var tokens = input.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+                if (tokens.Length == 3 && tokens[1].Equals(CliConstants.Options.Mcp, StringComparison.OrdinalIgnoreCase))
+                {
+                    var enable = tokens[0].Equals(CliConstants.Commands.Enable, StringComparison.OrdinalIgnoreCase);
+                    var name = tokens[2];
+                    Controller.ToolCollection.SetServerEnabled(name, enable);
                     continue;
                 }
             }

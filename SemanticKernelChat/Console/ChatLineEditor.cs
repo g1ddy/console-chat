@@ -50,12 +50,22 @@ public sealed class ChatLineEditor : IChatLineEditor
             }
 
             var cmd = tokens[0];
-            if ((cmd.Equals(CliConstants.Commands.Enable, StringComparison.OrdinalIgnoreCase) ||
-                cmd.Equals(CliConstants.Commands.Disable, StringComparison.OrdinalIgnoreCase)) &&
-                tokens.Length == 2)
+            if (cmd.Equals(CliConstants.Commands.Enable, StringComparison.OrdinalIgnoreCase) ||
+                cmd.Equals(CliConstants.Commands.Disable, StringComparison.OrdinalIgnoreCase))
             {
-                var part = tokens[1];
-                return _toolNames.Where(t => t.StartsWith(part, StringComparison.OrdinalIgnoreCase));
+                if (tokens.Length == 2)
+                {
+                    var part = tokens[1];
+                    var option = CliConstants.Options.Mcp;
+                    return option.StartsWith(part, StringComparison.OrdinalIgnoreCase)
+                        ? new[] { option }
+                        : Array.Empty<string>();
+                }
+                else if (tokens.Length == 3 && tokens[1].Equals(CliConstants.Options.Mcp, StringComparison.OrdinalIgnoreCase))
+                {
+                    var part = tokens[2];
+                    return _toolNames.Where(t => t.StartsWith(part, StringComparison.OrdinalIgnoreCase));
+                }
             }
 
             if (cmd.Equals(CliConstants.Commands.Toggle, StringComparison.OrdinalIgnoreCase))
@@ -63,15 +73,10 @@ public sealed class ChatLineEditor : IChatLineEditor
                 if (tokens.Length == 2)
                 {
                     var part = tokens[1];
-                    var option = "mcp";
+                    var option = CliConstants.Options.Mcp;
                     return option.StartsWith(part, StringComparison.OrdinalIgnoreCase)
                         ? new[] { option }
                         : Array.Empty<string>();
-                }
-                else if (tokens.Length == 3 && tokens[1].Equals("mcp", StringComparison.OrdinalIgnoreCase))
-                {
-                    var part = tokens[2];
-                    return _toolNames.Where(t => t.StartsWith(part, StringComparison.OrdinalIgnoreCase));
                 }
             }
 
