@@ -65,6 +65,7 @@ public abstract class ChatCommandBase : AsyncCommand<ChatCommandBase.Settings>
                 continue;
             }
 
+            bool handled = false;
             foreach (var cmd in _commands)
             {
                 if (cmd.CanExecute(input))
@@ -72,15 +73,19 @@ public abstract class ChatCommandBase : AsyncCommand<ChatCommandBase.Settings>
                     bool cont = await cmd.ExecuteAsync(input, _history, Controller, _console);
                     if (!cont)
                         return 0;
-                    goto ContinueLoop;
+                    handled = true;
+                    break;
                 }
+            }
+
+            if (handled)
+            {
+                continue;
             }
 
             _history.AddUserMessage(input);
 
             await SendAndDisplayAsync();
-
-ContinueLoop:;
         }
 
         return 0;

@@ -20,16 +20,15 @@ public sealed class ChatLineEditor : IChatLineEditor
     public ChatLineEditor(McpToolCollection tools, IEnumerable<IChatCommandStrategy> commands)
     {
         _commands = commands.ToList();
-        var pluginNames = tools.Plugins.Keys;
-        ConfigureCompletion(pluginNames);
+        ConfigureCompletion();
     }
 
     public Task<string?> ReadLine(CancellationToken cancellationToken)
         => _editor.ReadLine(cancellationToken);
 
-    private void ConfigureCompletion(IEnumerable<string> pluginNames)
+    private void ConfigureCompletion()
     {
-        var completion = new CommandCompletion(pluginNames, _commands);
+        var completion = new CommandCompletion(_commands);
         _editor = new LineEditor
         {
             MultiLine = true,
@@ -39,18 +38,15 @@ public sealed class ChatLineEditor : IChatLineEditor
 
     private sealed class CommandCompletion : ITextCompletion
     {
-        private readonly List<string> _toolNames;
         private readonly List<IChatCommandStrategy> _commands;
 
-        public CommandCompletion(IEnumerable<string> toolNames, IEnumerable<IChatCommandStrategy> commands)
+        public CommandCompletion(IEnumerable<IChatCommandStrategy> commands)
         {
-            _toolNames = toolNames.Distinct(StringComparer.OrdinalIgnoreCase).ToList();
             _commands = commands.ToList();
         }
 
         public IEnumerable<string>? GetCompletions(string prefix, string word, string suffix)
         {
-            var tokens = (prefix + word).TrimStart().Split(' ', StringSplitOptions.RemoveEmptyEntries);
             var results = new List<string>();
 
             foreach (var cmd in _commands)
@@ -58,11 +54,6 @@ public sealed class ChatLineEditor : IChatLineEditor
                 var comps = cmd.GetCompletions(prefix, word, suffix);
                 if (comps is not null)
                     results.AddRange(comps);
-            }
-
-            if (tokens.Length <= 1)
-            {
-                results.AddRange(_toolNames.Where(t => t.StartsWith(word, StringComparison.OrdinalIgnoreCase)));
             }
 
             return results.Count > 0 ? results.Distinct(StringComparer.OrdinalIgnoreCase) : null;

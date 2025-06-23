@@ -15,7 +15,7 @@ public sealed class ToggleMcpServerCommandStrategy : IChatCommandStrategy
 
     public IEnumerable<string>? GetCompletions(string prefix, string word, string suffix)
     {
-        var tokens = (prefix + word).TrimStart().Split(' ', StringSplitOptions.RemoveEmptyEntries);
+        var tokens = (prefix + word).TrimStart().Split(' ', StringSplitOptions.TrimEntries);
         if (tokens.Length == 1)
         {
             return CliConstants.Commands.Toggle.StartsWith(word, StringComparison.OrdinalIgnoreCase)
@@ -31,8 +31,13 @@ public sealed class ToggleMcpServerCommandStrategy : IChatCommandStrategy
         return null;
     }
 
-    public bool CanExecute(string input) =>
-        input.StartsWith($"{CliConstants.Commands.Toggle} {CliConstants.Options.Mcp}", StringComparison.OrdinalIgnoreCase);
+    public bool CanExecute(string input)
+    {
+        var tokens = input.Split(' ', StringSplitOptions.TrimEntries);
+        return tokens.Length == 2 &&
+               tokens[0].Equals(CliConstants.Commands.Toggle, StringComparison.OrdinalIgnoreCase) &&
+               tokens[1].Equals(CliConstants.Options.Mcp, StringComparison.OrdinalIgnoreCase);
+    }
 
     public Task<bool> ExecuteAsync(string input, IChatHistoryService history, IChatController controller, IChatConsole console)
     {

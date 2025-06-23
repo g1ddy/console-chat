@@ -15,14 +15,14 @@ public sealed class SetMcpServerStateCommandStrategy : IChatCommandStrategy
 
     public IEnumerable<string>? GetCompletions(string prefix, string word, string suffix)
     {
-        var tokens = (prefix + word).TrimStart().Split(' ', StringSplitOptions.RemoveEmptyEntries);
+        var tokens = (prefix + word).TrimStart().Split(' ', StringSplitOptions.TrimEntries);
         if (tokens.Length == 1)
         {
             return new[] { CliConstants.Commands.Enable, CliConstants.Commands.Disable }
                 .Where(c => c.StartsWith(word, StringComparison.OrdinalIgnoreCase))
                 .ToList();
         }
-        if (tokens.Length == 2 &&
+        if (tokens.Length >= 2 &&
             (tokens[0].Equals(CliConstants.Commands.Enable, StringComparison.OrdinalIgnoreCase) ||
              tokens[0].Equals(CliConstants.Commands.Disable, StringComparison.OrdinalIgnoreCase)))
         {
@@ -30,7 +30,7 @@ public sealed class SetMcpServerStateCommandStrategy : IChatCommandStrategy
                 ? new[] { CliConstants.Options.Mcp }
                 : Array.Empty<string>();
         }
-        if (tokens.Length == 3 &&
+        if (tokens.Length >= 3 &&
             (tokens[0].Equals(CliConstants.Commands.Enable, StringComparison.OrdinalIgnoreCase) ||
              tokens[0].Equals(CliConstants.Commands.Disable, StringComparison.OrdinalIgnoreCase)) &&
             tokens[1].Equals(CliConstants.Options.Mcp, StringComparison.OrdinalIgnoreCase))
@@ -48,13 +48,22 @@ public sealed class SetMcpServerStateCommandStrategy : IChatCommandStrategy
             return false;
         }
 
-        var tokens = input.Split(' ', StringSplitOptions.RemoveEmptyEntries);
-        return tokens.Length == 3 && tokens[1].Equals(CliConstants.Options.Mcp, StringComparison.OrdinalIgnoreCase);
+        var tokens = input.Split(' ', StringSplitOptions.TrimEntries);
+        return tokens.Length >= 3 &&
+               tokens[0].Length > 0 &&
+               (tokens[0].Equals(CliConstants.Commands.Enable, StringComparison.OrdinalIgnoreCase) ||
+                tokens[0].Equals(CliConstants.Commands.Disable, StringComparison.OrdinalIgnoreCase)) &&
+               tokens[1].Equals(CliConstants.Options.Mcp, StringComparison.OrdinalIgnoreCase);
     }
 
     public Task<bool> ExecuteAsync(string input, IChatHistoryService history, IChatController controller, IChatConsole console)
     {
-        var tokens = input.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+        var tokens = input.Split(' ', StringSplitOptions.TrimEntries);
+        if (tokens.Length < 3)
+        {
+            return Task.FromResult(true);
+        }
+
         bool enable = tokens[0].Equals(CliConstants.Commands.Enable, StringComparison.OrdinalIgnoreCase);
         string name = tokens[2];
         _tools.SetServerEnabled(name, enable);
