@@ -22,7 +22,7 @@ public sealed class SetMcpServerStateCommandStrategy : IChatCommandStrategy
                 .Where(c => c.StartsWith(word, StringComparison.OrdinalIgnoreCase))
                 .ToList();
         }
-        if (tokens.Length >= 2 &&
+        if (tokens.Length == 2 &&
             (tokens[0].Equals(CliConstants.Commands.Enable, StringComparison.OrdinalIgnoreCase) ||
              tokens[0].Equals(CliConstants.Commands.Disable, StringComparison.OrdinalIgnoreCase)))
         {
@@ -42,18 +42,18 @@ public sealed class SetMcpServerStateCommandStrategy : IChatCommandStrategy
 
     public bool CanExecute(string input)
     {
-        if (!(input.StartsWith(CliConstants.Commands.Enable, StringComparison.OrdinalIgnoreCase) ||
-              input.StartsWith(CliConstants.Commands.Disable, StringComparison.OrdinalIgnoreCase)))
+        var tokens = input.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+        if (tokens.Length != 3)
         {
             return false;
         }
 
-        var tokens = input.Split(' ', StringSplitOptions.TrimEntries);
-        return tokens.Length >= 3 &&
-               tokens[0].Length > 0 &&
-               (tokens[0].Equals(CliConstants.Commands.Enable, StringComparison.OrdinalIgnoreCase) ||
-                tokens[0].Equals(CliConstants.Commands.Disable, StringComparison.OrdinalIgnoreCase)) &&
-               tokens[1].Equals(CliConstants.Options.Mcp, StringComparison.OrdinalIgnoreCase);
+        bool hasCommand = tokens[0].Equals(CliConstants.Commands.Enable, StringComparison.OrdinalIgnoreCase) ||
+                           tokens[0].Equals(CliConstants.Commands.Disable, StringComparison.OrdinalIgnoreCase);
+
+        return hasCommand &&
+               tokens[1].Equals(CliConstants.Options.Mcp, StringComparison.OrdinalIgnoreCase) &&
+               _tools.Servers.Contains(tokens[2]);
     }
 
     public Task<bool> ExecuteAsync(string input, IChatHistoryService history, IChatController controller, IChatConsole console)
