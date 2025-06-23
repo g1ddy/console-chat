@@ -7,12 +7,10 @@ namespace SemanticKernelChat.Console;
 public sealed class ToggleMcpServerCommandStrategy : IChatCommandStrategy
 {
     private readonly McpToolCollection _tools;
-    private readonly IChatConsole _console;
 
-    public ToggleMcpServerCommandStrategy(McpToolCollection tools, IChatConsole console)
+    public ToggleMcpServerCommandStrategy(McpToolCollection tools)
     {
         _tools = tools;
-        _console = console;
     }
 
     public IEnumerable<string>? GetCompletions(string prefix, string word, string suffix)
@@ -39,7 +37,7 @@ public sealed class ToggleMcpServerCommandStrategy : IChatCommandStrategy
     public Task<bool> ExecuteAsync(string input, IChatHistoryService history, IChatController controller, IChatConsole console)
     {
         var choices = _tools.Servers.Select(n => (Name: n, Selected: _tools.IsServerEnabled(n)));
-        var selected = _console.PromptMultiSelection("Toggle MCP servers", choices).ToHashSet(StringComparer.OrdinalIgnoreCase);
+        var selected = console.PromptMultiSelection("Toggle MCP servers", choices).ToHashSet(StringComparer.OrdinalIgnoreCase);
         foreach (var name in _tools.Servers)
         {
             _tools.SetServerEnabled(name, selected.Contains(name));
