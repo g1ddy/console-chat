@@ -24,4 +24,9 @@ internal static class CliConstants
         public const string Disable = "/disable";
         public const string Toggle = "/toggle";
     }
+
+    public static class Options
+    {
+        public const string Mcp = "mcp";
+    }
 }

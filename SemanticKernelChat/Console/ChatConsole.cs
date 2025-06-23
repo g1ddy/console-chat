@@ -142,6 +142,26 @@ public class ChatConsole : IChatConsole
 
     public void WriteLine(string text) => _console.WriteLine(text);
 
+    public IReadOnlyList<string> PromptMultiSelection(string title, IEnumerable<(string Name, bool Selected)> items)
+    {
+        var prompt = new MultiSelectionPrompt<(string Name, bool Selected)>()
+            .Title(title)
+            .InstructionsText("[grey](Press <space> to toggle, <enter> to accept)[/]")
+            .UseConverter(c => $"{c.Name} {(c.Selected ? "[green](enabled)" : "[red](disabled)")}");
+
+        foreach (var item in items)
+        {
+            prompt.AddChoice(item);
+            if (item.Selected)
+            {
+                prompt.Select(item);
+            }
+        }
+
+        var result = _console.Prompt(prompt);
+        return result.Select(r => r.Name).ToList();
+    }
+
     /// <summary>
     /// Reads user input using RadLine's multiline editor.
     /// Returns <c>null</c> when the input stream ends.
