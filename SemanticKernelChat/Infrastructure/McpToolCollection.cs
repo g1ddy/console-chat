@@ -9,7 +9,7 @@ public sealed class McpToolCollection : IAsyncDisposable
 {
     private readonly McpServerState _state;
 
-    public McpToolCollection()
+    private McpToolCollection()
     {
         _state = (McpServerState)Activator.CreateInstance(typeof(McpServerState), nonPublic: true)!;
     }

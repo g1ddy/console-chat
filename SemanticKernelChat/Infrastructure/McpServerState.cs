@@ -103,7 +103,7 @@ internal sealed class McpServerState : IAsyncDisposable
         }
     }
 
-    public static Task<McpServerState> CreateAsync(CancellationToken cancellationToken = default)
+    public static async Task<McpServerState> CreateAsync(CancellationToken cancellationToken = default)
     {
         var state = new McpServerState();
         var configuration = new ConfigurationBuilder()
@@ -123,7 +123,8 @@ internal sealed class McpServerState : IAsyncDisposable
             }
         }
 
-        return Task.FromResult(state);
+        await Task.WhenAll(state._loadTasks.Values);
+        return state;
     }
 
     public async ValueTask DisposeAsync()

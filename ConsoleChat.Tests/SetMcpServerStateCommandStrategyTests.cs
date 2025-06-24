@@ -29,7 +29,8 @@ public class SetMcpServerStateCommandStrategyTests
             dict[name] = entry;
         }
 
-        var ctor = collectionType.GetConstructors(BindingFlags.NonPublic | BindingFlags.Instance)[0];
+        var ctor = collectionType.GetConstructor(BindingFlags.NonPublic | BindingFlags.Instance,
+            binder: null, types: new[] { stateType }, modifiers: null)!;
         var collection = (McpToolCollection)ctor.Invoke(new[] { state });
         return collection;
     }
