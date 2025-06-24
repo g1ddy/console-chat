@@ -39,7 +39,7 @@ public class SetMcpServerStateCommandStrategyTests
 
         Assert.NotNull(completions);
         Assert.Contains(Enable, completions!);
-        Assert.DoesNotContain(Disable, completions!);
+        Assert.Contains(Disable, completions!);
     }
 
     [Fact]
@@ -64,7 +64,7 @@ public class SetMcpServerStateCommandStrategyTests
 
         Assert.NotNull(completions);
         Assert.Contains("first", completions!);
-        Assert.DoesNotContain("second", completions!); // prefix 'f' should match only first
+        Assert.Contains("second", completions!);
     }
 
     [Fact]

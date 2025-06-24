@@ -18,24 +18,20 @@ public sealed class SetMcpServerStateCommandStrategy : IChatCommandStrategy
         var tokens = (prefix + word).TrimStart().Split(' ', StringSplitOptions.TrimEntries);
         if (tokens.Length == 1)
         {
-            return new[] { CliConstants.Commands.Enable, CliConstants.Commands.Disable }
-                .Where(c => c.StartsWith(word, StringComparison.OrdinalIgnoreCase))
-                .ToList();
+            return new[] { CliConstants.Commands.Enable, CliConstants.Commands.Disable };
         }
         if (tokens.Length == 2 &&
             (tokens[0].Equals(CliConstants.Commands.Enable, StringComparison.OrdinalIgnoreCase) ||
              tokens[0].Equals(CliConstants.Commands.Disable, StringComparison.OrdinalIgnoreCase)))
         {
-            return CliConstants.Options.Mcp.StartsWith(word, StringComparison.OrdinalIgnoreCase)
-                ? new[] { CliConstants.Options.Mcp }
-                : Array.Empty<string>();
+            return new[] { CliConstants.Options.Mcp };
         }
         if (tokens.Length >= 3 &&
             (tokens[0].Equals(CliConstants.Commands.Enable, StringComparison.OrdinalIgnoreCase) ||
              tokens[0].Equals(CliConstants.Commands.Disable, StringComparison.OrdinalIgnoreCase)) &&
             tokens[1].Equals(CliConstants.Options.Mcp, StringComparison.OrdinalIgnoreCase))
         {
-            return _tools.Servers.Where(n => n.StartsWith(word, StringComparison.OrdinalIgnoreCase)).ToList();
+            return _tools.Servers.ToList();
         }
         return null;
     }

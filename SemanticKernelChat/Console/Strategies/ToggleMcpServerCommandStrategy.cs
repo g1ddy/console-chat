@@ -18,15 +18,11 @@ public sealed class ToggleMcpServerCommandStrategy : IChatCommandStrategy
         var tokens = (prefix + word).TrimStart().Split(' ', StringSplitOptions.TrimEntries);
         if (tokens.Length == 1)
         {
-            return CliConstants.Commands.Toggle.StartsWith(word, StringComparison.OrdinalIgnoreCase)
-                ? new[] { CliConstants.Commands.Toggle }
-                : null;
+            return new[] { CliConstants.Commands.Toggle };
         }
         if (tokens.Length == 2 && tokens[0].Equals(CliConstants.Commands.Toggle, StringComparison.OrdinalIgnoreCase))
         {
-            return CliConstants.Options.Mcp.StartsWith(word, StringComparison.OrdinalIgnoreCase)
-                ? new[] { CliConstants.Options.Mcp }
-                : Array.Empty<string>();
+            return new[] { CliConstants.Options.Mcp };
         }
         return null;
     }
