@@ -1,4 +1,6 @@
 using Microsoft.Extensions.AI;
+using System.Collections.Generic;
+using System.Linq;
 
 using SemanticKernelChat.Console;
 using SemanticKernelChat.Infrastructure;
@@ -23,15 +25,18 @@ public abstract class ChatCommandBase : AsyncCommand<ChatCommandBase.Settings>
     protected IChatHistoryService History => _history;
     protected IChatController Controller { get; }
     private readonly IChatConsole _console;
+    private readonly List<IChatCommandStrategy> _commands;
 
     protected ChatCommandBase(
         IChatHistoryService history,
         IChatController controller,
-        IChatConsole console)
+        IChatConsole console,
+        IEnumerable<IChatCommandStrategy> commands)
     {
         _history = history;
         Controller = controller;
         _console = console;
+        _commands = commands.ToList();
     }
 
     /// <summary>
@@ -49,8 +54,7 @@ public abstract class ChatCommandBase : AsyncCommand<ChatCommandBase.Settings>
             _console.WriteUserPrompt();
             var input = await _console.ReadMultilineInputAsync();
 
-            if (input is null ||
-                input.Equals(CliConstants.Commands.Exit, StringComparison.OrdinalIgnoreCase))
+            if (input is null)
             {
                 _console.WriteExitMessage();
                 break;
@@ -61,33 +65,22 @@ public abstract class ChatCommandBase : AsyncCommand<ChatCommandBase.Settings>
                 continue;
             }
 
-            if (input.StartsWith(CliConstants.Commands.Toggle, StringComparison.OrdinalIgnoreCase))
+            bool handled = false;
+            foreach (var cmd in _commands)
             {
-                var tokens = input.Split(' ', StringSplitOptions.RemoveEmptyEntries);
-                if (tokens.Length == 2 && tokens[1].Equals(CliConstants.Options.Mcp, StringComparison.OrdinalIgnoreCase))
+                if (cmd.CanExecute(input))
                 {
-                    var tools = Controller.ToolCollection;
-                    var choices = tools.Servers.Select(n => (Name: n, Selected: tools.IsServerEnabled(n)));
-                    var selected = _console.PromptMultiSelection("Toggle MCP servers", choices).ToHashSet(StringComparer.OrdinalIgnoreCase);
-                    foreach (var name in tools.Servers)
-                    {
-                        tools.SetServerEnabled(name, selected.Contains(name));
-                    }
-                    continue;
+                    bool cont = await cmd.ExecuteAsync(input, _history, Controller, _console);
+                    if (!cont)
+                        return 0;
+                    handled = true;
+                    break;
                 }
             }
 
-            if (input.StartsWith(CliConstants.Commands.Enable, StringComparison.OrdinalIgnoreCase) ||
-                input.StartsWith(CliConstants.Commands.Disable, StringComparison.OrdinalIgnoreCase))
+            if (handled)
             {
-                var tokens = input.Split(' ', StringSplitOptions.RemoveEmptyEntries);
-                if (tokens.Length == 3 && tokens[1].Equals(CliConstants.Options.Mcp, StringComparison.OrdinalIgnoreCase))
-                {
-                    var enable = tokens[0].Equals(CliConstants.Commands.Enable, StringComparison.OrdinalIgnoreCase);
-                    var name = tokens[2];
-                    Controller.ToolCollection.SetServerEnabled(name, enable);
-                    continue;
-                }
+                continue;
             }
 
             _history.AddUserMessage(input);

@@ -23,6 +23,10 @@ builder.Services.AddSingleton(toolCollection);
 var console = AnsiConsole.Console;
 builder.Services.AddSingleton(console);
 
+builder.Services.AddSingleton<IChatCommandStrategy, ExitCommandStrategy>();
+builder.Services.AddSingleton<IChatCommandStrategy, ToggleMcpServerCommandStrategy>();
+builder.Services.AddSingleton<IChatCommandStrategy, SetMcpServerStateCommandStrategy>();
+
 builder.Services.AddSingleton<IChatLineEditor, ChatLineEditor>();
 builder.Services.AddSingleton<IChatConsole, ChatConsole>();
 builder.Services.AddSingleton<IChatController, ChatController>();
