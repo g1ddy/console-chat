@@ -1,6 +1,7 @@
 using System.Collections.Immutable;
 using System.Collections.ObjectModel;
 using System.Net;
+using System.Net.Http;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using System.Threading;
@@ -46,15 +47,72 @@ public static class McpClientHelper
         return command;
     }
 
+    internal static IDictionary<string, McpServerConfig> GetServerConfigs(IConfiguration configuration)
+    {
+        return configuration.GetSection("McpServers")
+            .Get<Dictionary<string, McpServerConfig>>()
+            ?? new Dictionary<string, McpServerConfig>();
+    }
+
+    internal static async Task<IClientTransport> CreateTransportAsync(
+        string name,
+        McpServerConfig serverConfig,
+        IHttpClientFactory? httpClientFactory = null,
+        CancellationToken cancellationToken = default)
+    {
+        var transportType = serverConfig.TransportType ?? McpServerTypes.Stdio;
+
+        switch (transportType.ToLowerInvariant())
+        {
+            case McpServerTypes.Stdio:
+                string command = ResolveCommandPath(serverConfig.Command);
+                return new StdioClientTransport(new()
+                {
+                    Name = name,
+                    Command = command,
+                    Arguments = serverConfig.Arguments,
+                    EnvironmentVariables = serverConfig.EnvironmentVariables,
+                    WorkingDirectory = AppContext.BaseDirectory,
+                });
+            case McpServerTypes.Sse:
+                var http = httpClientFactory?.CreateClient() ?? new HttpClient();
+                try
+                {
+                    var response = await http.SendAsync(
+                        new HttpRequestMessage(HttpMethod.Head, serverConfig.Command),
+                        cancellationToken);
+                    if (response.StatusCode is HttpStatusCode.Unauthorized or HttpStatusCode.Forbidden)
+                    {
+                        throw new InvalidOperationException($"SSE endpoint '{serverConfig.Command}' requires authentication.");
+                    }
+                }
+                finally
+                {
+                    if (httpClientFactory is null)
+                    {
+                        http.Dispose();
+                    }
+                }
+
+                return new SseClientTransport(new()
+                {
+                    Name = name,
+                    Endpoint = new Uri(serverConfig.Command),
+                    TransportMode = HttpTransportMode.Sse,
+                });
+            default:
+                throw new InvalidOperationException($"Unsupported server type: {serverConfig.TransportType}");
+        }
+    }
+
     public static async IAsyncEnumerable<IClientTransport> CreateTransportsAsync(
         IConfiguration configuration,
         IHttpClientFactory? httpClientFactory = null,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        var servers = configuration.GetSection("McpServers")
-            .Get<Dictionary<string, McpServerConfig>>();
+        var servers = GetServerConfigs(configuration);
 
-        if (servers is null || servers.Count == 0)
+        if (servers.Count == 0)
         {
             yield break;
         }
@@ -63,57 +121,13 @@ public static class McpClientHelper
         {
             var serverName = server.Key;
             var serverConfig = server.Value ?? throw new InvalidOperationException($"Server configuration for '{serverName}' is missing.");
-            var transportType = serverConfig.TransportType ?? McpServerTypes.Stdio; // Default to Stdio if not specified
 
             if (serverConfig.Disabled)
             {
                 continue;
             }
 
-            switch (transportType.ToLowerInvariant())
-            {
-                case McpServerTypes.Stdio:
-                    string command = ResolveCommandPath(serverConfig.Command);
-
-                    yield return new StdioClientTransport(new()
-                    {
-                        Name = serverName,
-                        Command = command,
-                        Arguments = serverConfig.Arguments,
-                        EnvironmentVariables = serverConfig.EnvironmentVariables,
-                        WorkingDirectory = AppContext.BaseDirectory,
-                    });
-                    break;
-                case McpServerTypes.Sse:
-                    var http = httpClientFactory?.CreateClient() ?? new HttpClient();
-                    try
-                    {
-                        var response = await http.SendAsync(
-                            new HttpRequestMessage(HttpMethod.Head, serverConfig.Command),
-                            cancellationToken);
-                        if (response.StatusCode is HttpStatusCode.Unauthorized or HttpStatusCode.Forbidden)
-                        {
-                            throw new InvalidOperationException($"SSE endpoint '{serverConfig.Command}' requires authentication.");
-                        }
-                    }
-                    finally
-                    {
-                        if (httpClientFactory is null)
-                        {
-                            http.Dispose();
-                        }
-                    }
-
-                    yield return new SseClientTransport(new()
-                    {
-                        Name = serverName,
-                        Endpoint = new Uri(serverConfig.Command),
-                        TransportMode = HttpTransportMode.Sse,
-                    });
-                    break;
-                default:
-                    throw new InvalidOperationException($"Unsupported server type: {serverConfig.TransportType}");
-            }
+            yield return await CreateTransportAsync(serverName, serverConfig, httpClientFactory, cancellationToken);
         }
     }
 }
