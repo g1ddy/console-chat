@@ -14,7 +14,8 @@ builder.Logging.AddConsole(options =>
 builder.Services
     .AddMcpServer()
     .WithStdioServerTransport()
-    .WithToolsFromAssembly();
+    .WithToolsFromAssembly()
+    .WithPromptsFromAssembly();
 
 // Build and run the host asynchronously
 await builder.Build().RunAsync();
