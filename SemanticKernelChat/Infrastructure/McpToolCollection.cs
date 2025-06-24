@@ -1,4 +1,5 @@
 using Microsoft.Extensions.Configuration;
+using System.Collections.Concurrent;
 
 using ModelContextProtocol.Client;
 
@@ -11,24 +12,29 @@ namespace SemanticKernelChat.Infrastructure;
 /// </summary>
 public sealed class McpToolCollection : IAsyncDisposable
 {
-    private readonly Dictionary<string, IList<McpClientTool>> _plugins = new();
+    private sealed class ServerEntry
+    {
+        public IList<McpClientTool> Tools { get; } = new List<McpClientTool>();
+        public bool Enabled { get; set; }
+    }
+
+    private readonly Dictionary<string, ServerEntry> _servers = new(StringComparer.OrdinalIgnoreCase);
     private readonly Dictionary<string, McpServerConfig> _configs = new();
-    private readonly Dictionary<string, Task<IList<McpClientTool>>> _loadTasks = new();
-    private readonly HashSet<string> _enabledServers = new(StringComparer.OrdinalIgnoreCase);
+    private readonly System.Collections.Concurrent.ConcurrentDictionary<string, Task<IList<McpClientTool>>> _loadTasks = new();
     private readonly List<IAsyncDisposable> _disposables = new();
 
-    public IReadOnlyDictionary<string, IList<McpClientTool>> Plugins => _plugins;
-    public IReadOnlyCollection<string> Servers => _plugins.Keys;
+    public IReadOnlyDictionary<string, IList<McpClientTool>> Plugins => _servers.ToDictionary(p => p.Key, p => p.Value.Tools);
+    public IReadOnlyCollection<string> Servers => _servers.Keys;
 
     public IReadOnlyList<McpClientTool> Tools
     {
         get
         {
-            foreach (var name in _enabledServers)
+            foreach (var (name, entry) in _servers)
             {
-                if (!_loadTasks.ContainsKey(name))
+                if (entry.Enabled)
                 {
-                    _loadTasks[name] = LoadServerAsync(name);
+                    _loadTasks.GetOrAdd(name, _ => LoadServerAsync(name));
                 }
             }
 
@@ -36,31 +42,31 @@ public sealed class McpToolCollection : IAsyncDisposable
             {
                 if (task.IsCompletedSuccessfully)
                 {
-                    _plugins[name] = task.Result;
+                    _servers[name].Tools.Clear();
+                    foreach (var tool in task.Result)
+                    {
+                        _servers[name].Tools.Add(tool);
+                    }
                 }
             }
 
-            return _plugins.Where(p => _enabledServers.Contains(p.Key))
-                .SelectMany(p => p.Value)
+            return _servers.Where(p => p.Value.Enabled)
+                .SelectMany(p => p.Value.Tools)
                 .ToList();
         }
     }
 
-    public bool IsServerEnabled(string name) => _enabledServers.Contains(name);
+    public bool IsServerEnabled(string name) => _servers.TryGetValue(name, out var entry) && entry.Enabled;
 
     public void SetServerEnabled(string name, bool enabled)
     {
-        if (enabled)
+        if (_servers.TryGetValue(name, out var entry))
         {
-            _enabledServers.Add(name);
-            if (!_loadTasks.ContainsKey(name))
+            entry.Enabled = enabled;
+            if (enabled)
             {
-                _loadTasks[name] = LoadServerAsync(name);
+                _loadTasks.GetOrAdd(name, _ => LoadServerAsync(name));
             }
-        }
-        else
-        {
-            _enabledServers.Remove(name);
         }
     }
 
@@ -80,10 +86,9 @@ public sealed class McpToolCollection : IAsyncDisposable
         foreach (var (name, config) in servers)
         {
             collection._configs[name] = config;
-            collection._plugins[name] = new List<McpClientTool>();
+            collection._servers[name] = new ServerEntry { Enabled = !config.Disabled };
             if (!config.Disabled)
             {
-                collection._enabledServers.Add(name);
                 collection._loadTasks[name] = collection.LoadServerAsync(name);
             }
         }
@@ -98,7 +103,11 @@ public sealed class McpToolCollection : IAsyncDisposable
         var client = await McpClientFactory.CreateAsync(transport);
         _disposables.Add(client);
         var tools = await client.ListToolsAsync();
-        _plugins[name] = tools;
+        _servers[name].Tools.Clear();
+        foreach (var tool in tools)
+        {
+            _servers[name].Tools.Add(tool);
+        }
         return tools;
     }
 

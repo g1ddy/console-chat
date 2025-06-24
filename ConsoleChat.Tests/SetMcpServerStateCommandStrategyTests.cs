@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using ModelContextProtocol.Client;
 using SemanticKernelChat.Console;
 using SemanticKernelChat.Infrastructure;
+using System.Reflection;
 using Xunit;
 
 namespace ConsoleChat.Tests;
@@ -14,12 +15,17 @@ public class SetMcpServerStateCommandStrategyTests
     private static McpToolCollection CreateCollection(params string[] servers)
     {
         var collection = new McpToolCollection();
-        var plugins = (Dictionary<string, IList<McpClientTool>>)collection.Plugins;
+
+        var serversField = typeof(McpToolCollection).GetField("_servers", BindingFlags.NonPublic | BindingFlags.Instance)!;
+        var dict = (System.Collections.IDictionary)serversField.GetValue(collection)!;
+        var entryType = serversField.FieldType.GenericTypeArguments[1];
         foreach (var name in servers)
         {
-            plugins[name] = new List<McpClientTool>();
-            collection.SetServerEnabled(name, true);
+            var entry = Activator.CreateInstance(entryType)!;
+            entryType.GetProperty("Enabled")!.SetValue(entry, true);
+            dict[name] = entry;
         }
+
         return collection;
     }
 

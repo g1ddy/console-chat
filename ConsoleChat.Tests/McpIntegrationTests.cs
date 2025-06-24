@@ -1,5 +1,6 @@
 using Microsoft.SemanticKernel;
 using System.Text.Json;
+using System.Threading;
 using SemanticKernelChat;
 using SemanticKernelChat.Infrastructure;
 
@@ -55,16 +56,16 @@ public class McpIntegrationTests
         }
     }
 
-    private static async Task WaitForToolsAsync(McpToolCollection collection, int count, int timeoutMs = 5000)
+    private static async Task WaitForToolsAsync(McpToolCollection collection, int count, int timeoutMs = 5000, CancellationToken cancellationToken = default)
     {
         var sw = System.Diagnostics.Stopwatch.StartNew();
-        while (sw.ElapsedMilliseconds < timeoutMs)
+        while (sw.ElapsedMilliseconds < timeoutMs && !cancellationToken.IsCancellationRequested)
         {
             if (collection.Tools.Count >= count)
             {
                 break;
             }
-            await Task.Delay(50);
+            await Task.Delay(50, cancellationToken);
         }
     }
 }
