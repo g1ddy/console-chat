@@ -11,6 +11,7 @@ public class McpIntegrationTests
     public async Task Tools_Are_Exposed_From_McpServer()
     {
         await using var toolCollection = await McpToolCollection.CreateAsync();
+        await WaitForToolsAsync(toolCollection, 5);
         var tools = toolCollection.Tools;
 
         Assert.True(tools.Count >= 5);
@@ -44,12 +45,26 @@ public class McpIntegrationTests
         try
         {
             await using var toolCollection = await McpToolCollection.CreateAsync();
+            await WaitForToolsAsync(toolCollection, 5);
             Assert.True(toolCollection.Tools.Count >= 5);
         }
         finally
         {
             Environment.CurrentDirectory = original;
             tempDir.Delete(recursive: true);
+        }
+    }
+
+    private static async Task WaitForToolsAsync(McpToolCollection collection, int count, int timeoutMs = 5000)
+    {
+        var sw = System.Diagnostics.Stopwatch.StartNew();
+        while (sw.ElapsedMilliseconds < timeoutMs)
+        {
+            if (collection.Tools.Count >= count)
+            {
+                break;
+            }
+            await Task.Delay(50);
         }
     }
 }

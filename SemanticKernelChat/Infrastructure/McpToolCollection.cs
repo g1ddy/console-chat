@@ -1,5 +1,4 @@
 using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
 
 using ModelContextProtocol.Client;
 
@@ -13,14 +12,39 @@ namespace SemanticKernelChat.Infrastructure;
 public sealed class McpToolCollection : IAsyncDisposable
 {
     private readonly Dictionary<string, IList<McpClientTool>> _plugins = new();
+    private readonly Dictionary<string, McpServerConfig> _configs = new();
+    private readonly Dictionary<string, Task<IList<McpClientTool>>> _loadTasks = new();
     private readonly HashSet<string> _enabledServers = new(StringComparer.OrdinalIgnoreCase);
     private readonly List<IAsyncDisposable> _disposables = new();
 
     public IReadOnlyDictionary<string, IList<McpClientTool>> Plugins => _plugins;
     public IReadOnlyCollection<string> Servers => _plugins.Keys;
 
-    public IReadOnlyList<McpClientTool> Tools =>
-        _plugins.Where(p => _enabledServers.Contains(p.Key)).SelectMany(p => p.Value).ToList();
+    public IReadOnlyList<McpClientTool> Tools
+    {
+        get
+        {
+            foreach (var name in _enabledServers)
+            {
+                if (!_loadTasks.ContainsKey(name))
+                {
+                    _loadTasks[name] = LoadServerAsync(name);
+                }
+            }
+
+            foreach (var (name, task) in _loadTasks)
+            {
+                if (task.IsCompletedSuccessfully)
+                {
+                    _plugins[name] = task.Result;
+                }
+            }
+
+            return _plugins.Where(p => _enabledServers.Contains(p.Key))
+                .SelectMany(p => p.Value)
+                .ToList();
+        }
+    }
 
     public bool IsServerEnabled(string name) => _enabledServers.Contains(name);
 
@@ -29,6 +53,10 @@ public sealed class McpToolCollection : IAsyncDisposable
         if (enabled)
         {
             _enabledServers.Add(name);
+            if (!_loadTasks.ContainsKey(name))
+            {
+                _loadTasks[name] = LoadServerAsync(name);
+            }
         }
         else
         {
@@ -39,7 +67,7 @@ public sealed class McpToolCollection : IAsyncDisposable
     /// <summary>
     /// Launches MCP servers, retrieves tools, and returns a disposable collection.
     /// </summary>
-    public static async Task<McpToolCollection> CreateAsync(CancellationToken cancellationToken = default)
+    public static Task<McpToolCollection> CreateAsync(CancellationToken cancellationToken = default)
     {
         var collection = new McpToolCollection();
         var configuration = new ConfigurationBuilder()
@@ -47,34 +75,31 @@ public sealed class McpToolCollection : IAsyncDisposable
             .AddJsonFile("appsettings.json", optional: true)
             .Build();
 
-        var services = new ServiceCollection();
-        _ = services.AddHttpClient();
-        using var provider = services.BuildServiceProvider();
-        var httpClientFactory = provider.GetRequiredService<IHttpClientFactory>();
+        var servers = McpClientHelper.GetServerConfigs(configuration);
 
-        var transports = new List<IClientTransport>();
-        await foreach (var transport in McpClientHelper.CreateTransportsAsync(configuration, httpClientFactory, cancellationToken))
+        foreach (var (name, config) in servers)
         {
-            transports.Add(transport);
+            collection._configs[name] = config;
+            collection._plugins[name] = new List<McpClientTool>();
+            if (!config.Disabled)
+            {
+                collection._enabledServers.Add(name);
+                collection._loadTasks[name] = collection.LoadServerAsync(name);
+            }
         }
 
-        var tasks = transports.Select(async transport =>
-        {
-            var client = await McpClientFactory.CreateAsync(transport);
-            var tools = await client.ListToolsAsync();
-            return (client, transport.Name, tools);
-        });
+        return Task.FromResult(collection);
+    }
 
-        var results = await Task.WhenAll(tasks);
-
-        foreach (var (client, name, tools) in results)
-        {
-            collection._disposables.Add(client);
-            collection._plugins[name] = tools;
-            collection._enabledServers.Add(name);
-        }
-
-        return collection;
+    private async Task<IList<McpClientTool>> LoadServerAsync(string name)
+    {
+        var config = _configs[name];
+        var transport = await McpClientHelper.CreateTransportAsync(name, config);
+        var client = await McpClientFactory.CreateAsync(transport);
+        _disposables.Add(client);
+        var tools = await client.ListToolsAsync();
+        _plugins[name] = tools;
+        return tools;
     }
 
     public async ValueTask DisposeAsync()
