@@ -166,9 +166,9 @@ public class ChatConsole : IChatConsole
         {
             var table = new Table().Border(TableBorder.Rounded).BorderColor(Color.Grey);
             table.AddColumn("[bold]Selected[/]");
-            foreach (var r in result)
+            foreach (var selection in result)
             {
-                table.AddRow($"[yellow]*[/] {r.Name.EscapeMarkup()}");
+                table.AddRow($"[yellow]*[/] {selection.Name.EscapeMarkup()}");
             }
             _console.Write(table);
         }
@@ -177,7 +177,7 @@ public class ChatConsole : IChatConsole
             _console.MarkupLine("[grey]No selections made.[/]");
         }
 
-        return result.Select(r => r.Name).ToList();
+        return result.Select(selection => selection.Name).ToList();
     }
 
     /// <summary>
