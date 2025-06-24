@@ -44,6 +44,28 @@ public abstract class ChatCommandBase : AsyncCommand<ChatCommandBase.Settings>
     /// </summary>
     protected abstract Task SendAndDisplayAsync();
 
+    /// <summary>
+    /// Iterate through registered command strategies and execute the first one
+    /// that can handle <paramref name="input"/>.
+    /// </summary>
+    /// <param name="input">User input line.</param>
+    /// <returns>
+    /// <c>null</c> if no command handled the input; otherwise the result of the
+    /// executed command indicating whether processing should continue.
+    /// </returns>
+    private async Task<bool?> TryHandleCommandAsync(string input)
+    {
+        foreach (var cmd in _commands)
+        {
+            if (cmd.CanExecute(input))
+            {
+                return await cmd.ExecuteAsync(input, _history, Controller, _console);
+            }
+        }
+
+        return null;
+    }
+
     public override async Task<int> ExecuteAsync(CommandContext context, Settings settings)
     {
         _console.WriteWelcomeMessage();
@@ -65,21 +87,12 @@ public abstract class ChatCommandBase : AsyncCommand<ChatCommandBase.Settings>
                 continue;
             }
 
-            bool handled = false;
-            foreach (var cmd in _commands)
-            {
-                if (cmd.CanExecute(input))
-                {
-                    bool cont = await cmd.ExecuteAsync(input, _history, Controller, _console);
-                    if (!cont)
-                        return 0;
-                    handled = true;
-                    break;
-                }
-            }
+            var commandResult = await TryHandleCommandAsync(input);
 
-            if (handled)
+            if (commandResult.HasValue)
             {
+                if (!commandResult.Value)
+                    return 0;
                 continue;
             }
 
