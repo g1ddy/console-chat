@@ -148,7 +148,7 @@ public class ChatConsole : IChatConsole
         var prompt = new MultiSelectionPrompt<(string Name, bool Selected)>()
             .Title(title)
             .InstructionsText("[grey](Press <space> to toggle, <enter> to accept)[/]")
-            .UseConverter(c => $"{c.Name} {(c.Selected ? "[green](enabled)" : "[red](disabled)")}");
+            .UseConverter(c => $"{c.Name} {(c.Selected ? "[green](enabled)[/]" : "[red](disabled)[/]")}");
 
         foreach (var item in items)
         {
@@ -160,6 +160,23 @@ public class ChatConsole : IChatConsole
         }
 
         var result = _console.Prompt(prompt);
+        _console.Clear();
+
+        if (result.Count > 0)
+        {
+            var table = new Table().Border(TableBorder.Rounded).BorderColor(Color.Grey);
+            table.AddColumn("[bold]Selected[/]");
+            foreach (var r in result)
+            {
+                table.AddRow($"[yellow]*[/] {r.Name.EscapeMarkup()}");
+            }
+            _console.Write(table);
+        }
+        else
+        {
+            _console.MarkupLine("[grey]No selections made.[/]");
+        }
+
         return result.Select(r => r.Name).ToList();
     }
 
