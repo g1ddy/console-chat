@@ -3,34 +3,34 @@ using ModelContextProtocol.Client;
 namespace SemanticKernelChat.Infrastructure;
 
 /// <summary>
-/// Holds MCP tools and disposes underlying transports when no longer needed.
+/// Holds prompts from MCP servers and manages underlying resources.
 /// </summary>
-public sealed class McpToolCollection : IAsyncDisposable
+public sealed class McpPromptCollection : IAsyncDisposable
 {
     private readonly McpServerState _state;
 
-    private McpToolCollection()
+    private McpPromptCollection()
     {
         _state = (McpServerState)Activator.CreateInstance(typeof(McpServerState), nonPublic: true)!;
     }
 
-    private McpToolCollection(McpServerState state)
+    private McpPromptCollection(McpServerState state)
     {
         _state = state;
     }
 
     public IReadOnlyCollection<string> Servers => _state.Servers;
 
-    public IReadOnlyList<McpClientTool> Tools => _state.GetTools();
+    public IReadOnlyList<McpClientPrompt> Prompts => _state.GetPrompts();
 
     public bool IsServerEnabled(string name) => _state.IsServerEnabled(name);
 
     public void SetServerEnabled(string name, bool enabled) => _state.SetServerEnabled(name, enabled);
 
-    public static async Task<McpToolCollection> CreateAsync(CancellationToken cancellationToken = default)
+    public static async Task<McpPromptCollection> CreateAsync(CancellationToken cancellationToken = default)
     {
         var state = await McpServerState.CreateAsync(cancellationToken);
-        return new McpToolCollection(state);
+        return new McpPromptCollection(state);
     }
 
     public async ValueTask DisposeAsync() => await _state.DisposeAsync();

@@ -14,10 +14,13 @@ public class SetMcpServerStateCommandStrategyTests
     private const string Mcp = "mcp";
     private static McpToolCollection CreateCollection(params string[] servers)
     {
-        var collection = new McpToolCollection();
+        var collectionType = typeof(McpToolCollection);
+        var stateField = collectionType.GetField("_state", BindingFlags.NonPublic | BindingFlags.Instance)!;
+        var stateType = stateField.FieldType;
+        var state = Activator.CreateInstance(stateType, nonPublic: true)!;
 
-        var serversField = typeof(McpToolCollection).GetField("_servers", BindingFlags.NonPublic | BindingFlags.Instance)!;
-        var dict = (System.Collections.IDictionary)serversField.GetValue(collection)!;
+        var serversField = stateType.GetField("_servers", BindingFlags.NonPublic | BindingFlags.Instance)!;
+        var dict = (System.Collections.IDictionary)serversField.GetValue(state)!;
         var entryType = serversField.FieldType.GenericTypeArguments[1];
         foreach (var name in servers)
         {
@@ -26,6 +29,9 @@ public class SetMcpServerStateCommandStrategyTests
             dict[name] = entry;
         }
 
+        var ctor = collectionType.GetConstructor(BindingFlags.NonPublic | BindingFlags.Instance,
+            binder: null, types: new[] { stateType }, modifiers: null)!;
+        var collection = (McpToolCollection)ctor.Invoke(new[] { state });
         return collection;
     }
 
