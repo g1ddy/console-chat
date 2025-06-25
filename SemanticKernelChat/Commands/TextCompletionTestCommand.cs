@@ -1,5 +1,6 @@
 using Microsoft.Extensions.AI;
 using SemanticKernelChat.Console;
+using SemanticKernelChat.Infrastructure;
 using Spectre.Console.Cli;
 
 namespace SemanticKernelChat.Commands;
@@ -9,15 +10,18 @@ public sealed class TextCompletionTestCommand : AsyncCommand
     private readonly IChatHistoryService _history;
     private readonly IChatController _controller;
     private readonly IChatConsole _console;
+    private readonly McpPromptCollection _prompts;
 
     public TextCompletionTestCommand(
         IChatHistoryService history,
         IChatController controller,
-        IChatConsole console)
+        IChatConsole console,
+        McpPromptCollection prompts)
     {
         _history = history;
         _controller = controller;
         _console = console;
+        _prompts = prompts;
     }
 
     public override async Task<int> ExecuteAsync(CommandContext context)
@@ -43,6 +47,9 @@ public sealed class TextCompletionTestCommand : AsyncCommand
         // /list command demo
         var listStrategy = new ListToolsCommandStrategy(_controller.ToolCollection);
         await listStrategy.ExecuteAsync("/list tools", _history, _controller, _console);
+
+        var promptStrategy = new ListPromptsCommandStrategy(_prompts);
+        await promptStrategy.ExecuteAsync("/list prompts", _history, _controller, _console);
 
         // Fin
         return 0;
