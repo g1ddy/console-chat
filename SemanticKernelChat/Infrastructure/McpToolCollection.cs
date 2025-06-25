@@ -23,6 +23,8 @@ public sealed class McpToolCollection : IAsyncDisposable
 
     public IReadOnlyList<McpClientTool> Tools => _state.GetTools();
 
+    internal IReadOnlyList<McpServerState.McpServerInfo> GetServerInfos() => _state.GetServerInfos();
+
     public bool IsServerEnabled(string name) => _state.IsServerEnabled(name);
 
     public void SetServerEnabled(string name, bool enabled) => _state.SetServerEnabled(name, enabled);

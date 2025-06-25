@@ -2,6 +2,7 @@ using Microsoft.Extensions.Configuration;
 using ModelContextProtocol.Client;
 using SemanticKernelChat.Helpers;
 using System.Collections.Concurrent;
+using System.Linq;
 
 namespace SemanticKernelChat.Infrastructure;
 
@@ -22,6 +23,8 @@ internal sealed class McpServerState : IAsyncDisposable
         public bool Enabled { get; set; }
         public ServerStatus Status { get; set; } = ServerStatus.None;
     }
+
+    internal sealed record McpServerInfo(string Name, bool Enabled, ServerStatus Status, IReadOnlyList<McpClientTool> Tools);
 
     private readonly Dictionary<string, ServerEntry> _servers = new(StringComparer.OrdinalIgnoreCase);
     private readonly Dictionary<string, McpServerConfig> _configs = new();
@@ -59,6 +62,20 @@ internal sealed class McpServerState : IAsyncDisposable
         TriggerLoads();
         return _servers.Where(p => p.Value.Enabled && p.Value.Status == ServerStatus.Ready)
             .SelectMany(p => p.Value.Prompts)
+            .ToList();
+    }
+
+    internal IReadOnlyList<McpServerInfo> GetServerInfos()
+    {
+        TriggerLoads();
+        return _servers.Select(p =>
+            new McpServerInfo(
+                p.Key,
+                p.Value.Enabled,
+                p.Value.Status,
+                p.Value.Enabled && p.Value.Status == ServerStatus.Ready
+                    ? p.Value.Tools.ToList()
+                    : Array.Empty<McpClientTool>()))
             .ToList();
     }
 

@@ -40,6 +40,10 @@ public sealed class TextCompletionTestCommand : AsyncCommand
         _history.AddUserMessage(inputStreaming);
         await _controller.SendAndDisplayStreamingAsync(_history);
 
+        // /list command demo
+        var listStrategy = new ListToolsCommandStrategy(_controller.ToolCollection);
+        await listStrategy.ExecuteAsync("/list tools", _history, _controller, _console);
+
         // Fin
         return 0;
     }
