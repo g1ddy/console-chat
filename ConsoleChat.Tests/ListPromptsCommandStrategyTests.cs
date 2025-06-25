@@ -1,6 +1,5 @@
 using SemanticKernelChat.Console;
 using SemanticKernelChat.Infrastructure;
-using System.Reflection;
 
 namespace ConsoleChat.Tests;
 
@@ -11,14 +10,7 @@ public class ListPromptsCommandStrategyTests
 
     private static McpPromptCollection CreateCollection()
     {
-        var collectionType = typeof(McpPromptCollection);
-        var stateField = collectionType.GetField("_state", BindingFlags.NonPublic | BindingFlags.Instance)!;
-        var state = Activator.CreateInstance(stateField.FieldType, nonPublic: true)!;
-
-        var ctor = collectionType.GetConstructor(BindingFlags.NonPublic | BindingFlags.Instance,
-            binder: null, types: new[] { stateField.FieldType }, modifiers: null)!;
-        var collection = (McpPromptCollection)ctor.Invoke(new[] { state });
-        return collection;
+        return new McpPromptCollection();
     }
 
     [Fact]

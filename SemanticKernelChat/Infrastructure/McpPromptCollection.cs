@@ -9,12 +9,12 @@ public sealed class McpPromptCollection : IAsyncDisposable
 {
     private readonly McpServerState _state;
 
-    private McpPromptCollection()
+    internal McpPromptCollection()
     {
-        _state = (McpServerState)Activator.CreateInstance(typeof(McpServerState), nonPublic: true)!;
+        _state = new McpServerState();
     }
 
-    private McpPromptCollection(McpServerState state)
+    internal McpPromptCollection(McpServerState state)
     {
         _state = state;
     }

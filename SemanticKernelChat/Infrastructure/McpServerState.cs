@@ -32,7 +32,7 @@ internal sealed class McpServerState : IAsyncDisposable
     private readonly ConcurrentDictionary<string, Task> _loadTasks = new();
     private readonly List<IAsyncDisposable> _disposables = new();
 
-    private McpServerState() { }
+    internal McpServerState() { }
 
     public IReadOnlyCollection<string> Servers => _servers.Keys;
 

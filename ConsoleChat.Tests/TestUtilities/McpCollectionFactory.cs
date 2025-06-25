@@ -5,8 +5,8 @@ namespace ConsoleChat.Tests.TestUtilities;
 internal static class McpCollectionFactory
 {
     public static McpToolCollection CreateToolCollection()
-        => (McpToolCollection)Activator.CreateInstance(typeof(McpToolCollection), nonPublic: true)!;
+        => new McpToolCollection();
 
     public static McpPromptCollection CreatePromptCollection()
-        => (McpPromptCollection)Activator.CreateInstance(typeof(McpPromptCollection), nonPublic: true)!;
+        => new McpPromptCollection();
 }
