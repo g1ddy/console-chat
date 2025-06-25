@@ -16,6 +16,7 @@ internal static class CliConstants
             Enable,
             Disable,
             Toggle,
+            List,
         ];
 
         public const string Help = "/help";
@@ -23,10 +24,12 @@ internal static class CliConstants
         public const string Enable = "/enable";
         public const string Disable = "/disable";
         public const string Toggle = "/toggle";
+        public const string List = "/list";
     }
 
     public static class Options
     {
         public const string Mcp = "mcp";
+        public const string Tools = "tools";
     }
 }
