@@ -31,5 +31,6 @@ internal static class CliConstants
     {
         public const string Mcp = "mcp";
         public const string Tools = "tools";
+        public const string Prompts = "prompts";
     }
 }

@@ -20,6 +20,9 @@ builder.Services.AddSingleton<IChatHistoryService, ChatHistoryService>();
 var toolCollection = await McpToolCollection.CreateAsync();
 builder.Services.AddSingleton(toolCollection);
 
+var promptCollection = await McpPromptCollection.CreateAsync();
+builder.Services.AddSingleton(promptCollection);
+
 var console = AnsiConsole.Console;
 builder.Services.AddSingleton(console);
 
@@ -27,6 +30,7 @@ builder.Services.AddSingleton<IChatCommandStrategy, ExitCommandStrategy>();
 builder.Services.AddSingleton<IChatCommandStrategy, ToggleMcpServerCommandStrategy>();
 builder.Services.AddSingleton<IChatCommandStrategy, SetMcpServerStateCommandStrategy>();
 builder.Services.AddSingleton<IChatCommandStrategy, ListToolsCommandStrategy>();
+builder.Services.AddSingleton<IChatCommandStrategy, ListPromptsCommandStrategy>();
 
 builder.Services.AddSingleton<IChatLineEditor, ChatLineEditor>();
 builder.Services.AddSingleton<IChatConsole, ChatConsole>();

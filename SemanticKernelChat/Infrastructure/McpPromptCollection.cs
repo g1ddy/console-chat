@@ -23,6 +23,8 @@ public sealed class McpPromptCollection : IAsyncDisposable
 
     public IReadOnlyList<McpClientPrompt> Prompts => _state.GetPrompts();
 
+    internal IReadOnlyList<McpServerState.McpPromptInfo> GetServerInfos() => _state.GetPromptInfos();
+
     public bool IsServerEnabled(string name) => _state.IsServerEnabled(name);
 
     public void SetServerEnabled(string name, bool enabled) => _state.SetServerEnabled(name, enabled);
