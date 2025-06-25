@@ -26,7 +26,10 @@ public sealed class TextCompletionTestCommand : ChatCommandBase
         }
 
         public Task<string?> ReadLine(CancellationToken cancellationToken)
-            => Task.FromResult(_inputs.Count > 0 ? _inputs.Dequeue() : null);
+        {
+            _inputs.TryDequeue(out var input);
+            return Task.FromResult(input);
+        }
     }
 
     private static readonly string[] ScriptedInputs =
@@ -46,23 +49,26 @@ public sealed class TextCompletionTestCommand : ChatCommandBase
         McpToolCollection tools,
         IEnumerable<IChatCommandStrategy> strategies,
         IAnsiConsole ansiConsole)
-        : base(
-            history,
-            CreateController(chatClient, tools, ansiConsole, out var console),
-            console,
-            strategies)
+        : this(history, CreateController(chatClient, tools, ansiConsole), strategies)
     {
     }
 
-    private static IChatController CreateController(
+    private TextCompletionTestCommand(
+        IChatHistoryService history,
+        (IChatController controller, IChatConsole console) created,
+        IEnumerable<IChatCommandStrategy> strategies)
+        : base(history, created.controller, created.console, strategies)
+    {
+    }
+
+    private static (IChatController controller, IChatConsole console) CreateController(
         IChatClient chatClient,
         McpToolCollection tools,
-        IAnsiConsole ansiConsole,
-        out IChatConsole console)
+        IAnsiConsole ansiConsole)
     {
         var chatConsole = new ChatConsole(new FakeLineEditor(ScriptedInputs), ansiConsole);
-        console = chatConsole;
-        return new ChatController(chatConsole, chatClient, tools);
+        var controller = new ChatController(chatConsole, chatClient, tools);
+        return (controller, chatConsole);
     }
 
     /// <summary>
@@ -71,15 +77,16 @@ public sealed class TextCompletionTestCommand : ChatCommandBase
     /// </summary>
     protected override async Task SendAndDisplayAsync()
     {
-        if (_sendCount == 0)
+        switch (_sendCount++)
         {
-            await Controller.SendAndDisplayAsync(History);
+            case 0:
+                // The first message demonstrates non-streaming chat.
+                await Controller.SendAndDisplayAsync(History);
+                break;
+            default:
+                // Subsequent messages demonstrate streaming chat.
+                await Controller.SendAndDisplayStreamingAsync(History);
+                break;
         }
-        else
-        {
-            await Controller.SendAndDisplayStreamingAsync(History);
-        }
-
-        _sendCount++;
     }
 }
