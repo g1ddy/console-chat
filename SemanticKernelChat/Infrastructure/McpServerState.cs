@@ -25,6 +25,7 @@ internal sealed class McpServerState : IAsyncDisposable
     }
 
     internal sealed record McpServerInfo(string Name, bool Enabled, ServerStatus Status, IReadOnlyList<McpClientTool> Tools);
+    internal sealed record McpPromptInfo(string Name, bool Enabled, ServerStatus Status, IReadOnlyList<McpClientPrompt> Prompts);
 
     private readonly Dictionary<string, ServerEntry> _servers = new(StringComparer.OrdinalIgnoreCase);
     private readonly Dictionary<string, McpServerConfig> _configs = new();
@@ -76,6 +77,20 @@ internal sealed class McpServerState : IAsyncDisposable
                 p.Value.Enabled && p.Value.Status == ServerStatus.Ready
                     ? p.Value.Tools.ToList()
                     : Array.Empty<McpClientTool>()))
+            .ToList();
+    }
+
+    internal IReadOnlyList<McpPromptInfo> GetPromptInfos()
+    {
+        TriggerLoads();
+        return _servers.Select(p =>
+            new McpPromptInfo(
+                p.Key,
+                p.Value.Enabled,
+                p.Value.Status,
+                p.Value.Enabled && p.Value.Status == ServerStatus.Ready
+                    ? p.Value.Prompts.ToList()
+                    : Array.Empty<McpClientPrompt>()))
             .ToList();
     }
 
