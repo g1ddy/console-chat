@@ -14,7 +14,7 @@ internal enum ServerStatus
     Failed
 }
 
-internal sealed class McpServerState : IDisposable, IAsyncDisposable
+internal sealed class McpServerState : IAsyncDisposable
 {
     internal sealed class ServerEntry
     {
@@ -158,8 +158,6 @@ internal sealed class McpServerState : IDisposable, IAsyncDisposable
         await Task.WhenAll(state._loadTasks.Values);
         return state;
     }
-
-    public void Dispose() => DisposeAsync().AsTask().GetAwaiter().GetResult();
 
     public async ValueTask DisposeAsync()
     {
