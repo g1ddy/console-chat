@@ -18,10 +18,10 @@ await builder.Services.AddSemanticKernelChatClient(builder.Configuration);
 builder.Services.AddSingleton<IChatHistoryService, ChatHistoryService>();
 
 var toolCollection = await McpToolCollection.CreateAsync();
-builder.Services.AddSingleton(toolCollection);
+builder.Services.AddSingleton<McpToolCollection>(_ => toolCollection);
 
 var promptCollection = await McpPromptCollection.CreateAsync();
-builder.Services.AddSingleton(promptCollection);
+builder.Services.AddSingleton<McpPromptCollection>(_ => promptCollection);
 
 var console = AnsiConsole.Console;
 builder.Services.AddSingleton(console);
