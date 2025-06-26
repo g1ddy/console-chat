@@ -1,7 +1,7 @@
-using System.Collections.Generic;
 using ModelContextProtocol.Client;
 using SemanticKernelChat.Console;
 using SemanticKernelChat.Infrastructure;
+using ConsoleChat.Tests.TestUtilities;
 
 using Xunit;
 
@@ -12,20 +12,9 @@ public class SetMcpServerStateCommandStrategyTests
     private const string Enable = "/enable";
     private const string Disable = "/disable";
     private const string Mcp = "mcp";
+
     private static McpToolCollection CreateCollection(params string[] servers)
-    {
-        var dict = new Dictionary<string, McpServerState.ServerEntry>(StringComparer.OrdinalIgnoreCase);
-        foreach (var name in servers)
-        {
-            dict[name] = new McpServerState.ServerEntry
-            {
-                Enabled = true,
-                Status = ServerStatus.Ready
-            };
-        }
-        var state = new McpServerState(dict);
-        return new McpToolCollection(state);
-    }
+        => McpCollectionFactory.CreateToolCollection(servers);
 
     [Fact]
     public void GetCompletions_Returns_Command_Names()

@@ -1,5 +1,6 @@
 using SemanticKernelChat.Console;
 using SemanticKernelChat.Infrastructure;
+using ConsoleChat.Tests.TestUtilities;
 
 namespace ConsoleChat.Tests;
 
@@ -10,7 +11,7 @@ public class ListToolsCommandStrategyTests
 
     private static McpToolCollection CreateCollection()
     {
-        return new McpToolCollection();
+        return McpCollectionFactory.CreateToolCollection();
     }
 
     [Fact]
