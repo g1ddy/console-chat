@@ -1,4 +1,5 @@
 using Microsoft.Extensions.DependencyInjection;
+using System.Threading.Tasks;
 using Spectre.Console.Cli;
 
 namespace SemanticKernelChat.Infrastructure;
@@ -41,7 +42,7 @@ public sealed class TypeRegistrar : ITypeRegistrar
         );
     }
 
-    private sealed class TypeResolver : ITypeResolver, IDisposable
+    private sealed class TypeResolver : ITypeResolver, IAsyncDisposable
     {
         private readonly ServiceProvider _provider;
 
@@ -53,7 +54,7 @@ public sealed class TypeRegistrar : ITypeRegistrar
         public object? Resolve(Type? type)
             => _provider.GetService(type ?? throw new ArgumentNullException());
 
-        public void Dispose()
-            => _provider.Dispose();
+        public ValueTask DisposeAsync()
+            => _provider.DisposeAsync();
     }
 }
