@@ -143,6 +143,8 @@ public class ChatConsole : IChatConsole
 
     public void WriteLine(string text) => _console.WriteLine(text);
 
+    public void Write(IRenderable renderable) => _console.Write(renderable);
+
     public IReadOnlyList<string> PromptMultiSelection(string title, IEnumerable<(string Name, bool Selected)> items)
     {
         var prompt = new MultiSelectionPrompt<(string Name, bool Selected)>()
