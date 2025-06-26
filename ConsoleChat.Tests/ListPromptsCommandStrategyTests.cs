@@ -1,5 +1,6 @@
 using SemanticKernelChat.Console;
 using SemanticKernelChat.Infrastructure;
+using ConsoleChat.Tests.TestUtilities;
 
 namespace ConsoleChat.Tests;
 
@@ -10,7 +11,7 @@ public class ListPromptsCommandStrategyTests
 
     private static McpPromptCollection CreateCollection()
     {
-        return new McpPromptCollection();
+        return McpCollectionFactory.CreatePromptCollection();
     }
 
     [Fact]

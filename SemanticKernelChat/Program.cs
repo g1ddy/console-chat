@@ -18,11 +18,11 @@ builder.Logging.AddConsole();
 await builder.Services.AddSemanticKernelChatClient(builder.Configuration);
 builder.Services.AddSingleton<IChatHistoryService, ChatHistoryService>();
 
-var toolCollection = await McpToolCollection.CreateAsync();
-builder.Services.AddSingleton<McpToolCollection>(_ => toolCollection);
-
-var promptCollection = await McpPromptCollection.CreateAsync();
-builder.Services.AddSingleton<McpPromptCollection>(_ => promptCollection);
+await builder.Services.AddMcpServerState();
+builder.Services.AddSingleton<McpToolCollection>(sp =>
+    new McpToolCollection(sp.GetRequiredService<McpServerState>()));
+builder.Services.AddSingleton<McpPromptCollection>(sp =>
+    new McpPromptCollection(sp.GetRequiredService<McpServerState>()));
 
 var console = AnsiConsole.Console;
 builder.Services.AddSingleton(console);
