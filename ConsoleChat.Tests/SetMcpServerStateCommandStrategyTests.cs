@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using ModelContextProtocol.Client;
 using SemanticKernelChat.Console;
 using SemanticKernelChat.Infrastructure;
