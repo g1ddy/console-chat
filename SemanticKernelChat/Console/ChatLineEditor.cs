@@ -14,7 +14,7 @@ public interface IChatLineEditor
 
 public sealed class ChatLineEditor : IChatLineEditor
 {
-    private LineEditor _editor = default!;
+    private LineEditor? _editor;
     private readonly List<IChatCommandStrategy> _commands;
 
     public ChatLineEditor(McpToolCollection tools, IEnumerable<IChatCommandStrategy> commands)
@@ -24,7 +24,9 @@ public sealed class ChatLineEditor : IChatLineEditor
     }
 
     public Task<string?> ReadLine(CancellationToken cancellationToken)
-        => _editor.ReadLine(cancellationToken);
+        => _editor is not null
+            ? _editor.ReadLine(cancellationToken)
+            : Task.FromResult<string?>(null);
 
     private void ConfigureCompletion()
     {
