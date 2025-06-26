@@ -34,6 +34,11 @@ internal sealed class McpServerState : IAsyncDisposable
 
     internal McpServerState() { }
 
+    internal void AddServerForTest(string name, bool enabled = true, ServerStatus status = ServerStatus.Ready)
+    {
+        _servers[name] = new ServerEntry { Enabled = enabled, Status = status };
+    }
+
     public IReadOnlyCollection<string> Servers => _servers.Keys;
 
     public bool IsServerEnabled(string name) => _servers.TryGetValue(name, out var entry) && entry.Enabled;
