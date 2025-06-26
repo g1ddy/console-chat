@@ -42,7 +42,7 @@ public sealed class TypeRegistrar : ITypeRegistrar
         );
     }
 
-    private sealed class TypeResolver : ITypeResolver, IDisposable, IAsyncDisposable
+    private sealed class TypeResolver : ITypeResolver, IAsyncDisposable
     {
         private readonly ServiceProvider _provider;
 
@@ -53,11 +53,6 @@ public sealed class TypeRegistrar : ITypeRegistrar
 
         public object? Resolve(Type? type)
             => _provider.GetService(type ?? throw new ArgumentNullException());
-
-        // ServiceProvider.Dispose synchronously invokes DisposeAsync on services
-        // that only implement IAsyncDisposable, so a direct call is sufficient.
-        public void Dispose()
-            => _provider.Dispose();
 
         public ValueTask DisposeAsync()
             => _provider.DisposeAsync();
