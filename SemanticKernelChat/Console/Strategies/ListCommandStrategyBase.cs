@@ -45,9 +45,9 @@ internal abstract class ListCommandStrategyBase<TInfo> : IChatCommandStrategy
 
     public Task<bool> ExecuteAsync(string input, IChatHistoryService history, IChatController controller, IChatConsole console)
     {
-        var infos = GetServerInfos();
-        var enabled = infos.Where(IsEnabled).ToList();
-        var disabled = infos.Where(i => !IsEnabled(i)).ToList();
+        var infosLookup = GetServerInfos().ToLookup(IsEnabled);
+        var enabled = infosLookup[true].ToList();
+        var disabled = infosLookup[false].ToList();
 
         var columnContent = new List<IRenderable>();
 
@@ -71,7 +71,7 @@ internal abstract class ListCommandStrategyBase<TInfo> : IChatCommandStrategy
             columnContent.Add(tree);
         }
         var columns = new Columns(columnContent) { Expand = true };
-        AnsiConsole.Write(columns);
+        console.Write(columns);
         return Task.FromResult(true);
     }
 }
