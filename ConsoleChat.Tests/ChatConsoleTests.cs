@@ -49,7 +49,8 @@ public class ChatConsoleTests
         var testConsole = new TestConsole();
 
         var msg = new ChatMessage(ChatRole.User, "hello");
-        var console = new ChatConsole(new ChatLineEditor(Enumerable.Empty<IChatCommandStrategy>()), testConsole);
+        var completion = new CommandCompletion(Enumerable.Empty<IChatCommandStrategy>());
+        var console = new ChatConsole(new ChatLineEditor(completion), testConsole);
         console.WriteChatMessages(msg);
 
         Assert.Empty(history.Messages);
@@ -71,7 +72,8 @@ public class ChatConsoleTests
             new FunctionResultContent("1", "r1")
         });
 
-        var console = new ChatConsole(new ChatLineEditor(Enumerable.Empty<IChatCommandStrategy>()), testConsole);
+        var completion = new CommandCompletion(Enumerable.Empty<IChatCommandStrategy>());
+        var console = new ChatConsole(new ChatLineEditor(completion), testConsole);
         console.WriteChatMessages(callMessage, resultMessage);
 
         Assert.Contains("First", testConsole.Output);
@@ -86,7 +88,8 @@ public class ChatConsoleTests
         var testConsole = new TestConsole();
 
         var client = new FakeChatClient { Response = new(new ChatMessage(ChatRole.Assistant, "done")) };
-        var console = new ChatConsole(new ChatLineEditor(Enumerable.Empty<IChatCommandStrategy>()), testConsole);
+        var completion = new CommandCompletion(Enumerable.Empty<IChatCommandStrategy>());
+        var console = new ChatConsole(new ChatLineEditor(completion), testConsole);
         var controller = new ChatController(console, client, McpCollectionFactory.CreateToolCollection());
         await controller.SendAndDisplayAsync(history);
 
@@ -106,7 +109,8 @@ public class ChatConsoleTests
         client.StreamingUpdates.Add(new ChatResponseUpdate(ChatRole.Assistant, "A"));
         client.StreamingUpdates.Add(new ChatResponseUpdate(ChatRole.Assistant, "B"));
 
-        var console = new ChatConsole(new ChatLineEditor(Enumerable.Empty<IChatCommandStrategy>()), testConsole);
+        var completion = new CommandCompletion(Enumerable.Empty<IChatCommandStrategy>());
+        var console = new ChatConsole(new ChatLineEditor(completion), testConsole);
         var controller = new ChatController(console, client, McpCollectionFactory.CreateToolCollection());
         await controller.SendAndDisplayStreamingAsync(history);
 
@@ -137,7 +141,8 @@ public class ChatConsoleTests
             new ChatResponseUpdate(ChatRole.Tool, resultContents)
         ]);
 
-        var console = new ChatConsole(new ChatLineEditor(Enumerable.Empty<IChatCommandStrategy>()), testConsole);
+        var completion = new CommandCompletion(Enumerable.Empty<IChatCommandStrategy>());
+        var console = new ChatConsole(new ChatLineEditor(completion), testConsole);
         _ = await console.DisplayStreamingUpdatesAsync(updates);
 
         Assert.Contains("First", testConsole.Output);
@@ -148,7 +153,8 @@ public class ChatConsoleTests
     public void DisplayError_Writes_Exception_Message()
     {
         var testConsole = new TestConsole();
-        var console = new ChatConsole(new ChatLineEditor(Enumerable.Empty<IChatCommandStrategy>()), testConsole);
+        var completion = new CommandCompletion(Enumerable.Empty<IChatCommandStrategy>());
+        var console = new ChatConsole(new ChatLineEditor(completion), testConsole);
 
         console.DisplayError(new InvalidOperationException("fail"));
 
@@ -164,7 +170,8 @@ public class ChatConsoleTests
             new ChatResponseUpdate(ChatRole.Tool, new[] { new FunctionResultContent("id", "r") })
         ]);
 
-        var console = new ChatConsole(new ChatLineEditor(Enumerable.Empty<IChatCommandStrategy>()), testConsole);
+        var completion = new CommandCompletion(Enumerable.Empty<IChatCommandStrategy>());
+        var console = new ChatConsole(new ChatLineEditor(completion), testConsole);
         _ = await console.DisplayStreamingUpdatesAsync(updates);
 
         Assert.Contains("Tool Result", testConsole.Output);

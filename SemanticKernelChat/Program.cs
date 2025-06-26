@@ -6,6 +6,7 @@ using SemanticKernelChat;
 using SemanticKernelChat.Commands;
 using SemanticKernelChat.Infrastructure;
 using SemanticKernelChat.Console;
+using RadLine;
 
 using Spectre.Console;
 using Spectre.Console.Cli;
@@ -31,6 +32,8 @@ builder.Services.AddSingleton<IChatCommandStrategy, ToggleMcpServerCommandStrate
 builder.Services.AddSingleton<IChatCommandStrategy, SetMcpServerStateCommandStrategy>();
 builder.Services.AddSingleton<IChatCommandStrategy, ListToolsCommandStrategy>();
 builder.Services.AddSingleton<IChatCommandStrategy, ListPromptsCommandStrategy>();
+
+builder.Services.AddSingleton<ITextCompletion, CommandCompletion>();
 
 builder.Services.AddSingleton<IChatLineEditor, ChatLineEditor>();
 builder.Services.AddSingleton<IChatConsole, ChatConsole>();
