@@ -55,7 +55,7 @@ public sealed class TypeRegistrar : ITypeRegistrar
             => _provider.GetService(type ?? throw new ArgumentNullException());
 
         public void Dispose()
-            => _provider.DisposeAsync().AsTask().GetAwaiter().GetResult();
+            => _provider.Dispose();
 
         public ValueTask DisposeAsync()
             => _provider.DisposeAsync();
