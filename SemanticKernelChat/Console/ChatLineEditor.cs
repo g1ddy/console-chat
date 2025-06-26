@@ -1,7 +1,5 @@
 using RadLine;
 
-using SemanticKernelChat.Infrastructure;
-using SemanticKernelChat.Console;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -14,24 +12,22 @@ public interface IChatLineEditor
 
 public sealed class ChatLineEditor : IChatLineEditor
 {
-    private LineEditor? _editor;
+    private readonly LineEditor _editor;
     private readonly List<IChatCommandStrategy> _commands;
 
-    public ChatLineEditor(McpToolCollection tools, IEnumerable<IChatCommandStrategy> commands)
+    public ChatLineEditor(IEnumerable<IChatCommandStrategy> commands)
     {
         _commands = commands.ToList();
-        ConfigureCompletion();
+        _editor = CreateEditor();
     }
 
     public Task<string?> ReadLine(CancellationToken cancellationToken)
-        => _editor is not null
-            ? _editor.ReadLine(cancellationToken)
-            : Task.FromResult<string?>(null);
+        => _editor.ReadLine(cancellationToken);
 
-    private void ConfigureCompletion()
+    private LineEditor CreateEditor()
     {
         var completion = new CommandCompletion(_commands);
-        _editor = new LineEditor
+        return new LineEditor
         {
             MultiLine = true,
             Completion = completion,
