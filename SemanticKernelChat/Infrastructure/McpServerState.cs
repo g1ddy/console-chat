@@ -27,16 +27,19 @@ internal sealed class McpServerState : IAsyncDisposable
     internal sealed record McpServerInfo(string Name, bool Enabled, ServerStatus Status, IReadOnlyList<McpClientTool> Tools);
     internal sealed record McpPromptInfo(string Name, bool Enabled, ServerStatus Status, IReadOnlyList<McpClientPrompt> Prompts);
 
-    private readonly Dictionary<string, ServerEntry> _servers = new(StringComparer.OrdinalIgnoreCase);
+    private readonly Dictionary<string, ServerEntry> _servers;
     private readonly Dictionary<string, McpServerConfig> _configs = new();
     private readonly ConcurrentDictionary<string, Task> _loadTasks = new();
     private readonly List<IAsyncDisposable> _disposables = new();
 
-    internal McpServerState() { }
-
-    internal void AddServerForTest(string name, bool enabled = true, ServerStatus status = ServerStatus.Ready)
+    internal McpServerState()
+        : this(new Dictionary<string, ServerEntry>(StringComparer.OrdinalIgnoreCase))
     {
-        _servers[name] = new ServerEntry { Enabled = enabled, Status = status };
+    }
+
+    internal McpServerState(Dictionary<string, ServerEntry> servers)
+    {
+        _servers = servers;
     }
 
     public IReadOnlyCollection<string> Servers => _servers.Keys;
@@ -142,7 +145,8 @@ internal sealed class McpServerState : IAsyncDisposable
 
     public static async Task<McpServerState> CreateAsync(CancellationToken cancellationToken = default)
     {
-        var state = new McpServerState();
+        var serversDict = new Dictionary<string, ServerEntry>(StringComparer.OrdinalIgnoreCase);
+        var state = new McpServerState(serversDict);
         var configuration = new ConfigurationBuilder()
             .SetBasePath(AppContext.BaseDirectory)
             .AddJsonFile("appsettings.json", optional: true)
@@ -153,7 +157,7 @@ internal sealed class McpServerState : IAsyncDisposable
         foreach (var (name, config) in servers)
         {
             state._configs[name] = config;
-            state._servers[name] = new ServerEntry { Enabled = !config.Disabled };
+            serversDict[name] = new ServerEntry { Enabled = !config.Disabled };
             if (!config.Disabled)
             {
                 state._loadTasks[name] = state.LoadServerAsync(name);

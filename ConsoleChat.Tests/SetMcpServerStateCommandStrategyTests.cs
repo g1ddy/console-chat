@@ -14,11 +14,16 @@ public class SetMcpServerStateCommandStrategyTests
     private const string Mcp = "mcp";
     private static McpToolCollection CreateCollection(params string[] servers)
     {
-        var state = new McpServerState();
+        var dict = new Dictionary<string, McpServerState.ServerEntry>(StringComparer.OrdinalIgnoreCase);
         foreach (var name in servers)
         {
-            state.AddServerForTest(name);
+            dict[name] = new McpServerState.ServerEntry
+            {
+                Enabled = true,
+                Status = ServerStatus.Ready
+            };
         }
+        var state = new McpServerState(dict);
         return new McpToolCollection(state);
     }
 
