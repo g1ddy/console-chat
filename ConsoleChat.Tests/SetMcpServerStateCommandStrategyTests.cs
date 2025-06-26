@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using ModelContextProtocol.Client;
 using SemanticKernelChat.Console;
 using SemanticKernelChat.Infrastructure;
-using System.Reflection;
+
 using Xunit;
 
 namespace ConsoleChat.Tests;
@@ -14,25 +14,17 @@ public class SetMcpServerStateCommandStrategyTests
     private const string Mcp = "mcp";
     private static McpToolCollection CreateCollection(params string[] servers)
     {
-        var collectionType = typeof(McpToolCollection);
-        var stateField = collectionType.GetField("_state", BindingFlags.NonPublic | BindingFlags.Instance)!;
-        var stateType = stateField.FieldType;
-        var state = Activator.CreateInstance(stateType, nonPublic: true)!;
-
-        var serversField = stateType.GetField("_servers", BindingFlags.NonPublic | BindingFlags.Instance)!;
-        var dict = (System.Collections.IDictionary)serversField.GetValue(state)!;
-        var entryType = serversField.FieldType.GenericTypeArguments[1];
+        var dict = new Dictionary<string, McpServerState.ServerEntry>(StringComparer.OrdinalIgnoreCase);
         foreach (var name in servers)
         {
-            var entry = Activator.CreateInstance(entryType)!;
-            entryType.GetProperty("Enabled")!.SetValue(entry, true);
-            dict[name] = entry;
+            dict[name] = new McpServerState.ServerEntry
+            {
+                Enabled = true,
+                Status = ServerStatus.Ready
+            };
         }
-
-        var ctor = collectionType.GetConstructor(BindingFlags.NonPublic | BindingFlags.Instance,
-            binder: null, types: new[] { stateType }, modifiers: null)!;
-        var collection = (McpToolCollection)ctor.Invoke(new[] { state });
-        return collection;
+        var state = new McpServerState(dict);
+        return new McpToolCollection(state);
     }
 
     [Fact]

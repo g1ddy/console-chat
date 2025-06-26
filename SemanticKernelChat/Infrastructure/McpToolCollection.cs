@@ -9,12 +9,12 @@ public sealed class McpToolCollection : IAsyncDisposable
 {
     private readonly McpServerState _state;
 
-    private McpToolCollection()
+    internal McpToolCollection()
     {
-        _state = (McpServerState)Activator.CreateInstance(typeof(McpServerState), nonPublic: true)!;
+        _state = new McpServerState();
     }
 
-    private McpToolCollection(McpServerState state)
+    internal McpToolCollection(McpServerState state)
     {
         _state = state;
     }

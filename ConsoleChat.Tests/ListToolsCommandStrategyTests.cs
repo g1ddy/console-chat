@@ -1,6 +1,5 @@
 using SemanticKernelChat.Console;
 using SemanticKernelChat.Infrastructure;
-using System.Reflection;
 
 namespace ConsoleChat.Tests;
 
@@ -11,14 +10,7 @@ public class ListToolsCommandStrategyTests
 
     private static McpToolCollection CreateCollection()
     {
-        var collectionType = typeof(McpToolCollection);
-        var stateField = collectionType.GetField("_state", BindingFlags.NonPublic | BindingFlags.Instance)!;
-        var state = Activator.CreateInstance(stateField.FieldType, nonPublic: true)!;
-
-        var ctor = collectionType.GetConstructor(BindingFlags.NonPublic | BindingFlags.Instance,
-            binder: null, types: new[] { stateField.FieldType }, modifiers: null)!;
-        var collection = (McpToolCollection)ctor.Invoke(new[] { state });
-        return collection;
+        return new McpToolCollection();
     }
 
     [Fact]
