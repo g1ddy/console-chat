@@ -9,10 +9,8 @@ public class ListToolsCommandStrategyTests
     private const string List = "/list";
     private const string Tools = "tools";
 
-    private static McpToolCollection CreateCollection()
-    {
-        return McpCollectionFactory.CreateToolCollection();
-    }
+    private static McpToolCollection CreateCollection() =>
+        McpCollectionFactory.CreateToolCollection();
 
     [Fact]
     public void GetCompletions_Returns_Command_Name()
