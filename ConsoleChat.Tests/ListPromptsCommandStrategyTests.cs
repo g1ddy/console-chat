@@ -9,10 +9,8 @@ public class ListPromptsCommandStrategyTests
     private const string List = "/list";
     private const string Prompts = "prompts";
 
-    private static McpPromptCollection CreateCollection()
-    {
-        return McpCollectionFactory.CreatePromptCollection();
-    }
+    private static McpPromptCollection CreateCollection() =>
+        McpCollectionFactory.CreatePromptCollection();
 
     [Fact]
     public void GetCompletions_Returns_Command_Name()
