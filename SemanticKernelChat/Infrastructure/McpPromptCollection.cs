@@ -1,3 +1,4 @@
+using Microsoft.Extensions.Configuration;
 using ModelContextProtocol.Client;
 
 namespace SemanticKernelChat.Infrastructure;
@@ -5,20 +6,13 @@ namespace SemanticKernelChat.Infrastructure;
 /// <summary>
 /// Holds prompts from MCP servers and manages underlying resources.
 /// </summary>
-public sealed class McpPromptCollection : IAsyncDisposable
+public sealed class McpPromptCollection
 {
     private readonly McpServerState _state;
-    private readonly bool _ownsState;
 
-    internal McpPromptCollection(McpServerState state)
-        : this(state, ownsState: false)
-    {
-    }
-
-    private McpPromptCollection(McpServerState state, bool ownsState)
+    public McpPromptCollection(McpServerState state)
     {
         _state = state;
-        _ownsState = ownsState;
     }
 
     public IReadOnlyCollection<string> Servers => _state.Servers;
@@ -33,15 +27,12 @@ public sealed class McpPromptCollection : IAsyncDisposable
 
     public static async Task<McpPromptCollection> CreateAsync(CancellationToken cancellationToken = default)
     {
-        var state = await McpServerState.CreateAsync(cancellationToken);
-        return new McpPromptCollection(state, ownsState: true);
-    }
+        var configuration = new ConfigurationBuilder()
+            .SetBasePath(AppContext.BaseDirectory)
+            .AddJsonFile("appsettings.json", optional: true)
+            .Build();
 
-    public async ValueTask DisposeAsync()
-    {
-        if (_ownsState)
-        {
-            await _state.DisposeAsync();
-        }
+        var state = await McpServerState.CreateAsync(configuration, cancellationToken);
+        return new McpPromptCollection(state);
     }
 }

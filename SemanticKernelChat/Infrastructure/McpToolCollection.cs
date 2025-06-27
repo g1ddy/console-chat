@@ -1,3 +1,4 @@
+using Microsoft.Extensions.Configuration;
 using ModelContextProtocol.Client;
 
 namespace SemanticKernelChat.Infrastructure;
@@ -5,20 +6,13 @@ namespace SemanticKernelChat.Infrastructure;
 /// <summary>
 /// Holds MCP tools and disposes underlying transports when no longer needed.
 /// </summary>
-public sealed class McpToolCollection : IAsyncDisposable
+public sealed class McpToolCollection
 {
     private readonly McpServerState _state;
-    private readonly bool _ownsState;
 
-    internal McpToolCollection(McpServerState state)
-        : this(state, ownsState: false)
-    {
-    }
-
-    private McpToolCollection(McpServerState state, bool ownsState)
+    public McpToolCollection(McpServerState state)
     {
         _state = state;
-        _ownsState = ownsState;
     }
 
     public IReadOnlyCollection<string> Servers => _state.Servers;
@@ -33,15 +27,12 @@ public sealed class McpToolCollection : IAsyncDisposable
 
     public static async Task<McpToolCollection> CreateAsync(CancellationToken cancellationToken = default)
     {
-        var state = await McpServerState.CreateAsync(cancellationToken);
-        return new McpToolCollection(state, ownsState: true);
-    }
+        var configuration = new ConfigurationBuilder()
+            .SetBasePath(AppContext.BaseDirectory)
+            .AddJsonFile("appsettings.json", optional: true)
+            .Build();
 
-    public async ValueTask DisposeAsync()
-    {
-        if (_ownsState)
-        {
-            await _state.DisposeAsync();
-        }
+        var state = await McpServerState.CreateAsync(configuration, cancellationToken);
+        return new McpToolCollection(state);
     }
 }

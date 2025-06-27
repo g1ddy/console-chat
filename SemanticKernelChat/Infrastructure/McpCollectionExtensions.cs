@@ -16,10 +16,8 @@ public static class McpCollectionExtensions
         CancellationToken ct = default)
     {
         await services.AddMcpServerState(ct);
-        services.AddSingleton<McpToolCollection>(sp =>
-            new McpToolCollection(sp.GetRequiredService<McpServerState>()));
-        services.AddSingleton<McpPromptCollection>(sp =>
-            new McpPromptCollection(sp.GetRequiredService<McpServerState>()));
+        services.AddSingleton<McpToolCollection>();
+        services.AddSingleton<McpPromptCollection>();
         return services;
     }
 }

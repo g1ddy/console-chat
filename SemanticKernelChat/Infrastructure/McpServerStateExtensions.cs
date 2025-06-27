@@ -1,3 +1,4 @@
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using System.Threading;
 using System.Threading.Tasks;
@@ -10,7 +11,12 @@ public static class McpServerStateExtensions
         this IServiceCollection services,
         CancellationToken cancellationToken = default)
     {
-        var state = await McpServerState.CreateAsync(cancellationToken);
+        var configuration = new ConfigurationBuilder()
+            .SetBasePath(AppContext.BaseDirectory)
+            .AddJsonFile("appsettings.json", optional: true)
+            .Build();
+
+        var state = await McpServerState.CreateAsync(configuration, cancellationToken);
         services.AddSingleton(state);
         return services;
     }
