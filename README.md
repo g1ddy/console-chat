@@ -80,10 +80,9 @@ Type `exit` on an empty line to quit.
 ### Spectre Console
 
 The console client relies on [Spectre.Console](https://spectreconsole.net/) for
-rich terminal output such as panels, spinners, and command parsing.
-Specify the desired command alias when launching the application. Running
-without an alias starts `chat`.
-
+rich terminal output such as panels, spinners, and command parsing. Specify the
+desired command alias when launching the application. Running without an alias
+starts `chat`.
 
 ```bash
 dotnet publish SemanticKernelChat -c Release -o out
@@ -136,6 +135,16 @@ The MCP server itself only uses the default logging configuration. Its `appsetti
   "AllowedHosts": "*"
 }
 ```
+
+### Getting started in the codebase
+
+Key entry points include:
+
+- `Program.cs` in **SemanticKernelChat** – wires up the command-line host and dependency injection.
+- `ChatController` – orchestrates messages between the console UI and the configured chat client.
+- `McpServer` project – exposes example tools that can be invoked from chat.
+
+Exploring these components is a good way to understand how the client and server communicate. The test project contains additional usage examples and is a helpful reference when extending the toolset.
 
 ## License
 
