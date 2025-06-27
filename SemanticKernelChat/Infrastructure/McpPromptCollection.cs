@@ -1,4 +1,3 @@
-using Microsoft.Extensions.Configuration;
 using ModelContextProtocol.Client;
 
 namespace SemanticKernelChat.Infrastructure;
@@ -27,12 +26,7 @@ public sealed class McpPromptCollection
 
     public static async Task<McpPromptCollection> CreateAsync(CancellationToken cancellationToken = default)
     {
-        var configuration = new ConfigurationBuilder()
-            .SetBasePath(AppContext.BaseDirectory)
-            .AddJsonFile("appsettings.json", optional: true)
-            .Build();
-
-        var state = await McpServerState.CreateAsync(configuration, cancellationToken);
+        var state = await McpServerState.CreateAsync(cancellationToken);
         return new McpPromptCollection(state);
     }
 }

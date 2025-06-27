@@ -145,20 +145,12 @@ public sealed class McpServerState : IAsyncDisposable
 
     public static async Task<McpServerState> CreateAsync(CancellationToken cancellationToken = default)
     {
+        var serversDict = new Dictionary<string, ServerEntry>(StringComparer.OrdinalIgnoreCase);
+        var state = new McpServerState(serversDict);
         var configuration = new ConfigurationBuilder()
             .SetBasePath(AppContext.BaseDirectory)
             .AddJsonFile("appsettings.json", optional: true)
             .Build();
-
-        return await CreateAsync(configuration, cancellationToken);
-    }
-
-    internal static async Task<McpServerState> CreateAsync(
-        IConfiguration configuration,
-        CancellationToken cancellationToken = default)
-    {
-        var serversDict = new Dictionary<string, ServerEntry>(StringComparer.OrdinalIgnoreCase);
-        var state = new McpServerState(serversDict);
 
         var servers = McpClientHelper.GetServerConfigs(configuration);
 
