@@ -10,6 +10,24 @@ This repository contains a console based chat client built with **Microsoft Sema
 
 Both applications target **.NET 8** and are included in the `ConsoleChat.sln` solution file.
 
+### Solution layout
+
+```
+ConsoleChat.sln
+├── SemanticKernelChat/     # main chat client
+│   ├── Commands/           # Spectre.Console CLI commands
+│   ├── Console/            # UI and controller classes
+│   ├── Clients/            # implementations of IChatClient
+│   ├── Infrastructure/     # MCP helpers and DI extensions
+│   └── Helpers/            # provider utilities
+├── McpServer/              # example MCP server with tools
+└── ConsoleChat.Tests/      # xUnit test project
+```
+
+This layout keeps the chat client, tool server, and tests separated while still
+belonging to the same solution. Exploring each folder is a good way to get
+familiar with the architecture.
+
 ## Building
 
 Restore dependencies and build all projects:
@@ -56,20 +74,16 @@ The client starts any configured MCP transports (by default it launches the `Mcp
 - `chat-stream` *(default)* – Streaming responses as they are generated.
 - `chat` – Waits for the full response before printing.
 - `text-completion` – Single-shot completion via `--query`.
-- `chat` *(default)* – Waits for the full response before printing.
-- `chat-stream` – Streaming responses as they are generated.
 
 Type `exit` on an empty line to quit.
 
 ### Spectre Console
 
 The console client relies on [Spectre.Console](https://spectreconsole.net/) for
-rich terminal output such as panels, spinners, and command parsing. Three commands
-are registered with the Spectre CLI:
+rich terminal output such as panels, spinners, and command parsing.
+Specify the desired command alias when launching the application. Running
+without an alias starts `chat`.
 
-- `chat-stream` *(default)*
-- `chat`
-desired command alias. Running without an alias starts `chat`.
 
 ```bash
 dotnet publish SemanticKernelChat -c Release -o out
