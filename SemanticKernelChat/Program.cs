@@ -18,11 +18,7 @@ builder.Logging.AddConsole();
 await builder.Services.AddSemanticKernelChatClient(builder.Configuration);
 builder.Services.AddSingleton<IChatHistoryService, ChatHistoryService>();
 
-await builder.Services.AddMcpServerState();
-builder.Services.AddSingleton<McpToolCollection>(sp =>
-    new McpToolCollection(sp.GetRequiredService<McpServerState>()));
-builder.Services.AddSingleton<McpPromptCollection>(sp =>
-    new McpPromptCollection(sp.GetRequiredService<McpServerState>()));
+await builder.Services.AddMcpCollections();
 
 var console = AnsiConsole.Console;
 builder.Services.AddSingleton(console);
