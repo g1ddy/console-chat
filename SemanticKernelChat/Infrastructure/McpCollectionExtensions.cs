@@ -15,10 +15,11 @@ public static class McpCollectionExtensions
         this IServiceCollection services,
         CancellationToken ct = default)
     {
-        var state = await McpServerState.CreateAsync(ct);
-        services.AddSingleton(state);
-        services.AddSingleton<McpToolCollection>(_ => new McpToolCollection(state));
-        services.AddSingleton<McpPromptCollection>(_ => new McpPromptCollection(state));
+        await services.AddMcpServerState(ct);
+        services.AddSingleton<McpToolCollection>(sp =>
+            new McpToolCollection(sp.GetRequiredService<McpServerState>()));
+        services.AddSingleton<McpPromptCollection>(sp =>
+            new McpPromptCollection(sp.GetRequiredService<McpServerState>()));
         return services;
     }
 }
