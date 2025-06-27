@@ -33,7 +33,7 @@ Never guess tool results or add extra text.
             return -1;
         }
 
-        await using var toolCollection = await McpToolCollection.CreateAsync();
+        var toolCollection = await McpToolCollection.CreateAsync();
         var tools = toolCollection.Tools;
 
         List<ChatMessage> messages =

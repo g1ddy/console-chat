@@ -14,7 +14,7 @@ internal enum ServerStatus
     Failed
 }
 
-internal sealed class McpServerState : IAsyncDisposable
+public sealed class McpServerState : IAsyncDisposable
 {
     internal sealed class ServerEntry
     {
