@@ -8,10 +8,17 @@ namespace SemanticKernelChat.Infrastructure;
 public sealed class McpToolCollection : IAsyncDisposable
 {
     private readonly McpServerState _state;
+    private readonly bool _ownsState;
 
     internal McpToolCollection(McpServerState state)
+        : this(state, ownsState: false)
+    {
+    }
+
+    private McpToolCollection(McpServerState state, bool ownsState)
     {
         _state = state;
+        _ownsState = ownsState;
     }
 
     public IReadOnlyCollection<string> Servers => _state.Servers;
@@ -27,8 +34,14 @@ public sealed class McpToolCollection : IAsyncDisposable
     public static async Task<McpToolCollection> CreateAsync(CancellationToken cancellationToken = default)
     {
         var state = await McpServerState.CreateAsync(cancellationToken);
-        return new McpToolCollection(state);
+        return new McpToolCollection(state, ownsState: true);
     }
 
-    public async ValueTask DisposeAsync() => await _state.DisposeAsync();
+    public async ValueTask DisposeAsync()
+    {
+        if (_ownsState)
+        {
+            await _state.DisposeAsync();
+        }
+    }
 }

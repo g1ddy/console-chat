@@ -8,10 +8,17 @@ namespace SemanticKernelChat.Infrastructure;
 public sealed class McpPromptCollection : IAsyncDisposable
 {
     private readonly McpServerState _state;
+    private readonly bool _ownsState;
 
     internal McpPromptCollection(McpServerState state)
+        : this(state, ownsState: false)
+    {
+    }
+
+    private McpPromptCollection(McpServerState state, bool ownsState)
     {
         _state = state;
+        _ownsState = ownsState;
     }
 
     public IReadOnlyCollection<string> Servers => _state.Servers;
@@ -27,8 +34,14 @@ public sealed class McpPromptCollection : IAsyncDisposable
     public static async Task<McpPromptCollection> CreateAsync(CancellationToken cancellationToken = default)
     {
         var state = await McpServerState.CreateAsync(cancellationToken);
-        return new McpPromptCollection(state);
+        return new McpPromptCollection(state, ownsState: true);
     }
 
-    public async ValueTask DisposeAsync() => await _state.DisposeAsync();
+    public async ValueTask DisposeAsync()
+    {
+        if (_ownsState)
+        {
+            await _state.DisposeAsync();
+        }
+    }
 }
