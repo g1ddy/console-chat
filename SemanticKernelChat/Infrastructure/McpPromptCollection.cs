@@ -5,11 +5,11 @@ namespace SemanticKernelChat.Infrastructure;
 /// <summary>
 /// Holds prompts from MCP servers and manages underlying resources.
 /// </summary>
-public sealed class McpPromptCollection : IAsyncDisposable
+public sealed class McpPromptCollection
 {
     private readonly McpServerState _state;
 
-    internal McpPromptCollection(McpServerState state)
+    public McpPromptCollection(McpServerState state)
     {
         _state = state;
     }
@@ -29,6 +29,4 @@ public sealed class McpPromptCollection : IAsyncDisposable
         var state = await McpServerState.CreateAsync(cancellationToken);
         return new McpPromptCollection(state);
     }
-
-    public async ValueTask DisposeAsync() => await _state.DisposeAsync();
 }
