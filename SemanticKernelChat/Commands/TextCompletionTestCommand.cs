@@ -3,6 +3,9 @@ using SemanticKernelChat.Console;
 using SemanticKernelChat.Infrastructure;
 using Spectre.Console;
 using Spectre.Console.Cli;
+using SemanticKernelChat.Plugins;
+using Microsoft.SemanticKernel;
+using System.Linq;
 
 namespace SemanticKernelChat.Commands;
 
@@ -67,7 +70,13 @@ public sealed class TextCompletionTestCommand : ChatCommandBase
         IAnsiConsole ansiConsole)
     {
         var chatConsole = new ChatConsole(new FakeLineEditor(ScriptedInputs), ansiConsole);
-        var controller = new ChatController(chatConsole, chatClient, tools);
+        var functions = new RenderableFunctions(chatConsole);
+        var plugin = KernelPluginFactory.CreateFromObject(functions);
+#pragma warning disable SKEXP0001
+        var kernel = Kernel.CreateBuilder().Build();
+        var aiFunctions = plugin.AsAIFunctions(kernel).ToList();
+#pragma warning restore SKEXP0001
+        var controller = new ChatController(chatConsole, chatClient, tools, aiFunctions);
         return (controller, chatConsole);
     }
 
