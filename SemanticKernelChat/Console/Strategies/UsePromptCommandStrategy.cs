@@ -60,7 +60,12 @@ public sealed class UsePromptCommandStrategy : IChatCommandStrategy
         foreach (var message in result.Messages)
         {
             string text = message.Content.Text ?? string.Empty;
-            ChatRole role = message.Role == Role.User ? ChatRole.User : ChatRole.Assistant;
+            ChatRole role = message.Role switch
+            {
+                Role.User => ChatRole.User,
+                Role.Assistant => ChatRole.Assistant,
+                _ => ChatRole.Assistant,
+            };
             messages.Add(new ChatMessage(role, text));
         }
 
