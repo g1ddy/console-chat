@@ -15,6 +15,6 @@ Below is a list of open features still planned for future development. Earlier t
    - Likely requires optional dependencies and should be toggled via configuration.
 
 3. **Session persistence**
-    - Save chat history and server state to disk and reload on startup so conversations resume across runs.
-    - `ChatHistoryService` and `McpServerState` are key classes to extend.
+   - Save chat history and server state to disk and reload on startup so conversations resume across runs.
+   - `ChatHistoryService` and `McpServerState` are key classes to extend.
 
