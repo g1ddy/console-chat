@@ -10,6 +10,9 @@ public class ChatController : IChatController
     private readonly IChatConsole _console;
     private readonly IChatClient _chatClient;
     private readonly McpToolCollection _toolCollection;
+    private readonly IReadOnlyList<AIFunction> _functions;
+
+    private ChatOptions CreateChatOptions() => new() { Tools = [.._toolCollection.Tools, .._functions] };
     private const int DefaultSummaryThreshold = 20;
     private const int DefaultSummaryKeepLast = 5;
 
@@ -22,7 +25,7 @@ public class ChatController : IChatController
     public ChatController(
         IChatConsole console,
         IChatClient chatClient,
-        McpToolCollection toolCollection,
+        McpToolCollection toolCollection, IReadOnlyList<AIFunction> functions,
         int summaryThreshold = DefaultSummaryThreshold,
         int summaryKeepLast = DefaultSummaryKeepLast)
     {
@@ -44,6 +47,7 @@ public class ChatController : IChatController
         _console = console;
         _chatClient = chatClient;
         _toolCollection = toolCollection;
+        _functions = functions;
         _summaryThreshold = summaryThreshold;
         _summaryKeepLast = summaryKeepLast;
     }
@@ -83,9 +87,7 @@ public class ChatController : IChatController
         {
             try
             {
-                var response = await _chatClient.GetResponseAsync(
-                    history.Messages,
-                    new() { Tools = [.. _toolCollection.Tools] });
+                var response = await _chatClient.GetResponseAsync(history.Messages, CreateChatOptions());
                 responses = [.. response.Messages];
             }
             catch (Exception ex)
@@ -110,9 +112,7 @@ public class ChatController : IChatController
     {
         await MaybeSummarizeAsync(history);
 
-        var updates = _chatClient.GetStreamingResponseAsync(
-            history.Messages,
-            new() { Tools = [.. _toolCollection.Tools] });
+        var updates = _chatClient.GetStreamingResponseAsync(history.Messages, CreateChatOptions());
         Exception? error = null;
         IReadOnlyList<ChatMessage> messages = [];
 

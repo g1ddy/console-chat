@@ -54,6 +54,14 @@ The server can be started on its own and listens via standard input/output so th
 
 It registers all tools in the `McpServer` assembly. Example tools include `CurrentTime`, `ToUpper`, and `Add`.
 
+The chat client itself exposes a few rich rendering helpers implemented as Semantic Kernel functions:
+
+- `SampleTable` – shows a `Table` of fruit counts.
+- `SampleTree` – displays a small `Tree` structure.
+- `SampleChart` – renders a `BarChart` of fruit sales.
+
+When invoked from chat these functions write directly to the console via `ChatConsole`.
+
 ## Running the chat client
 
 Launch the console chat application with:
@@ -76,6 +84,10 @@ The client starts any configured MCP transports (by default it launches the `Mcp
 - `text-completion` – Single-shot completion via `--query`.
 
 Type `exit` on an empty line to quit.
+
+The editor remembers your previous inputs. Use the **Up** and **Down** arrows to
+cycle through earlier messages. Set the `CHAT_HISTORY_FILE` environment variable
+to persist this history across sessions.
 
 ### Spectre Console
 
@@ -113,6 +125,10 @@ Example `appsettings.json`:
   "OpenAI": {
     "ModelId": "gpt-3.5-turbo"
   },
+  "Ollama": {
+    "ModelId": "llama3",
+    "BaseUrl": "http://localhost:11434"
+  },
   "AwsBedrock": {
     "ModelId": "anthropic.claude-3-sonnet-20240229-v1:0",
     "RoleArn": "arn:aws:iam::123456789012:role/BedrockAccess"
@@ -120,7 +136,7 @@ Example `appsettings.json`:
 }
 ```
 
-Set `Provider` to `OpenAI` or `AwsBedrock` and adjust the nested section with the required options. For OpenAI the API key may also be supplied via the `OPENAI_API_KEY` environment variable.
+Set `Provider` to `OpenAI`, `Ollama`, or `AwsBedrock` and adjust the nested section with the required options. For OpenAI the API key may also be supplied via the `OPENAI_API_KEY` environment variable. The `Ollama` section uses the [OllamaSharp](https://www.nuget.org/packages/OllamaSharp) package and accepts an optional `BaseUrl` for remote servers.
 
 The MCP server itself only uses the default logging configuration. Its `appsettings.json` looks like:
 

@@ -1,3 +1,4 @@
+using System;
 using Amazon.BedrockRuntime;
 
 using Microsoft.Extensions.AI;
@@ -12,6 +13,10 @@ namespace SemanticKernelChat.Infrastructure;
 /// </summary>
 public static class SemanticKernelExtensions
 {
+    /// <summary>
+    /// Default base URL for the Ollama server when none is configured.
+    /// </summary>
+    private const string DefaultOllamaBaseUrl = "http://localhost:11434";
     /// <summary>
     /// Registers the Semantic Kernel chat client and related services.
     /// </summary>
@@ -63,6 +68,11 @@ public static class SemanticKernelExtensions
                     modelId ?? "gpt-3.5-turbo",
                     configuration["OPENAI_API_KEY"] ?? Environment.GetEnvironmentVariable("OPENAI_API_KEY")
                 ).AsIChatClient();
+            case "Ollama":
+                // Create Ollama chat client using the official OllamaSharp package
+                var baseUrl = providerSection["BaseUrl"];
+                var ollamaUrl = string.IsNullOrWhiteSpace(baseUrl) ? DefaultOllamaBaseUrl : baseUrl;
+                return new OllamaSharp.OllamaApiClient(ollamaUrl, modelId);
             default:
                 throw new NotSupportedException($"Provider '{provider}' is not supported.");
         }
