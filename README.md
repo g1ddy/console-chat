@@ -125,6 +125,10 @@ Example `appsettings.json`:
   "OpenAI": {
     "ModelId": "gpt-3.5-turbo"
   },
+  "Ollama": {
+    "ModelId": "llama3",
+    "BaseUrl": "http://localhost:11434"
+  },
   "AwsBedrock": {
     "ModelId": "anthropic.claude-3-sonnet-20240229-v1:0",
     "RoleArn": "arn:aws:iam::123456789012:role/BedrockAccess"
@@ -132,7 +136,7 @@ Example `appsettings.json`:
 }
 ```
 
-Set `Provider` to `OpenAI` or `AwsBedrock` and adjust the nested section with the required options. For OpenAI the API key may also be supplied via the `OPENAI_API_KEY` environment variable.
+Set `Provider` to `OpenAI`, `Ollama`, or `AwsBedrock` and adjust the nested section with the required options. For OpenAI the API key may also be supplied via the `OPENAI_API_KEY` environment variable. The `Ollama` section uses the [OllamaSharp](https://www.nuget.org/packages/OllamaSharp) package and accepts an optional `BaseUrl` for remote servers.
 
 The MCP server itself only uses the default logging configuration. Its `appsettings.json` looks like:
 

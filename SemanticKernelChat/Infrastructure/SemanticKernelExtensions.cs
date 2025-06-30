@@ -1,3 +1,4 @@
+using System;
 using Amazon.BedrockRuntime;
 
 using Microsoft.Extensions.AI;
@@ -63,6 +64,17 @@ public static class SemanticKernelExtensions
                     modelId ?? "gpt-3.5-turbo",
                     configuration["OPENAI_API_KEY"] ?? Environment.GetEnvironmentVariable("OPENAI_API_KEY")
                 ).AsIChatClient();
+            case "Ollama":
+                // Create Ollama chat client using the official OllamaSharp package
+                var baseUrl = providerSection["BaseUrl"];
+                if (!string.IsNullOrWhiteSpace(baseUrl))
+                {
+                    return new OllamaSharp.OllamaApiClient(baseUrl, modelId);
+                }
+                else
+                {
+                    return new OllamaSharp.OllamaApiClient("http://localhost:11434", modelId);
+                }
             default:
                 throw new NotSupportedException($"Provider '{provider}' is not supported.");
         }
