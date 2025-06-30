@@ -19,6 +19,8 @@ public abstract class ChatCommandBase : AsyncCommand<ChatCommandBase.Settings>
     /// </summary>
     public sealed class Settings : CommandSettings
     {
+        [CommandOption("--file <PATH>")]
+        public string? FilePath { get; set; }
     }
 
     private readonly IChatHistoryService _history;
