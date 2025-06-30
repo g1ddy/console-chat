@@ -9,6 +9,7 @@ public interface IChatHistoryService
     void Add(ChatResponseUpdate[] messageUpdates);
     void AddUserMessage(string text);
     void AddAssistantMessage(string text);
+    void Replace(IEnumerable<ChatMessage> messages);
 }
 
 public class ChatHistoryService : IChatHistoryService
@@ -24,4 +25,10 @@ public class ChatHistoryService : IChatHistoryService
     public void AddUserMessage(string text) => Add(new ChatMessage(ChatRole.User, text));
 
     public void AddAssistantMessage(string text) => Add(new ChatMessage(ChatRole.Assistant, text));
+
+    public void Replace(IEnumerable<ChatMessage> messages)
+    {
+        _messages.Clear();
+        _messages.AddRange(messages);
+    }
 }

@@ -1,4 +1,6 @@
 using Microsoft.Extensions.AI;
+using System.Linq;
+using System.Collections.Generic;
 using SemanticKernelChat.Infrastructure;
 
 namespace SemanticKernelChat.Console;
@@ -8,18 +10,54 @@ public class ChatController : IChatController
     private readonly IChatConsole _console;
     private readonly IChatClient _chatClient;
     private readonly McpToolCollection _toolCollection;
+    private readonly int _summaryThreshold;
+    private readonly int _summaryKeepLast;
 
     public McpToolCollection ToolCollection => _toolCollection;
 
-    public ChatController(IChatConsole console, IChatClient chatClient, McpToolCollection toolCollection)
+    public ChatController(
+        IChatConsole console,
+        IChatClient chatClient,
+        McpToolCollection toolCollection,
+        int summaryThreshold = 20,
+        int summaryKeepLast = 5)
     {
         _console = console;
         _chatClient = chatClient;
         _toolCollection = toolCollection;
+        _summaryThreshold = summaryThreshold;
+        _summaryKeepLast = summaryKeepLast;
+    }
+
+    private async Task MaybeSummarizeAsync(IChatHistoryService history)
+    {
+        if (history.Messages.Count <= _summaryThreshold)
+        {
+            return;
+        }
+
+        int summarizeCount = history.Messages.Count - _summaryKeepLast;
+        if (summarizeCount <= 0)
+        {
+            return;
+        }
+
+        var toSummarize = history.Messages.Take(summarizeCount).ToList();
+        toSummarize.Add(new ChatMessage(ChatRole.User, "Summarize the previous conversation in a concise form."));
+
+        var response = await _chatClient.GetResponseAsync(toSummarize);
+        var summaryMessage = response.Messages.Last();
+
+        var newHistory = new List<ChatMessage> { summaryMessage };
+        newHistory.AddRange(history.Messages.Skip(summarizeCount));
+
+        history.Replace(newHistory);
     }
 
     public async Task SendAndDisplayAsync(IChatHistoryService history)
     {
+        await MaybeSummarizeAsync(history);
+
         ChatMessage[] responses = [];
         Exception? error = null;
         await _console.DisplayThinkingIndicator(async () =>
@@ -51,6 +89,8 @@ public class ChatController : IChatController
         IChatHistoryService history,
         Action<IReadOnlyList<ChatMessage>>? finalCallback = null)
     {
+        await MaybeSummarizeAsync(history);
+
         var updates = _chatClient.GetStreamingResponseAsync(
             history.Messages,
             new() { Tools = [.. _toolCollection.Tools] });
