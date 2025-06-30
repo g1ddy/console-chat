@@ -1,5 +1,4 @@
 using System.ComponentModel;
-using System.Net.Http;
 using System.Text.Json.Serialization;
 using ModelContextProtocol.Server;
 
@@ -8,11 +7,11 @@ namespace RaindropTools;
 [McpServerToolType]
 public class RaindropsTools
 {
-    private readonly RaindropApiClient _client;
+    private readonly IRaindropApi _api;
 
-    public RaindropsTools(RaindropApiClient client)
+    public RaindropsTools(IRaindropApi api)
     {
-        _client = client;
+        _api = api;
     }
 
     [McpServerTool, Description("Create a new bookmark in the specified collection")]
@@ -28,13 +27,13 @@ public class RaindropsTools
             important,
             collection = new IdRef { Id = collectionId }
         };
-        return await _client.SendAsync<ItemResponse<Raindrop>>(HttpMethod.Post, "raindrop", payload);
+        return await _api.CreateRaindrop(payload);
     }
 
     [McpServerTool, Description("Get a bookmark by id")]
     public async Task<ItemResponse<Raindrop>> Get(long id)
     {
-        return await _client.SendAsync<ItemResponse<Raindrop>>(HttpMethod.Get, $"raindrop/{id}");
+        return await _api.GetRaindrop(id);
     }
 
     [McpServerTool, Description("Update an existing bookmark")]
@@ -51,20 +50,19 @@ public class RaindropsTools
             important,
             collectionId
         };
-        return await _client.SendAsync<ItemResponse<Raindrop>>(HttpMethod.Put, $"raindrop/{id}", payload);
+        return await _api.UpdateRaindrop(id, payload);
     }
 
     [McpServerTool, Description("Delete a bookmark by id")]
     public async Task<SuccessResponse> Delete(long id)
     {
-        return await _client.SendAsync<SuccessResponse>(HttpMethod.Delete, $"raindrop/{id}");
+        return await _api.DeleteRaindrop(id);
     }
 
     [McpServerTool, Description("Search bookmarks in a collection")]
     public async Task<ItemsResponse<Raindrop>> Search(int collectionId, string query)
     {
-        var url = $"raindrops/{collectionId}?search={Uri.EscapeDataString(query)}";
-        return await _client.SendAsync<ItemsResponse<Raindrop>>(HttpMethod.Get, url);
+        return await _api.SearchRaindrops(collectionId, query);
     }
 }
 

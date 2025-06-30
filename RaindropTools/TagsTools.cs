@@ -1,5 +1,4 @@
 using System.ComponentModel;
-using System.Net.Http;
 using ModelContextProtocol.Server;
 
 namespace RaindropTools;
@@ -7,35 +6,29 @@ namespace RaindropTools;
 [McpServerToolType]
 public class TagsTools
 {
-    private readonly RaindropApiClient _client;
+    private readonly IRaindropApi _api;
 
-    public TagsTools(RaindropApiClient client)
+    public TagsTools(IRaindropApi api)
     {
-        _client = client;
+        _api = api;
     }
 
     [McpServerTool, Description("List all tags")]
     public async Task<string> List()
     {
-        var response = await _client.SendAsync(HttpMethod.Get, "tags");
-        response.EnsureSuccessStatusCode();
-        return await response.Content.ReadAsStringAsync();
+        return await _api.ListTags();
     }
 
     [McpServerTool, Description("Rename a tag")]
     public async Task<string> Rename(string oldTag, string newTag)
     {
         var payload = new { newName = newTag };
-        var response = await _client.SendAsync(HttpMethod.Put, $"tag/{Uri.EscapeDataString(oldTag)}", payload);
-        response.EnsureSuccessStatusCode();
-        return await response.Content.ReadAsStringAsync();
+        return await _api.RenameTag(Uri.EscapeDataString(oldTag), payload);
     }
 
     [McpServerTool, Description("Delete a tag")]
     public async Task<string> Delete(string tag)
     {
-        var response = await _client.SendAsync(HttpMethod.Delete, $"tag/{Uri.EscapeDataString(tag)}");
-        response.EnsureSuccessStatusCode();
-        return await response.Content.ReadAsStringAsync();
+        return await _api.DeleteTag(Uri.EscapeDataString(tag));
     }
 }

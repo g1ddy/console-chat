@@ -1,5 +1,4 @@
 using System.ComponentModel;
-using System.Net.Http;
 using ModelContextProtocol.Server;
 
 namespace RaindropTools;
@@ -7,44 +6,36 @@ namespace RaindropTools;
 [McpServerToolType]
 public class HighlightsTools
 {
-    private readonly RaindropApiClient _client;
+    private readonly IRaindropApi _api;
 
-    public HighlightsTools(RaindropApiClient client)
+    public HighlightsTools(IRaindropApi api)
     {
-        _client = client;
+        _api = api;
     }
 
     [McpServerTool, Description("Get highlights for a bookmark")]
     public async Task<string> Get(long raindropId)
     {
-        var response = await _client.SendAsync(HttpMethod.Get, $"raindrop/{raindropId}/highlights");
-        response.EnsureSuccessStatusCode();
-        return await response.Content.ReadAsStringAsync();
+        return await _api.GetHighlights(raindropId);
     }
 
     [McpServerTool, Description("Create a highlight for a bookmark")]
     public async Task<string> Create(long raindropId, string text)
     {
         var payload = new { text };
-        var response = await _client.SendAsync(HttpMethod.Post, $"raindrop/{raindropId}/highlights", payload);
-        response.EnsureSuccessStatusCode();
-        return await response.Content.ReadAsStringAsync();
+        return await _api.CreateHighlight(raindropId, payload);
     }
 
     [McpServerTool, Description("Update an existing highlight")]
     public async Task<string> Update(long highlightId, string text)
     {
         var payload = new { text };
-        var response = await _client.SendAsync(HttpMethod.Put, $"highlight/{highlightId}", payload);
-        response.EnsureSuccessStatusCode();
-        return await response.Content.ReadAsStringAsync();
+        return await _api.UpdateHighlight(highlightId, payload);
     }
 
     [McpServerTool, Description("Delete a highlight by id")]
     public async Task<string> Delete(long highlightId)
     {
-        var response = await _client.SendAsync(HttpMethod.Delete, $"highlight/{highlightId}");
-        response.EnsureSuccessStatusCode();
-        return await response.Content.ReadAsStringAsync();
+        return await _api.DeleteHighlight(highlightId);
     }
 }

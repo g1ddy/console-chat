@@ -1,5 +1,4 @@
 using System.ComponentModel;
-using System.Net.Http;
 using ModelContextProtocol.Server;
 
 namespace RaindropTools;
@@ -10,47 +9,47 @@ namespace RaindropTools;
 [McpServerToolType]
 public class CollectionsTools
 {
-    private readonly RaindropApiClient _client;
+    private readonly IRaindropApi _api;
 
-    public CollectionsTools(RaindropApiClient client)
+    public CollectionsTools(IRaindropApi api)
     {
-        _client = client;
+        _api = api;
     }
 
     [McpServerTool, Description("List all collections for the current user")]
     public async Task<ItemsResponse<Collection>> List()
     {
-        return await _client.SendAsync<ItemsResponse<Collection>>(HttpMethod.Get, "collections");
+        return await _api.ListCollections();
     }
 
     [McpServerTool, Description("Get details for a collection by id")]
     public async Task<ItemResponse<Collection>> Get(int id)
     {
-        return await _client.SendAsync<ItemResponse<Collection>>(HttpMethod.Get, $"collection/{id}");
+        return await _api.GetCollection(id);
     }
 
     [McpServerTool, Description("Create a new collection")]
     public async Task<ItemResponse<Collection>> Create(CollectionUpdate collection)
     {
-        return await _client.SendAsync<ItemResponse<Collection>>(HttpMethod.Post, "collection", collection);
+        return await _api.CreateCollection(collection);
     }
 
     [McpServerTool, Description("Update an existing collection")]
     public async Task<ItemResponse<Collection>> Update(int id, CollectionUpdate collection)
     {
-        return await _client.SendAsync<ItemResponse<Collection>>(HttpMethod.Put, $"collection/{id}", collection);
+        return await _api.UpdateCollection(id, collection);
     }
 
     [McpServerTool, Description("Delete a collection")]
     public async Task<SuccessResponse> Delete(int id)
     {
-        return await _client.SendAsync<SuccessResponse>(HttpMethod.Delete, $"collection/{id}");
+        return await _api.DeleteCollection(id);
     }
 
     [McpServerTool, Description("Update order of child collections")]
     public async Task<ItemResponse<Collection>> UpdateChildren(int parentId, ChildCollectionsUpdate update)
     {
-        return await _client.SendAsync<ItemResponse<Collection>>(HttpMethod.Put, $"collection/{parentId}/children", update);
+        return await _api.UpdateChildren(parentId, update);
     }
 }
 
@@ -82,7 +81,7 @@ public class CollectionUpdate
     /// <summary>
     /// Set to <c>true</c> to share the collection publicly.
     /// </summary>
-    public bool? IsPublic { get; set; }
+    public bool? Public { get; set; }
 }
 
 /// <summary>

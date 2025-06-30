@@ -1,6 +1,7 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
+using Refit;
 using System.Net.Http.Headers;
 
 namespace RaindropTools;
@@ -11,14 +12,22 @@ namespace RaindropTools;
 public static class RaindropServiceCollectionExtensions
 {
     /// <summary>
-    /// Registers <see cref="RaindropApiClient"/> using configuration from the
+    /// Registers <see cref="IRaindropApi"/> using configuration from the
     /// "Raindrop" section of <see cref="IConfiguration"/>.
     /// </summary>
     public static IServiceCollection AddRaindropApiClient(this IServiceCollection services, IConfiguration configuration)
     {
         services.Configure<RaindropOptions>(configuration.GetSection("Raindrop"));
 
-        services.AddHttpClient<RaindropApiClient>((sp, client) =>
+        services.AddRefitClient<IRaindropApi>(new RefitSettings
+        {
+            ContentSerializer = new SystemTextJsonContentSerializer(new System.Text.Json.JsonSerializerOptions
+            {
+                PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase,
+                PropertyNameCaseInsensitive = true
+            })
+        })
+        .ConfigureHttpClient((sp, client) =>
         {
             var options = sp.GetRequiredService<IOptions<RaindropOptions>>().Value;
 
