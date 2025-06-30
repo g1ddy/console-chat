@@ -14,11 +14,6 @@ namespace ConsoleChat.Tests;
 
 public class FileCommandTests
 {
-    private sealed class FakeRemainingArguments : IRemainingArguments
-    {
-        public ILookup<string, string?> Parsed { get; } = Array.Empty<(string, string?)>().ToLookup(t => t.Item1, t => t.Item2);
-        public IReadOnlyList<string> Raw { get; } = Array.Empty<string>();
-    }
 
     [Fact]
     public async Task ExecuteAsync_Reads_File_And_Sends_To_Client()

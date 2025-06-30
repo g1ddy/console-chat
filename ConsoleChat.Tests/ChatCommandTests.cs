@@ -29,11 +29,6 @@ public class ChatCommandTests
     }
 
 
-    private sealed class FakeRemainingArguments : IRemainingArguments
-    {
-        public ILookup<string, string?> Parsed { get; } = Array.Empty<(string, string?)>().ToLookup(t => t.Item1, t => t.Item2);
-        public IReadOnlyList<string> Raw { get; } = Array.Empty<string>();
-    }
 
     [Fact]
     public async Task ExecuteAsync_Writes_Welcome_And_Response()
