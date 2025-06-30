@@ -58,6 +58,7 @@ app.Configure(config =>
     _ = config.SetExceptionHandler(ex => console.WriteException(ex, ExceptionFormats.ShortenTypes));
     _ = config.AddCommand<TextCompletionTestCommand>("text-completion-test");
     _ = config.AddCommand<TextCompletionCommand>("text-completion");
+    _ = config.AddCommand<FileCommand>("file");
     _ = config.AddCommand<ChatStreamCommand>("chat-stream");
     _ = config.AddCommand<ChatCommand>("chat");
 });
