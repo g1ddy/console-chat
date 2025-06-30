@@ -19,17 +19,21 @@ public class RaindropApiIntegrationTests
             .AddEnvironmentVariables()
             .Build();
 
-        var services = new ServiceCollection();
-        services.AddRaindropApiClient(config);
-        services.AddTransient<CollectionsTools>();
-        services.AddTransient<RaindropsTools>();
-        services.AddTransient<HighlightsTools>();
-        services.AddTransient<TagsTools>();
-        services.AddTransient<UserTools>();
-        _provider = services.BuildServiceProvider();
+        var token = config["Raindrop:ApiToken"];
+        var baseUrl = config["Raindrop:BaseUrl"];
+        _enabled = !string.IsNullOrWhiteSpace(token) && !string.IsNullOrWhiteSpace(baseUrl);
 
-        _enabled = !string.IsNullOrWhiteSpace(
-            _provider.GetRequiredService<IOptions<RaindropOptions>>().Value.ApiToken);
+        var services = new ServiceCollection();
+        if (_enabled)
+        {
+            services.AddRaindropApiClient(config);
+            services.AddTransient<CollectionsTools>();
+            services.AddTransient<RaindropsTools>();
+            services.AddTransient<HighlightsTools>();
+            services.AddTransient<TagsTools>();
+            services.AddTransient<UserTools>();
+        }
+        _provider = services.BuildServiceProvider();
     }
 
 

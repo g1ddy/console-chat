@@ -21,11 +21,19 @@ public static class RaindropServiceCollectionExtensions
         services.AddHttpClient<RaindropApiClient>((sp, client) =>
         {
             var options = sp.GetRequiredService<IOptions<RaindropOptions>>().Value;
-            client.BaseAddress = new Uri("https://api.raindrop.io/rest/v1/");
-            if (!string.IsNullOrWhiteSpace(options.ApiToken))
+
+            if (string.IsNullOrWhiteSpace(options.BaseUrl))
             {
-                client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", options.ApiToken);
+                throw new InvalidOperationException("Raindrop BaseUrl is required");
             }
+
+            if (string.IsNullOrWhiteSpace(options.ApiToken))
+            {
+                throw new InvalidOperationException("Raindrop ApiToken is required");
+            }
+
+            client.BaseAddress = new Uri(options.BaseUrl);
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", options.ApiToken);
         });
 
         return services;
