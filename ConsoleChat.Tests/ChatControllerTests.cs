@@ -3,6 +3,7 @@ using NSubstitute;
 using SemanticKernelChat;
 using SemanticKernelChat.Console;
 using SemanticKernelChat.Infrastructure;
+using System.Collections.Generic;
 
 using ConsoleChat.Tests.TestUtilities;
 
@@ -104,5 +105,44 @@ public class ChatControllerTests
         _ = await console.Received(1).DisplayStreamingUpdatesAsync(Arg.Any<IAsyncEnumerable<ChatResponseUpdate>>());
         console.Received(1).DisplayError(Arg.Any<Exception>());
         Assert.Equal(1, history.Messages.Count);
+    }
+
+    [Fact]
+    public async Task SendAndDisplayAsync_Summarizes_When_Threshold_Exceeded()
+    {
+        var history = new ChatHistoryService();
+        for (int i = 0; i < 3; i++)
+        {
+            history.AddUserMessage($"u{i}");
+            history.AddAssistantMessage($"a{i}");
+        }
+        history.AddUserMessage("hello");
+
+        var console = Substitute.For<IChatConsole>();
+        console.DisplayThinkingIndicator(Arg.Any<Func<Task>>())
+            .Returns(call => ((Func<Task>)call[0])());
+
+        var calls = new List<IEnumerable<ChatMessage>>();
+        var client = Substitute.For<IChatClient>();
+        client
+            .GetResponseAsync(Arg.Any<IEnumerable<ChatMessage>>(), Arg.Any<ChatOptions?>(), Arg.Any<CancellationToken>())
+            .Returns(call =>
+            {
+                calls.Add((IEnumerable<ChatMessage>)call[0]);
+                if (calls.Count == 1)
+                {
+                    return Task.FromResult(new ChatResponse(new ChatMessage(ChatRole.Assistant, "summary")));
+                }
+                return Task.FromResult(new ChatResponse(new ChatMessage(ChatRole.Assistant, "done")));
+            });
+
+        var controller = new ChatController(console, client, McpCollectionFactory.CreateToolCollection(), [], summaryThreshold:5, summaryKeepLast:2);
+
+        await controller.SendAndDisplayAsync(history);
+
+        Assert.Equal(4, history.Messages.Count);
+        Assert.Equal("summary", history.Messages[0].Text);
+        await client.Received(2).GetResponseAsync(Arg.Any<IEnumerable<ChatMessage>>(), Arg.Any<ChatOptions?>(), Arg.Any<CancellationToken>());
+        console.Received(1).WriteChatMessages(Arg.Is<ChatMessage[]>(msgs => msgs.Last().Text == "done"));
     }
 }

@@ -1,15 +1,16 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.Extensions.AI;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Microsoft.SemanticKernel;
+
+using RadLine;
 
 using SemanticKernelChat;
 using SemanticKernelChat.Commands;
-using SemanticKernelChat.Infrastructure;
 using SemanticKernelChat.Console;
+using SemanticKernelChat.Infrastructure;
 using SemanticKernelChat.Plugins;
-using Microsoft.SemanticKernel;
-using Microsoft.Extensions.AI;
-using RadLine;
 
 using Spectre.Console;
 using Spectre.Console.Cli;
@@ -26,7 +27,7 @@ await builder.Services.AddMcpCollections();
 var console = AnsiConsole.Console;
 builder.Services.AddSingleton(console);
 builder.Services.AddSingleton<RenderableFunctions>();
-builder.Services.AddSingleton(provider =>
+builder.Services.AddSingleton<IReadOnlyList<AIFunction>>(provider =>
 {
     var functions = provider.GetRequiredService<RenderableFunctions>();
     var plugin = KernelPluginFactory.CreateFromObject(functions);
