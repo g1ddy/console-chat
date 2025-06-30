@@ -44,6 +44,12 @@ public class RaindropApiIntegrationTests
         return doc.RootElement.GetProperty("item").GetProperty("_id").GetInt64();
     }
 
+    private static long ExtractHighlightId(string json)
+    {
+        using var doc = JsonDocument.Parse(json);
+        return doc.RootElement.GetProperty("item").GetProperty("_id").GetInt64();
+    }
+
     [Fact]
     public async Task Collections_Crud()
     {
@@ -87,6 +93,53 @@ public class RaindropApiIntegrationTests
     }
 
     [Fact]
+    public async Task Highlights_Crud()
+    {
+        if (!_enabled) return;
+        var collections = _provider.GetRequiredService<CollectionsTools>();
+        int colId = ExtractCollectionId(await collections.Create(new CollectionUpdate { Title = "hl" }));
+        var bookmarks = _provider.GetRequiredService<RaindropsTools>();
+        long bId = ExtractBookmarkId(await bookmarks.Create(colId, "https://example.com/hl", "h"));
+        var highlights = _provider.GetRequiredService<HighlightsTools>();
+        long hId = ExtractHighlightId(await highlights.Create(bId, "test"));
+        try
+        {
+            await highlights.Update(hId, "upd");
+            var list = await highlights.Get(bId);
+            Assert.Contains("upd", list);
+        }
+        finally
+        {
+            await highlights.Delete(hId);
+            await bookmarks.Delete(bId);
+            await collections.Delete(colId);
+        }
+    }
+
+    [Fact]
+    public async Task Tags_Crud()
+    {
+        if (!_enabled) return;
+        var collections = _provider.GetRequiredService<CollectionsTools>();
+        int colId = ExtractCollectionId(await collections.Create(new CollectionUpdate { Title = "tg" }));
+        var bookmarks = _provider.GetRequiredService<RaindropsTools>();
+        long bId = ExtractBookmarkId(await bookmarks.Create(colId, "https://example.com/tag", "t", tags: [ "one" ]));
+        var tags = _provider.GetRequiredService<TagsTools>();
+        try
+        {
+            await tags.Rename("one", "two");
+            var list = await tags.List();
+            Assert.Contains("two", list);
+        }
+        finally
+        {
+            await tags.Delete("two");
+            await bookmarks.Delete(bId);
+            await collections.Delete(colId);
+        }
+    }
+
+    [Fact]
     public async Task Hierarchy_Test()
     {
         if (!_enabled) return;
@@ -95,16 +148,19 @@ public class RaindropApiIntegrationTests
         int childId = ExtractCollectionId(await collections.Create(new CollectionUpdate { Title = "child", ParentId = rootId }));
 
         var bookmarks = _provider.GetRequiredService<RaindropsTools>();
-        long b1 = ExtractBookmarkId(await bookmarks.Create(rootId, "https://example.com/1", "b1"));
-        long b2 = ExtractBookmarkId(await bookmarks.Create(rootId, "https://example.com/2", "b2"));
+        long b1 = ExtractBookmarkId(await bookmarks.Create(rootId,
+            "https://example.com/1", "b1", tags: ["t1"]));
+        long b2 = ExtractBookmarkId(await bookmarks.Create(rootId,
+            "https://example.com/2", "b2", tags: ["t2"]));
 
         var highlights = _provider.GetRequiredService<HighlightsTools>();
         var tags = _provider.GetRequiredService<TagsTools>();
 
         try
         {
-            await bookmarks.Update(b2, link: "https://example.com/updated");
             await highlights.Create(b1, "hl");
+            await bookmarks.Update(b2, link: "https://example.com/updated", collectionId: childId);
+            await tags.Rename("t2", "t22");
             await tags.List();
             await collections.UpdateChildren(rootId, new ChildCollectionsUpdate { Children = [ childId ] });
         }

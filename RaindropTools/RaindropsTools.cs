@@ -15,10 +15,11 @@ public class RaindropsTools
     }
 
     [McpServerTool, Description("Create a new bookmark in the specified collection")]
-    public async Task<string> Create(int collectionId, string url, string? title = null, string? excerpt = null)
+    public async Task<string> Create(int collectionId, string url, string? title = null,
+        string? excerpt = null, IEnumerable<string>? tags = null, bool? important = null)
     {
-        var payload = new { link = url, title, excerpt };
-        var response = await _client.SendAsync(HttpMethod.Post, $"raindrop/{collectionId}", payload);
+        var payload = new { link = url, title, excerpt, tags, important };
+        var response = await _client.SendAsync(HttpMethod.Post, $"raindrops/{collectionId}", payload);
         response.EnsureSuccessStatusCode();
         return await response.Content.ReadAsStringAsync();
     }
@@ -32,9 +33,11 @@ public class RaindropsTools
     }
 
     [McpServerTool, Description("Update an existing bookmark")]
-    public async Task<string> Update(long id, string? title = null, string? excerpt = null, string? link = null)
+    public async Task<string> Update(long id, string? title = null, string? excerpt = null,
+        string? link = null, IEnumerable<string>? tags = null, bool? important = null,
+        int? collectionId = null)
     {
-        var payload = new { link, title, excerpt };
+        var payload = new { link, title, excerpt, tags, important, collectionId };
         var response = await _client.SendAsync(HttpMethod.Put, $"raindrop/{id}", payload);
         response.EnsureSuccessStatusCode();
         return await response.Content.ReadAsStringAsync();
