@@ -54,6 +54,14 @@ The server can be started on its own and listens via standard input/output so th
 
 It registers all tools in the `McpServer` assembly. Example tools include `CurrentTime`, `ToUpper`, and `Add`.
 
+The chat client itself exposes a few rich rendering helpers implemented as Semantic Kernel functions:
+
+- `SampleTable` – shows a `Table` of fruit counts.
+- `SampleTree` – displays a small `Tree` structure.
+- `SampleChart` – renders a `BarChart` of fruit sales.
+
+When invoked from chat these functions write directly to the console via `ChatConsole`.
+
 ## Running the chat client
 
 Launch the console chat application with:

@@ -8,14 +8,18 @@ public class ChatController : IChatController
     private readonly IChatConsole _console;
     private readonly IChatClient _chatClient;
     private readonly McpToolCollection _toolCollection;
+    private readonly IReadOnlyList<AIFunction> _functions;
+
+    private ChatOptions CreateChatOptions() => new() { Tools = [.._toolCollection.Tools, .._functions] };
 
     public McpToolCollection ToolCollection => _toolCollection;
 
-    public ChatController(IChatConsole console, IChatClient chatClient, McpToolCollection toolCollection)
+    public ChatController(IChatConsole console, IChatClient chatClient, McpToolCollection toolCollection, IReadOnlyList<AIFunction> functions)
     {
         _console = console;
         _chatClient = chatClient;
         _toolCollection = toolCollection;
+        _functions = functions;
     }
 
     public async Task SendAndDisplayAsync(IChatHistoryService history)
@@ -26,9 +30,7 @@ public class ChatController : IChatController
         {
             try
             {
-                var response = await _chatClient.GetResponseAsync(
-                    history.Messages,
-                    new() { Tools = [.. _toolCollection.Tools] });
+                var response = await _chatClient.GetResponseAsync(history.Messages, CreateChatOptions());
                 responses = [.. response.Messages];
             }
             catch (Exception ex)
@@ -51,9 +53,7 @@ public class ChatController : IChatController
         IChatHistoryService history,
         Action<IReadOnlyList<ChatMessage>>? finalCallback = null)
     {
-        var updates = _chatClient.GetStreamingResponseAsync(
-            history.Messages,
-            new() { Tools = [.. _toolCollection.Tools] });
+        var updates = _chatClient.GetStreamingResponseAsync(history.Messages, CreateChatOptions());
         Exception? error = null;
         IReadOnlyList<ChatMessage> messages = [];
 

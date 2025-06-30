@@ -42,7 +42,7 @@ public class ChatCommandTests
         var lineEditor = new FakeLineEditor(new[] { "hi", null });
         var chatConsole = new ChatConsole(lineEditor, testConsole);
         var client = new FakeChatClient { Response = new(new ChatMessage(ChatRole.Assistant, "done")) };
-        var controller = new ChatController(chatConsole, client, McpCollectionFactory.CreateToolCollection());
+        var controller = new ChatController(chatConsole, client, McpCollectionFactory.CreateToolCollection(), []);
         var history = new ChatHistoryService();
         var command = new ChatCommand(history, controller, chatConsole, Enumerable.Empty<IChatCommandStrategy>());
 
