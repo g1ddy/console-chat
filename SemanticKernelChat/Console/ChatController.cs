@@ -10,8 +10,12 @@ public class ChatController : IChatController
     private readonly IChatConsole _console;
     private readonly IChatClient _chatClient;
     private readonly McpToolCollection _toolCollection;
+    private const int DefaultSummaryThreshold = 20;
+    private const int DefaultSummaryKeepLast = 5;
+
     private readonly int _summaryThreshold;
     private readonly int _summaryKeepLast;
+    private const string SummarizationPrompt = "Summarize the previous conversation in a concise form.";
 
     public McpToolCollection ToolCollection => _toolCollection;
 
@@ -19,9 +23,24 @@ public class ChatController : IChatController
         IChatConsole console,
         IChatClient chatClient,
         McpToolCollection toolCollection,
-        int summaryThreshold = 20,
-        int summaryKeepLast = 5)
+        int summaryThreshold = DefaultSummaryThreshold,
+        int summaryKeepLast = DefaultSummaryKeepLast)
     {
+        if (summaryThreshold <= 0)
+        {
+            throw new ArgumentOutOfRangeException(nameof(summaryThreshold), "Must be positive.");
+        }
+
+        if (summaryKeepLast <= 0)
+        {
+            throw new ArgumentOutOfRangeException(nameof(summaryKeepLast), "Must be positive.");
+        }
+
+        if (summaryKeepLast >= summaryThreshold)
+        {
+            throw new ArgumentException($"{nameof(summaryKeepLast)} must be less than {nameof(summaryThreshold)}.", nameof(summaryKeepLast));
+        }
+
         _console = console;
         _chatClient = chatClient;
         _toolCollection = toolCollection;
@@ -43,7 +62,7 @@ public class ChatController : IChatController
         }
 
         var toSummarize = history.Messages.Take(summarizeCount).ToList();
-        toSummarize.Add(new ChatMessage(ChatRole.User, "Summarize the previous conversation in a concise form."));
+        toSummarize.Add(new ChatMessage(ChatRole.User, SummarizationPrompt));
 
         var response = await _chatClient.GetResponseAsync(toSummarize);
         var summaryMessage = response.Messages.Last();
