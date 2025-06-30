@@ -21,9 +21,11 @@ public sealed class EchoChatClient : IChatClient
         if (lastMessage.Role == ChatRole.User)
         {
             responseContents.Add(new TextContent("I need to call some tools!"));
-            responseContents.Add(new FunctionCallContent("tool_call_table", "RenderableFunctions_SampleTable"));
-            responseContents.Add(new FunctionCallContent("tool_call_tree", "RenderableFunctions_SampleTree"));
-            responseContents.Add(new FunctionCallContent("tool_call_chart", "RenderableFunctions_SampleChart"));
+            responseContents.Add(new FunctionCallContent("tool_call_time", "CurrentTime"));
+            responseContents.Add(new FunctionCallContent("tool_call_echo", "ReverseEcho", new Dictionary<string, object?>
+            {
+                { "message", lastMessage.Text }
+            }));
         }
         else if (lastMessage.Role == ChatRole.Tool)
         {
