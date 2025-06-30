@@ -1,5 +1,5 @@
 using System.ComponentModel;
-using System.Net.Http;
+using Refit;
 using ModelContextProtocol.Server;
 
 namespace RaindropTools;
@@ -8,54 +8,49 @@ namespace RaindropTools;
 /// Tools for managing Raindrop collections.
 /// </summary>
 [McpServerToolType]
-public static class CollectionsTools
+public class CollectionsTools
 {
-    [McpServerTool, Description("List all collections for the current user")]
-    public static async Task<string> List(string token)
+    private readonly IRaindropApi _api;
+
+    public CollectionsTools(IRaindropApi api)
     {
-        var response = await RaindropApiClient.SendAsync(HttpMethod.Get, "collections", token);
-        response.EnsureSuccessStatusCode();
-        return await response.Content.ReadAsStringAsync();
+        _api = api;
+    }
+
+    [McpServerTool, Description("List all collections for the current user")]
+    public Task<ItemsResponse<Collection>> List()
+    {
+        return _api.ListCollections();
     }
 
     [McpServerTool, Description("Get details for a collection by id")]
-    public static async Task<string> Get(string token, int id)
+    public Task<ItemResponse<Collection>> Get(int id)
     {
-        var response = await RaindropApiClient.SendAsync(HttpMethod.Get, $"collection/{id}", token);
-        response.EnsureSuccessStatusCode();
-        return await response.Content.ReadAsStringAsync();
+        return _api.GetCollection(id);
     }
 
     [McpServerTool, Description("Create a new collection")]
-    public static async Task<string> Create(string token, CollectionUpdate collection)
+    public Task<ItemResponse<Collection>> Create(CollectionUpdate collection)
     {
-        var response = await RaindropApiClient.SendAsync(HttpMethod.Post, "collection", token, collection);
-        response.EnsureSuccessStatusCode();
-        return await response.Content.ReadAsStringAsync();
+        return _api.CreateCollection(collection);
     }
 
     [McpServerTool, Description("Update an existing collection")]
-    public static async Task<string> Update(string token, int id, CollectionUpdate collection)
+    public Task<ItemResponse<Collection>> Update(int id, CollectionUpdate collection)
     {
-        var response = await RaindropApiClient.SendAsync(HttpMethod.Put, $"collection/{id}", token, collection);
-        response.EnsureSuccessStatusCode();
-        return await response.Content.ReadAsStringAsync();
+        return _api.UpdateCollection(id, collection);
     }
 
     [McpServerTool, Description("Delete a collection")]
-    public static async Task<string> Delete(string token, int id)
+    public Task<SuccessResponse> Delete(int id)
     {
-        var response = await RaindropApiClient.SendAsync(HttpMethod.Delete, $"collection/{id}", token);
-        response.EnsureSuccessStatusCode();
-        return await response.Content.ReadAsStringAsync();
+        return _api.DeleteCollection(id);
     }
 
     [McpServerTool, Description("Update order of child collections")]
-    public static async Task<string> UpdateChildren(string token, int parentId, ChildCollectionsUpdate update)
+    public Task<ItemResponse<Collection>> UpdateChildren(int parentId, ChildCollectionsUpdate update)
     {
-        var response = await RaindropApiClient.SendAsync(HttpMethod.Put, $"collection/{parentId}/children", token, update);
-        response.EnsureSuccessStatusCode();
-        return await response.Content.ReadAsStringAsync();
+        return _api.UpdateChildCollections(parentId, update);
     }
 }
 

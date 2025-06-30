@@ -29,11 +29,6 @@ public class ChatCommandTests
     }
 
 
-    private sealed class FakeRemainingArguments : IRemainingArguments
-    {
-        public ILookup<string, string?> Parsed { get; } = Array.Empty<(string, string?)>().ToLookup(t => t.Item1, t => t.Item2);
-        public IReadOnlyList<string> Raw { get; } = Array.Empty<string>();
-    }
 
     [Fact]
     public async Task ExecuteAsync_Writes_Welcome_And_Response()
@@ -42,7 +37,7 @@ public class ChatCommandTests
         var lineEditor = new FakeLineEditor(new[] { "hi", null });
         var chatConsole = new ChatConsole(lineEditor, testConsole);
         var client = new FakeChatClient { Response = new(new ChatMessage(ChatRole.Assistant, "done")) };
-        var controller = new ChatController(chatConsole, client, McpCollectionFactory.CreateToolCollection());
+        var controller = new ChatController(chatConsole, client, McpCollectionFactory.CreateToolCollection(), []);
         var history = new ChatHistoryService();
         var command = new ChatCommand(history, controller, chatConsole, Enumerable.Empty<IChatCommandStrategy>());
 

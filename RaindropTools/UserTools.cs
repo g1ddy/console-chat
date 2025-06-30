@@ -1,26 +1,29 @@
 using System.ComponentModel;
-using System.Net.Http;
+using Refit;
 using ModelContextProtocol.Server;
 
 namespace RaindropTools;
 
 [McpServerToolType]
-public static class UserTools
+public class UserTools
 {
-    [McpServerTool, Description("Get current user information")]
-    public static async Task<string> Get(string token)
+    private readonly IRaindropApi _api;
+
+    public UserTools(IRaindropApi api)
     {
-        var response = await RaindropApiClient.SendAsync(HttpMethod.Get, "user", token);
-        response.EnsureSuccessStatusCode();
-        return await response.Content.ReadAsStringAsync();
+        _api = api;
+    }
+
+    [McpServerTool, Description("Get current user information")]
+    public async Task<string> Get()
+    {
+        return await _api.GetUser();
     }
 
     [McpServerTool, Description("Update current user profile")]
-    public static async Task<string> Update(string token, string? email = null, string? name = null)
+    public async Task<string> Update(string? email = null, string? name = null)
     {
         var payload = new { email, name };
-        var response = await RaindropApiClient.SendAsync(HttpMethod.Put, "user", token, payload);
-        response.EnsureSuccessStatusCode();
-        return await response.Content.ReadAsStringAsync();
+        return await _api.UpdateUser(payload);
     }
 }

@@ -59,11 +59,9 @@ public sealed class EchoChatClient : IChatClient
 
             var callContents = new List<AIContent>
             {
-                new FunctionCallContent("tool_call_time", "CurrentTime"),
-                new FunctionCallContent("tool_call_echo", "ReverseEcho", new Dictionary<string, object?>
-                {
-                    { "message", lastMessage.Text }
-                })
+                new FunctionCallContent("tool_call_table", "RenderableFunctions_SampleTable"),
+                new FunctionCallContent("tool_call_tree", "RenderableFunctions_SampleTree"),
+                new FunctionCallContent("tool_call_chart", "RenderableFunctions_SampleChart")
             };
 
             await Task.Delay(100, cancellationToken);

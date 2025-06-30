@@ -1,43 +1,42 @@
 using System.ComponentModel;
-using System.Net.Http;
+using Refit;
 using ModelContextProtocol.Server;
 
 namespace RaindropTools;
 
 [McpServerToolType]
-public static class HighlightsTools
+public class HighlightsTools
 {
-    [McpServerTool, Description("Get highlights for a bookmark")]
-    public static async Task<string> Get(string token, long raindropId)
+    private readonly IRaindropApi _api;
+
+    public HighlightsTools(IRaindropApi api)
     {
-        var response = await RaindropApiClient.SendAsync(HttpMethod.Get, $"raindrop/{raindropId}/highlights", token);
-        response.EnsureSuccessStatusCode();
-        return await response.Content.ReadAsStringAsync();
+        _api = api;
+    }
+
+    [McpServerTool, Description("Get highlights for a bookmark")]
+    public async Task<string> Get(long raindropId)
+    {
+        return await _api.GetHighlights(raindropId);
     }
 
     [McpServerTool, Description("Create a highlight for a bookmark")]
-    public static async Task<string> Create(string token, long raindropId, string text)
+    public async Task<string> Create(long raindropId, string text)
     {
         var payload = new { text };
-        var response = await RaindropApiClient.SendAsync(HttpMethod.Post, $"raindrop/{raindropId}/highlights", token, payload);
-        response.EnsureSuccessStatusCode();
-        return await response.Content.ReadAsStringAsync();
+        return await _api.CreateHighlight(raindropId, payload);
     }
 
     [McpServerTool, Description("Update an existing highlight")]
-    public static async Task<string> Update(string token, long highlightId, string text)
+    public async Task<string> Update(long highlightId, string text)
     {
         var payload = new { text };
-        var response = await RaindropApiClient.SendAsync(HttpMethod.Put, $"highlight/{highlightId}", token, payload);
-        response.EnsureSuccessStatusCode();
-        return await response.Content.ReadAsStringAsync();
+        return await _api.UpdateHighlight(highlightId, payload);
     }
 
     [McpServerTool, Description("Delete a highlight by id")]
-    public static async Task<string> Delete(string token, long highlightId)
+    public async Task<string> Delete(long highlightId)
     {
-        var response = await RaindropApiClient.SendAsync(HttpMethod.Delete, $"highlight/{highlightId}", token);
-        response.EnsureSuccessStatusCode();
-        return await response.Content.ReadAsStringAsync();
+        return await _api.DeleteHighlight(highlightId);
     }
 }

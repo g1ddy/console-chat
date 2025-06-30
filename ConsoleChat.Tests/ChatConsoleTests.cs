@@ -90,7 +90,7 @@ public class ChatConsoleTests
         var client = new FakeChatClient { Response = new(new ChatMessage(ChatRole.Assistant, "done")) };
         var completion = new CommandCompletion(Enumerable.Empty<IChatCommandStrategy>());
         var console = new ChatConsole(new ChatLineEditor(completion), testConsole);
-        var controller = new ChatController(console, client, McpCollectionFactory.CreateToolCollection());
+        var controller = new ChatController(console, client, McpCollectionFactory.CreateToolCollection(), []);
         await controller.SendAndDisplayAsync(history);
 
         Assert.Equal(2, history.Messages.Count);
@@ -111,7 +111,7 @@ public class ChatConsoleTests
 
         var completion = new CommandCompletion(Enumerable.Empty<IChatCommandStrategy>());
         var console = new ChatConsole(new ChatLineEditor(completion), testConsole);
-        var controller = new ChatController(console, client, McpCollectionFactory.CreateToolCollection());
+        var controller = new ChatController(console, client, McpCollectionFactory.CreateToolCollection(), []);
         await controller.SendAndDisplayStreamingAsync(history);
 
         Assert.Equal(2, history.Messages.Count);
@@ -176,6 +176,7 @@ public class ChatConsoleTests
 
         Assert.Contains("Tool Result", testConsole.Output);
     }
+
 
     private static async IAsyncEnumerable<ChatResponseUpdate> AsAsyncEnumerable(IEnumerable<ChatResponseUpdate> updates)
     {
