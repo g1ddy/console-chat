@@ -1,5 +1,6 @@
 using System.ComponentModel;
 using System.Net.Http;
+using System.Text.Json.Serialization;
 using ModelContextProtocol.Server;
 
 namespace RaindropTools;
@@ -15,48 +16,59 @@ public class RaindropsTools
     }
 
     [McpServerTool, Description("Create a new bookmark in the specified collection")]
-    public async Task<string> Create(int collectionId, string url, string? title = null,
+    public async Task<ItemResponse<Raindrop>> Create(int collectionId, string url, string? title = null,
         string? excerpt = null, IEnumerable<string>? tags = null, bool? important = null)
     {
-        var payload = new { link = url, title, excerpt, tags, important };
-        var response = await _client.SendAsync(HttpMethod.Post, $"raindrops/{collectionId}", payload);
-        response.EnsureSuccessStatusCode();
-        return await response.Content.ReadAsStringAsync();
+        var payload = new
+        {
+            link = url,
+            title,
+            excerpt,
+            tags,
+            important,
+            collection = new IdRef { Id = collectionId }
+        };
+        return await _client.SendAsync<ItemResponse<Raindrop>>(HttpMethod.Post, "raindrop", payload);
     }
 
     [McpServerTool, Description("Get a bookmark by id")]
-    public async Task<string> Get(long id)
+    public async Task<ItemResponse<Raindrop>> Get(long id)
     {
-        var response = await _client.SendAsync(HttpMethod.Get, $"raindrop/{id}");
-        response.EnsureSuccessStatusCode();
-        return await response.Content.ReadAsStringAsync();
+        return await _client.SendAsync<ItemResponse<Raindrop>>(HttpMethod.Get, $"raindrop/{id}");
     }
 
     [McpServerTool, Description("Update an existing bookmark")]
-    public async Task<string> Update(long id, string? title = null, string? excerpt = null,
+    public async Task<ItemResponse<Raindrop>> Update(long id, string? title = null, string? excerpt = null,
         string? link = null, IEnumerable<string>? tags = null, bool? important = null,
         int? collectionId = null)
     {
-        var payload = new { link, title, excerpt, tags, important, collectionId };
-        var response = await _client.SendAsync(HttpMethod.Put, $"raindrop/{id}", payload);
-        response.EnsureSuccessStatusCode();
-        return await response.Content.ReadAsStringAsync();
+        var payload = new
+        {
+            link,
+            title,
+            excerpt,
+            tags,
+            important,
+            collectionId
+        };
+        return await _client.SendAsync<ItemResponse<Raindrop>>(HttpMethod.Put, $"raindrop/{id}", payload);
     }
 
     [McpServerTool, Description("Delete a bookmark by id")]
-    public async Task<string> Delete(long id)
+    public async Task<SuccessResponse> Delete(long id)
     {
-        var response = await _client.SendAsync(HttpMethod.Delete, $"raindrop/{id}");
-        response.EnsureSuccessStatusCode();
-        return await response.Content.ReadAsStringAsync();
+        return await _client.SendAsync<SuccessResponse>(HttpMethod.Delete, $"raindrop/{id}");
     }
 
     [McpServerTool, Description("Search bookmarks in a collection")]
-    public async Task<string> Search(int collectionId, string query)
+    public async Task<ItemsResponse<Raindrop>> Search(int collectionId, string query)
     {
         var url = $"raindrops/{collectionId}?search={Uri.EscapeDataString(query)}";
-        var response = await _client.SendAsync(HttpMethod.Get, url);
-        response.EnsureSuccessStatusCode();
-        return await response.Content.ReadAsStringAsync();
+        return await _client.SendAsync<ItemsResponse<Raindrop>>(HttpMethod.Get, url);
     }
+}
+
+internal class IdRef
+{
+    [JsonPropertyName("$id")] public int Id { get; set; }
 }

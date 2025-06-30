@@ -28,4 +28,16 @@ public class RaindropApiClient
 
         return await _client.SendAsync(request);
     }
+
+    /// <summary>
+    /// Sends a request and deserializes the JSON response into the specified type.
+    /// </summary>
+    public async Task<T> SendAsync<T>(HttpMethod method, string path, object? body = null)
+    {
+        var response = await SendAsync(method, path, body);
+        response.EnsureSuccessStatusCode();
+        using var stream = await response.Content.ReadAsStreamAsync();
+        var result = await JsonSerializer.DeserializeAsync<T>(stream);
+        return result ?? throw new InvalidOperationException("Failed to deserialize response");
+    }
 }

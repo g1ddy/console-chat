@@ -18,51 +18,39 @@ public class CollectionsTools
     }
 
     [McpServerTool, Description("List all collections for the current user")]
-    public async Task<string> List()
+    public async Task<ItemsResponse<Collection>> List()
     {
-        var response = await _client.SendAsync(HttpMethod.Get, "collections");
-        response.EnsureSuccessStatusCode();
-        return await response.Content.ReadAsStringAsync();
+        return await _client.SendAsync<ItemsResponse<Collection>>(HttpMethod.Get, "collections");
     }
 
     [McpServerTool, Description("Get details for a collection by id")]
-    public async Task<string> Get(int id)
+    public async Task<ItemResponse<Collection>> Get(int id)
     {
-        var response = await _client.SendAsync(HttpMethod.Get, $"collection/{id}");
-        response.EnsureSuccessStatusCode();
-        return await response.Content.ReadAsStringAsync();
+        return await _client.SendAsync<ItemResponse<Collection>>(HttpMethod.Get, $"collection/{id}");
     }
 
     [McpServerTool, Description("Create a new collection")]
-    public async Task<string> Create(CollectionUpdate collection)
+    public async Task<ItemResponse<Collection>> Create(CollectionUpdate collection)
     {
-        var response = await _client.SendAsync(HttpMethod.Post, "collection", collection);
-        response.EnsureSuccessStatusCode();
-        return await response.Content.ReadAsStringAsync();
+        return await _client.SendAsync<ItemResponse<Collection>>(HttpMethod.Post, "collection", collection);
     }
 
     [McpServerTool, Description("Update an existing collection")]
-    public async Task<string> Update(int id, CollectionUpdate collection)
+    public async Task<ItemResponse<Collection>> Update(int id, CollectionUpdate collection)
     {
-        var response = await _client.SendAsync(HttpMethod.Put, $"collection/{id}", collection);
-        response.EnsureSuccessStatusCode();
-        return await response.Content.ReadAsStringAsync();
+        return await _client.SendAsync<ItemResponse<Collection>>(HttpMethod.Put, $"collection/{id}", collection);
     }
 
     [McpServerTool, Description("Delete a collection")]
-    public async Task<string> Delete(int id)
+    public async Task<SuccessResponse> Delete(int id)
     {
-        var response = await _client.SendAsync(HttpMethod.Delete, $"collection/{id}");
-        response.EnsureSuccessStatusCode();
-        return await response.Content.ReadAsStringAsync();
+        return await _client.SendAsync<SuccessResponse>(HttpMethod.Delete, $"collection/{id}");
     }
 
     [McpServerTool, Description("Update order of child collections")]
-    public async Task<string> UpdateChildren(int parentId, ChildCollectionsUpdate update)
+    public async Task<ItemResponse<Collection>> UpdateChildren(int parentId, ChildCollectionsUpdate update)
     {
-        var response = await _client.SendAsync(HttpMethod.Put, $"collection/{parentId}/children", update);
-        response.EnsureSuccessStatusCode();
-        return await response.Content.ReadAsStringAsync();
+        return await _client.SendAsync<ItemResponse<Collection>>(HttpMethod.Put, $"collection/{parentId}/children", update);
     }
 }
 
