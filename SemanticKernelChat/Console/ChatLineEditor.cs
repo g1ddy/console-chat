@@ -32,12 +32,19 @@ public sealed class ChatLineEditor : IChatLineEditor
         _historyPath = Environment.GetEnvironmentVariable(HistoryEnvVar);
         if (!string.IsNullOrEmpty(_historyPath) && File.Exists(_historyPath))
         {
-            foreach (var line in File.ReadLines(_historyPath))
+            try
             {
-                if (!string.IsNullOrWhiteSpace(line))
+                foreach (var line in File.ReadLines(_historyPath))
                 {
-                    _editor.History.Add(line);
+                    if (!string.IsNullOrWhiteSpace(line))
+                    {
+                        _editor.History.Add(line);
+                    }
                 }
+            }
+            catch (Exception ex)
+            {
+                System.Console.Error.WriteLine($"Warning: Failed to load chat history from '{_historyPath}'. {ex.Message}");
             }
         }
     }
@@ -53,11 +60,11 @@ public sealed class ChatLineEditor : IChatLineEditor
             {
                 try
                 {
-                    File.AppendAllText(_historyPath, line + Environment.NewLine);
+                    await File.AppendAllTextAsync(_historyPath, line + Environment.NewLine, cancellationToken);
                 }
-                catch
+                catch (Exception ex)
                 {
-                    // Ignore file persistence errors
+                    System.Console.Error.WriteLine($"Warning: Failed to write to history file: {ex.Message}");
                 }
             }
         }
