@@ -5,17 +5,21 @@ using System.Text.Json;
 
 namespace RaindropTools;
 
-internal static class RaindropApiClient
+/// <summary>
+/// Typed HTTP client used to call the Raindrop API.
+/// </summary>
+public class RaindropApiClient
 {
-    private static readonly HttpClient _client = new()
-    {
-        BaseAddress = new Uri("https://api.raindrop.io/rest/v1/")
-    };
+    private readonly HttpClient _client;
 
-    public static async Task<HttpResponseMessage> SendAsync(HttpMethod method, string path, string token, object? body = null)
+    public RaindropApiClient(HttpClient client)
+    {
+        _client = client;
+    }
+
+    public async Task<HttpResponseMessage> SendAsync(HttpMethod method, string path, object? body = null)
     {
         using var request = new HttpRequestMessage(method, path);
-        request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
 
         if (body != null)
         {

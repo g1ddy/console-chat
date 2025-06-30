@@ -1,3 +1,5 @@
+using RaindropTools;
+
 var builder = Host.CreateApplicationBuilder(args);
 
 builder.Logging.AddConsole(options =>
@@ -6,6 +8,7 @@ builder.Logging.AddConsole(options =>
 });
 
 builder.Services
+    .AddRaindropApiClient(builder.Configuration)
     .AddMcpServer()
     .WithStdioServerTransport()
     .WithToolsFromAssembly(typeof(RaindropTools.RaindropsTools).Assembly);
