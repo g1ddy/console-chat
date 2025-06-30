@@ -14,6 +14,10 @@ namespace SemanticKernelChat.Infrastructure;
 public static class SemanticKernelExtensions
 {
     /// <summary>
+    /// Default base URL for the Ollama server when none is configured.
+    /// </summary>
+    private const string DefaultOllamaBaseUrl = "http://localhost:11434";
+    /// <summary>
     /// Registers the Semantic Kernel chat client and related services.
     /// </summary>
     public static async Task<IServiceCollection> AddSemanticKernelChatClient(
@@ -67,14 +71,8 @@ public static class SemanticKernelExtensions
             case "Ollama":
                 // Create Ollama chat client using the official OllamaSharp package
                 var baseUrl = providerSection["BaseUrl"];
-                if (!string.IsNullOrWhiteSpace(baseUrl))
-                {
-                    return new OllamaSharp.OllamaApiClient(baseUrl, modelId);
-                }
-                else
-                {
-                    return new OllamaSharp.OllamaApiClient("http://localhost:11434", modelId);
-                }
+                var ollamaUrl = string.IsNullOrWhiteSpace(baseUrl) ? DefaultOllamaBaseUrl : baseUrl;
+                return new OllamaSharp.OllamaApiClient(ollamaUrl, modelId);
             default:
                 throw new NotSupportedException($"Provider '{provider}' is not supported.");
         }
