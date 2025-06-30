@@ -52,10 +52,11 @@ public sealed class FileCommand : AsyncCommand<ChatCommandBase.Settings>
         }
 
         const string Prompt = "Please read the attached file, summarize it, and be ready to answer questions.";
+        var mediaType = $"application/pdf;name={Path.GetFileName(settings.FilePath)}";
         var contents = new AIContent[]
         {
             new TextContent(Prompt),
-            new DataContent(data, "application/pdf")
+            new DataContent(data, mediaType)
         };
 
         _history.Add(new ChatMessage(ChatRole.User, contents));

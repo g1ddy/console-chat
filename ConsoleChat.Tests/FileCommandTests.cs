@@ -43,7 +43,8 @@ public class FileCommandTests
             Assert.NotNull(client.LastMessages);
             var msg = client.LastMessages!.Last();
             Assert.Contains("summarize", msg.Text, StringComparison.OrdinalIgnoreCase);
-            Assert.Contains(msg.Contents, c => c is DataContent);
+            var dataContent = msg.Contents.OfType<DataContent>().Single();
+            Assert.Contains("name=", dataContent.MediaType, StringComparison.OrdinalIgnoreCase);
         }
         finally
         {
