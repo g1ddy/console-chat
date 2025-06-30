@@ -28,8 +28,8 @@ builder.Services.AddSingleton(console);
 builder.Services.AddSingleton<RenderableFunctions>();
 builder.Services.AddSingleton(provider =>
 {
-    var chatConsole = provider.GetRequiredService<IChatConsole>();
-    var plugin = KernelPluginFactory.CreateFromObject(new RenderableFunctions(chatConsole));
+    var functions = provider.GetRequiredService<RenderableFunctions>();
+    var plugin = KernelPluginFactory.CreateFromObject(functions);
     var kernel = Kernel.CreateBuilder().Build();
 #pragma warning disable SKEXP0001
     return plugin.AsAIFunctions(kernel).ToList();

@@ -10,6 +10,8 @@ public class ChatController : IChatController
     private readonly McpToolCollection _toolCollection;
     private readonly IReadOnlyList<AIFunction> _functions;
 
+    private ChatOptions CreateChatOptions() => new() { Tools = [.._toolCollection.Tools, .._functions] };
+
     public McpToolCollection ToolCollection => _toolCollection;
 
     public ChatController(IChatConsole console, IChatClient chatClient, McpToolCollection toolCollection, IReadOnlyList<AIFunction> functions)
@@ -28,17 +30,7 @@ public class ChatController : IChatController
         {
             try
             {
-                var options = new ChatOptions { Tools = [] };
-                foreach (var t in _toolCollection.Tools)
-                {
-                    options.Tools.Add(t);
-                }
-                foreach (var f in _functions)
-                {
-                    options.Tools.Add(f);
-                }
-
-                var response = await _chatClient.GetResponseAsync(history.Messages, options);
+                var response = await _chatClient.GetResponseAsync(history.Messages, CreateChatOptions());
                 responses = [.. response.Messages];
             }
             catch (Exception ex)
@@ -61,17 +53,7 @@ public class ChatController : IChatController
         IChatHistoryService history,
         Action<IReadOnlyList<ChatMessage>>? finalCallback = null)
     {
-        var options = new ChatOptions { Tools = [] };
-        foreach (var t in _toolCollection.Tools)
-        {
-            options.Tools.Add(t);
-        }
-        foreach (var f in _functions)
-        {
-            options.Tools.Add(f);
-        }
-
-        var updates = _chatClient.GetStreamingResponseAsync(history.Messages, options);
+        var updates = _chatClient.GetStreamingResponseAsync(history.Messages, CreateChatOptions());
         Exception? error = null;
         IReadOnlyList<ChatMessage> messages = [];
 
