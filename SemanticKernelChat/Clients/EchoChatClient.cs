@@ -21,11 +21,9 @@ public sealed class EchoChatClient : IChatClient
         if (lastMessage.Role == ChatRole.User)
         {
             responseContents.Add(new TextContent("I need to call some tools!"));
-            responseContents.Add(new FunctionCallContent("tool_call_time", "CurrentTime"));
-            responseContents.Add(new FunctionCallContent("tool_call_echo", "ReverseEcho", new Dictionary<string, object?>
-            {
-                { "message", lastMessage.Text }
-            }));
+            responseContents.Add(new FunctionCallContent("tool_call_table", "SampleTable"));
+            responseContents.Add(new FunctionCallContent("tool_call_tree", "SampleTree"));
+            responseContents.Add(new FunctionCallContent("tool_call_chart", "SampleChart"));
         }
         else if (lastMessage.Role == ChatRole.Tool)
         {
@@ -59,11 +57,9 @@ public sealed class EchoChatClient : IChatClient
 
             var callContents = new List<AIContent>
             {
-                new FunctionCallContent("tool_call_time", "CurrentTime"),
-                new FunctionCallContent("tool_call_echo", "ReverseEcho", new Dictionary<string, object?>
-                {
-                    { "message", lastMessage.Text }
-                })
+                new FunctionCallContent("tool_call_table", "SampleTable"),
+                new FunctionCallContent("tool_call_tree", "SampleTree"),
+                new FunctionCallContent("tool_call_chart", "SampleChart")
             };
 
             await Task.Delay(100, cancellationToken);
