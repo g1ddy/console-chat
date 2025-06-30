@@ -1,14 +1,13 @@
-using System;
-using System.IO;
+using ConsoleChat.Tests.TestUtilities;
+
+using Microsoft.Extensions.AI;
+
 using SemanticKernelChat;
 using SemanticKernelChat.Commands;
 using SemanticKernelChat.Console;
-using SemanticKernelChat.Infrastructure;
-using Microsoft.Extensions.AI;
-using System.Linq;
-using ConsoleChat.Tests.TestUtilities;
-using Spectre.Console.Testing;
+
 using Spectre.Console.Cli;
+using Spectre.Console.Testing;
 
 namespace ConsoleChat.Tests;
 
@@ -27,7 +26,7 @@ public class FileCommandTests
             var lineEditor = new ChatLineEditor(new CommandCompletion(Enumerable.Empty<IChatCommandStrategy>()));
             var chatConsole = new ChatConsole(lineEditor, console);
             var client = new FakeChatClient { Response = new(new ChatMessage(ChatRole.Assistant, "done")) };
-            var controller = new ChatController(chatConsole, client, McpCollectionFactory.CreateToolCollection());
+            var controller = new ChatController(chatConsole, client, McpCollectionFactory.CreateToolCollection(), []);
 
             var command = new FileCommand(history, controller);
             var context = new CommandContext(new FakeRemainingArguments(), "file", new object());
