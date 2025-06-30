@@ -5,29 +5,36 @@ using ModelContextProtocol.Server;
 namespace RaindropTools;
 
 [McpServerToolType]
-public static class TagsTools
+public class TagsTools
 {
-    [McpServerTool, Description("List all tags")]
-    public static async Task<string> List(string token)
+    private readonly RaindropApiClient _client;
+
+    public TagsTools(RaindropApiClient client)
     {
-        var response = await RaindropApiClient.SendAsync(HttpMethod.Get, "tags", token);
+        _client = client;
+    }
+
+    [McpServerTool, Description("List all tags")]
+    public async Task<string> List()
+    {
+        var response = await _client.SendAsync(HttpMethod.Get, "tags");
         response.EnsureSuccessStatusCode();
         return await response.Content.ReadAsStringAsync();
     }
 
     [McpServerTool, Description("Rename a tag")]
-    public static async Task<string> Rename(string token, string oldTag, string newTag)
+    public async Task<string> Rename(string oldTag, string newTag)
     {
         var payload = new { newName = newTag };
-        var response = await RaindropApiClient.SendAsync(HttpMethod.Put, $"tag/{Uri.EscapeDataString(oldTag)}", token, payload);
+        var response = await _client.SendAsync(HttpMethod.Put, $"tag/{Uri.EscapeDataString(oldTag)}", payload);
         response.EnsureSuccessStatusCode();
         return await response.Content.ReadAsStringAsync();
     }
 
     [McpServerTool, Description("Delete a tag")]
-    public static async Task<string> Delete(string token, string tag)
+    public async Task<string> Delete(string tag)
     {
-        var response = await RaindropApiClient.SendAsync(HttpMethod.Delete, $"tag/{Uri.EscapeDataString(tag)}", token);
+        var response = await _client.SendAsync(HttpMethod.Delete, $"tag/{Uri.EscapeDataString(tag)}");
         response.EnsureSuccessStatusCode();
         return await response.Content.ReadAsStringAsync();
     }

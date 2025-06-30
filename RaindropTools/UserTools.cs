@@ -5,21 +5,28 @@ using ModelContextProtocol.Server;
 namespace RaindropTools;
 
 [McpServerToolType]
-public static class UserTools
+public class UserTools
 {
-    [McpServerTool, Description("Get current user information")]
-    public static async Task<string> Get(string token)
+    private readonly RaindropApiClient _client;
+
+    public UserTools(RaindropApiClient client)
     {
-        var response = await RaindropApiClient.SendAsync(HttpMethod.Get, "user", token);
+        _client = client;
+    }
+
+    [McpServerTool, Description("Get current user information")]
+    public async Task<string> Get()
+    {
+        var response = await _client.SendAsync(HttpMethod.Get, "user");
         response.EnsureSuccessStatusCode();
         return await response.Content.ReadAsStringAsync();
     }
 
     [McpServerTool, Description("Update current user profile")]
-    public static async Task<string> Update(string token, string? email = null, string? name = null)
+    public async Task<string> Update(string? email = null, string? name = null)
     {
         var payload = new { email, name };
-        var response = await RaindropApiClient.SendAsync(HttpMethod.Put, "user", token, payload);
+        var response = await _client.SendAsync(HttpMethod.Put, "user", payload);
         response.EnsureSuccessStatusCode();
         return await response.Content.ReadAsStringAsync();
     }
