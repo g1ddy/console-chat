@@ -11,7 +11,7 @@ Below is a list of open features still planned for future development. Earlier t
    - Investigate reflection or `AssemblyLoadContext` to discover tools.
 
 2. **Voice input/output mode**
-   - Integrate speech recognition for user input and text‑to‑speech for responses.
+   - Integrate speech recognition for user input and text-to-speech for responses.
    - Likely requires optional dependencies and should be toggled via configuration.
 
 3. **Session persistence**
