@@ -39,8 +39,6 @@ public sealed class TextCompletionTestCommand : ChatCommandBase
     [
         "This is a demo of non-streaming chat!",
         "This is a demo of streaming chat!",
-        $"{CliConstants.Commands.List} {CliConstants.Options.Tools}",
-        $"{CliConstants.Commands.List} {CliConstants.Options.Prompts}",
         CliConstants.Commands.Exit
     ];
 
