@@ -136,7 +136,7 @@ public class ChatControllerTests
                 return Task.FromResult(new ChatResponse(new ChatMessage(ChatRole.Assistant, "done")));
             });
 
-        var controller = new ChatController(console, client, McpCollectionFactory.CreateToolCollection(), summaryThreshold:5, summaryKeepLast:2);
+        var controller = new ChatController(console, client, McpCollectionFactory.CreateToolCollection(), [], summaryThreshold:5, summaryKeepLast:2);
 
         await controller.SendAndDisplayAsync(history);
 
