@@ -85,6 +85,10 @@ The client starts any configured MCP transports (by default it launches the `Mcp
 
 Type `exit` on an empty line to quit.
 
+The editor remembers your previous inputs. Use the **Up** and **Down** arrows to
+cycle through earlier messages. Set the `CHAT_HISTORY_FILE` environment variable
+to persist this history across sessions.
+
 ### Spectre Console
 
 The console client relies on [Spectre.Console](https://spectreconsole.net/) for
