@@ -34,12 +34,18 @@ public sealed class FileCommand : AsyncCommand<ChatCommandBase.Settings>
             return -1;
         }
 
+        if (Path.GetExtension(settings.FilePath) is not ".pdf")
+        {
+            AnsiConsole.MarkupLine("[red]Only PDF files are supported[/]");
+            return -1;
+        }
+
         byte[] data;
         try
         {
             data = await File.ReadAllBytesAsync(settings.FilePath);
         }
-        catch (Exception ex)
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
         {
             AnsiConsole.MarkupLine($"[red]Error reading file: {ex.Message}[/]");
             return -1;
