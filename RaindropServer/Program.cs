@@ -11,6 +11,6 @@ builder.Services
     .AddRaindropApiClient(builder.Configuration)
     .AddMcpServer()
     .WithStdioServerTransport()
-    .WithToolsFromAssembly(typeof(RaindropTools.RaindropsTools).Assembly);
+    .WithToolsFromAssembly(typeof(RaindropTools.Raindrops.RaindropsTools).Assembly);
 
 await builder.Build().RunAsync();

@@ -1,8 +1,8 @@
 using System.ComponentModel;
-using System.Text.Json.Serialization;
 using ModelContextProtocol.Server;
+using RaindropTools.Common;
 
-namespace RaindropTools;
+namespace RaindropTools.Raindrops;
 
 [McpServerToolType]
 public class RaindropsTools
@@ -15,7 +15,7 @@ public class RaindropsTools
     }
 
     [McpServerTool, Description("Create a new bookmark in the specified collection")]
-    public async Task<ItemResponse<Raindrop>> Create(int collectionId, string url, string? title = null,
+    public Task<ItemResponse<Raindrop>> Create(int collectionId, string url, string? title = null,
         string? excerpt = null, IEnumerable<string>? tags = null, bool? important = null)
     {
         var payload = new
@@ -27,17 +27,14 @@ public class RaindropsTools
             important,
             collection = new IdRef { Id = collectionId }
         };
-        return await _api.CreateRaindrop(payload);
+        return _api.CreateRaindrop(payload);
     }
 
     [McpServerTool, Description("Get a bookmark by id")]
-    public async Task<ItemResponse<Raindrop>> Get(long id)
-    {
-        return await _api.GetRaindrop(id);
-    }
+    public Task<ItemResponse<Raindrop>> Get(long id) => _api.GetRaindrop(id);
 
     [McpServerTool, Description("Update an existing bookmark")]
-    public async Task<ItemResponse<Raindrop>> Update(long id, string? title = null, string? excerpt = null,
+    public Task<ItemResponse<Raindrop>> Update(long id, string? title = null, string? excerpt = null,
         string? link = null, IEnumerable<string>? tags = null, bool? important = null,
         int? collectionId = null)
     {
@@ -50,23 +47,12 @@ public class RaindropsTools
             important,
             collectionId
         };
-        return await _api.UpdateRaindrop(id, payload);
+        return _api.UpdateRaindrop(id, payload);
     }
 
     [McpServerTool, Description("Delete a bookmark by id")]
-    public async Task<SuccessResponse> Delete(long id)
-    {
-        return await _api.DeleteRaindrop(id);
-    }
+    public Task<SuccessResponse> Delete(long id) => _api.DeleteRaindrop(id);
 
     [McpServerTool, Description("Search bookmarks in a collection")]
-    public async Task<ItemsResponse<Raindrop>> Search(int collectionId, string query)
-    {
-        return await _api.SearchRaindrops(collectionId, query);
-    }
-}
-
-internal class IdRef
-{
-    [JsonPropertyName("$id")] public int Id { get; set; }
+    public Task<ItemsResponse<Raindrop>> Search(int collectionId, string query) => _api.SearchRaindrops(collectionId, query);
 }

@@ -1,4 +1,8 @@
 using Refit;
+using RaindropTools.Common;
+using RaindropTools.Collections;
+using RaindropTools.Raindrops;
+using RaindropTools.Highlights;
 
 namespace RaindropTools;
 
@@ -26,7 +30,6 @@ public interface IRaindropApi
     // raindrops
     [Post("/raindrop")]
     Task<ItemResponse<Raindrop>> CreateRaindrop([Body] object payload);
-    // dynamic payload for create
 
     [Get("/raindrop/{id}")]
     Task<ItemResponse<Raindrop>> GetRaindrop(long id);
@@ -41,17 +44,17 @@ public interface IRaindropApi
     Task<ItemsResponse<Raindrop>> SearchRaindrops(int collectionId, [AliasAs("search")] string query);
 
     // highlights
-    [Get("/raindrop/{raindropId}/highlights")]
-    Task<string> GetHighlights(long raindropId);
+    [Get("/highlights")]
+    Task<ItemsResponse<Highlight>> ListHighlights([AliasAs("page")] int? page = null, [AliasAs("perpage")] int? perPage = null);
 
-    [Post("/raindrop/{raindropId}/highlights")]
-    Task<string> CreateHighlight(long raindropId, [Body] object payload);
+    [Get("/highlights/{collectionId}")]
+    Task<ItemsResponse<Highlight>> ListHighlightsByCollection(int collectionId, [AliasAs("page")] int? page = null, [AliasAs("perpage")] int? perPage = null);
 
-    [Put("/highlight/{highlightId}")]
-    Task<string> UpdateHighlight(long highlightId, [Body] object payload);
+    [Get("/raindrop/{id}")]
+    Task<ItemResponse<RaindropHighlights>> GetHighlights(long id);
 
-    [Delete("/highlight/{highlightId}")]
-    Task<string> DeleteHighlight(long highlightId);
+    [Put("/raindrop/{id}")]
+    Task<ItemResponse<RaindropHighlights>> UpdateHighlights(long id, [Body] HighlightsPayload payload);
 
     // tags
     [Get("/tags")]

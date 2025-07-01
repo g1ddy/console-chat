@@ -1,7 +1,7 @@
 using System.ComponentModel;
 using ModelContextProtocol.Server;
 
-namespace RaindropTools;
+namespace RaindropTools.Tags;
 
 [McpServerToolType]
 public class TagsTools
@@ -14,21 +14,15 @@ public class TagsTools
     }
 
     [McpServerTool, Description("List all tags")]
-    public async Task<string> List()
-    {
-        return await _api.ListTags();
-    }
+    public Task<string> List() => _api.ListTags();
 
     [McpServerTool, Description("Rename a tag")]
-    public async Task<string> Rename(string oldTag, string newTag)
+    public Task<string> Rename(string oldTag, string newTag)
     {
         var payload = new { newName = newTag };
-        return await _api.RenameTag(Uri.EscapeDataString(oldTag), payload);
+        return _api.RenameTag(Uri.EscapeDataString(oldTag), payload);
     }
 
     [McpServerTool, Description("Delete a tag")]
-    public async Task<string> Delete(string tag)
-    {
-        return await _api.DeleteTag(Uri.EscapeDataString(tag));
-    }
+    public Task<string> Delete(string tag) => _api.DeleteTag(Uri.EscapeDataString(tag));
 }
