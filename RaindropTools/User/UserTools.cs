@@ -6,9 +6,9 @@ namespace RaindropTools.User;
 [McpServerToolType]
 public class UserTools
 {
-    private readonly IRaindropApi _api;
+    private readonly IUserApi _api;
 
-    public UserTools(IRaindropApi api)
+    public UserTools(IUserApi api)
     {
         _api = api;
     }

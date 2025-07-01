@@ -7,9 +7,9 @@ namespace RaindropTools.Collections;
 [McpServerToolType]
 public class CollectionsTools
 {
-    private readonly IRaindropApi _api;
+    private readonly ICollectionsApi _api;
 
-    public CollectionsTools(IRaindropApi api)
+    public CollectionsTools(ICollectionsApi api)
     {
         _api = api;
     }
@@ -21,10 +21,10 @@ public class CollectionsTools
     public Task<ItemResponse<Collection>> Get(int id) => _api.GetCollection(id);
 
     [McpServerTool, Description("Create a new collection")]
-    public Task<ItemResponse<Collection>> Create(CollectionUpdate collection) => _api.CreateCollection(collection);
+    public Task<ItemResponse<Collection>> Create(Collection collection) => _api.CreateCollection(collection);
 
     [McpServerTool, Description("Update an existing collection")]
-    public Task<ItemResponse<Collection>> Update(int id, CollectionUpdate collection) => _api.UpdateCollection(id, collection);
+    public Task<ItemResponse<Collection>> Update(int id, Collection collection) => _api.UpdateCollection(id, collection);
 
     [McpServerTool, Description("Delete a collection")]
     public Task<SuccessResponse> Delete(int id) => _api.DeleteCollection(id);

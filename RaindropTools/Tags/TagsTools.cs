@@ -6,9 +6,9 @@ namespace RaindropTools.Tags;
 [McpServerToolType]
 public class TagsTools
 {
-    private readonly IRaindropApi _api;
+    private readonly ITagsApi _api;
 
-    public TagsTools(IRaindropApi api)
+    public TagsTools(ITagsApi api)
     {
         _api = api;
     }

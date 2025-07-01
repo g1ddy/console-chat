@@ -1,4 +1,5 @@
 using System.ComponentModel;
+using System.Linq;
 using ModelContextProtocol.Server;
 using RaindropTools.Common;
 
@@ -7,9 +8,9 @@ namespace RaindropTools.Raindrops;
 [McpServerToolType]
 public class RaindropsTools
 {
-    private readonly IRaindropApi _api;
+    private readonly IRaindropsApi _api;
 
-    public RaindropsTools(IRaindropApi api)
+    public RaindropsTools(IRaindropsApi api)
     {
         _api = api;
     }
@@ -18,14 +19,14 @@ public class RaindropsTools
     public Task<ItemResponse<Raindrop>> Create(int collectionId, string url, string? title = null,
         string? excerpt = null, IEnumerable<string>? tags = null, bool? important = null)
     {
-        var payload = new
+        var payload = new Raindrop
         {
-            link = url,
-            title,
-            excerpt,
-            tags,
-            important,
-            collection = new IdRef { Id = collectionId }
+            Link = url,
+            Title = title,
+            Excerpt = excerpt,
+            Tags = tags?.ToList(),
+            Important = important,
+            CollectionId = collectionId
         };
         return _api.CreateRaindrop(payload);
     }
@@ -38,14 +39,14 @@ public class RaindropsTools
         string? link = null, IEnumerable<string>? tags = null, bool? important = null,
         int? collectionId = null)
     {
-        var payload = new
+        var payload = new Raindrop
         {
-            link,
-            title,
-            excerpt,
-            tags,
-            important,
-            collectionId
+            Link = link,
+            Title = title,
+            Excerpt = excerpt,
+            Tags = tags?.ToList(),
+            Important = important,
+            CollectionId = collectionId
         };
         return _api.UpdateRaindrop(id, payload);
     }

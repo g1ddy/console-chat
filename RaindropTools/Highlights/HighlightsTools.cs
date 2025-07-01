@@ -7,9 +7,9 @@ namespace RaindropTools.Highlights;
 [McpServerToolType]
 public class HighlightsTools
 {
-    private readonly IRaindropApi _api;
+    private readonly IHighlightsApi _api;
 
-    public HighlightsTools(IRaindropApi api)
+    public HighlightsTools(IHighlightsApi api)
     {
         _api = api;
     }
@@ -30,7 +30,7 @@ public class HighlightsTools
     {
         var payload = new HighlightsPayload
         {
-            Highlights = [ new HighlightInput { Text = text, Color = color, Note = note } ]
+            Highlights = [ new Highlight { Text = text, Color = color, Note = note } ]
         };
         return _api.UpdateHighlights(raindropId, payload);
     }
@@ -40,7 +40,7 @@ public class HighlightsTools
     {
         var payload = new HighlightsPayload
         {
-            Highlights = [ new HighlightInput { Id = highlightId, Text = text, Color = color, Note = note } ]
+            Highlights = [ new Highlight { Id = highlightId, Text = text, Color = color, Note = note } ]
         };
         return _api.UpdateHighlights(raindropId, payload);
     }
@@ -50,7 +50,7 @@ public class HighlightsTools
     {
         var payload = new HighlightsPayload
         {
-            Highlights = [ new HighlightInput { Id = highlightId, Text = string.Empty } ]
+            Highlights = [ new Highlight { Id = highlightId, Text = string.Empty } ]
         };
         return _api.UpdateHighlights(raindropId, payload);
     }

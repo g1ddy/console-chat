@@ -20,8 +20,8 @@ public class IntegrationTests : TestBase
     public async Task FullFlow()
     {
         var collections = Provider.GetRequiredService<CollectionsTools>();
-        int rootId = (await collections.Create(new CollectionUpdate { Title = "root" })).Item.Id;
-        int childId = (await collections.Create(new CollectionUpdate { Title = "child", ParentId = rootId })).Item.Id;
+        int rootId = (await collections.Create(new Collection { Title = "root" })).Item.Id;
+        int childId = (await collections.Create(new Collection { Title = "child", ParentId = rootId })).Item.Id;
 
         var bookmarks = Provider.GetRequiredService<RaindropsTools>();
         long b1 = (await bookmarks.Create(rootId, "https://example.com/1", "b1", tags: ["t1"])).Item.Id;

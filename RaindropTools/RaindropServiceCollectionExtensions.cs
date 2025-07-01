@@ -3,6 +3,11 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Refit;
 using System.Net.Http.Headers;
+using RaindropTools.Collections;
+using RaindropTools.Raindrops;
+using RaindropTools.Highlights;
+using RaindropTools.Tags;
+using RaindropTools.User;
 
 namespace RaindropTools;
 
@@ -12,22 +17,23 @@ namespace RaindropTools;
 public static class RaindropServiceCollectionExtensions
 {
     /// <summary>
-    /// Registers <see cref="IRaindropApi"/> using configuration from the
+    /// Registers Raindrop API clients using configuration from the
     /// "Raindrop" section of <see cref="IConfiguration"/>.
     /// </summary>
     public static IServiceCollection AddRaindropApiClient(this IServiceCollection services, IConfiguration configuration)
     {
         services.Configure<RaindropOptions>(configuration.GetSection("Raindrop"));
 
-        services.AddRefitClient<IRaindropApi>(new RefitSettings
+        var settings = new RefitSettings
         {
             ContentSerializer = new SystemTextJsonContentSerializer(new System.Text.Json.JsonSerializerOptions
             {
                 PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase,
                 PropertyNameCaseInsensitive = true
             })
-        })
-        .ConfigureHttpClient((sp, client) =>
+        };
+
+        void Configure(HttpClient client, IServiceProvider sp)
         {
             var options = sp.GetRequiredService<IOptions<RaindropOptions>>().Value;
 
@@ -43,7 +49,13 @@ public static class RaindropServiceCollectionExtensions
 
             client.BaseAddress = new Uri(options.BaseUrl);
             client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", options.ApiToken);
-        });
+        }
+
+        services.AddRefitClient<ICollectionsApi>(settings).ConfigureHttpClient((sp, client) => Configure(client, sp));
+        services.AddRefitClient<IRaindropsApi>(settings).ConfigureHttpClient((sp, client) => Configure(client, sp));
+        services.AddRefitClient<IHighlightsApi>(settings).ConfigureHttpClient((sp, client) => Configure(client, sp));
+        services.AddRefitClient<ITagsApi>(settings).ConfigureHttpClient((sp, client) => Configure(client, sp));
+        services.AddRefitClient<IUserApi>(settings).ConfigureHttpClient((sp, client) => Configure(client, sp));
 
         return services;
     }

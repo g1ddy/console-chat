@@ -19,7 +19,7 @@ public class HighlightsTests : TestBase
     public async Task Crud()
     {
         var collections = Provider.GetRequiredService<CollectionsTools>();
-        int colId = (await collections.Create(new CollectionUpdate { Title = "hl" })).Item.Id;
+        int colId = (await collections.Create(new Collection { Title = "hl" })).Item.Id;
         var drops = Provider.GetRequiredService<RaindropsTools>();
         long dropId = (await drops.Create(colId, "https://example.com/hl", "h")).Item.Id;
         var highlights = Provider.GetRequiredService<HighlightsTools>();
