@@ -21,5 +21,5 @@ public class RaindropsBulkUpdate
     public string? Cover { get; set; }
 
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    public ParentRef? Collection { get; set; }
+    public IdRef? Collection { get; set; }
 }

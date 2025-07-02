@@ -22,7 +22,7 @@ public class IntegrationTests : TestBase
     {
         var collections = Provider.GetRequiredService<CollectionsTools>();
         int rootCollectionId = (await collections.Create(new Collection { Title = "Integration Root Collection" })).Item.Id;
-        int childCollectionId = (await collections.Create(new Collection { Title = "Integration Child Collection", Parent = new ParentRef { Id = rootCollectionId } })).Item.Id;
+        int childCollectionId = (await collections.Create(new Collection { Title = "Integration Child Collection", Parent = new IdRef { Id = rootCollectionId } })).Item.Id;
 
         var raindropsTool = Provider.GetRequiredService<RaindropsTools>();
         long firstRaindropId = (await raindropsTool.Create(rootCollectionId, "https://example.com/1", "Integration Raindrop One", tags: ["TagOne"])).Item.Id;

@@ -33,7 +33,7 @@ public class CollectionsTests : TestBase
     {
         var collections = Provider.GetRequiredService<CollectionsTools>();
         int parentCollectionId = (await collections.Create(new Collection { Title = "Collections ListChildren - Parent" })).Item.Id;
-        int childCollectionId = (await collections.Create(new Collection { Title = "Collections ListChildren - Child", Parent = new ParentRef { Id = parentCollectionId } })).Item.Id;
+        int childCollectionId = (await collections.Create(new Collection { Title = "Collections ListChildren - Child", Parent = new IdRef { Id = parentCollectionId } })).Item.Id;
         try
         {
             var result = await collections.ListChildren();
