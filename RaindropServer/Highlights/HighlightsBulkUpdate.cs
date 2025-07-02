@@ -1,6 +1,6 @@
 namespace RaindropTools.Highlights;
 
-public class HighlightsPayload
+public class HighlightsBulkUpdate
 {
     public List<Highlight> Highlights { get; set; } = new();
 }

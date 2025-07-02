@@ -11,4 +11,14 @@ public class UserInfo
 
     [JsonPropertyName("fullName")]
     public string? FullName { get; set; }
+
+    public bool Pro { get; set; }
+
+    public object? Config { get; set; }
+
+    public object? Dropbox { get; set; }
+
+    public object? Files { get; set; }
+
+    public string? Type { get; set; }
 }

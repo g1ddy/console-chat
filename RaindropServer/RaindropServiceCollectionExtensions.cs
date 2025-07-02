@@ -29,7 +29,8 @@ public static class RaindropServiceCollectionExtensions
             ContentSerializer = new SystemTextJsonContentSerializer(new System.Text.Json.JsonSerializerOptions
             {
                 PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase,
-                PropertyNameCaseInsensitive = true
+                PropertyNameCaseInsensitive = true,
+                DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull
             })
         };
 

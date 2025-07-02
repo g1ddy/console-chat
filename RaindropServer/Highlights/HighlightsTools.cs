@@ -28,17 +28,17 @@ public class HighlightsTools
     [McpServerTool, Description("Create a highlight for a bookmark")]
     public Task<ItemResponse<RaindropHighlights>> Create(long raindropId, string text, string? color = null, string? note = null)
     {
-        var payload = new HighlightsPayload
+        var payload = new HighlightsBulkUpdate
         {
             Highlights = [ new Highlight { Text = text, Color = color, Note = note } ]
         };
         return _api.UpdateHighlights(raindropId, payload);
     }
 
-    [McpServerTool, Description("Update an existing highlight using the same endpoint as creation")]
+    [McpServerTool, Description("Update an existing highlight")]
     public Task<ItemResponse<RaindropHighlights>> Update(long raindropId, string highlightId, string? text = null, string? color = null, string? note = null)
     {
-        var payload = new HighlightsPayload
+        var payload = new HighlightsBulkUpdate
         {
             Highlights = [ new Highlight { Id = highlightId, Text = text, Color = color, Note = note } ]
         };
@@ -48,7 +48,7 @@ public class HighlightsTools
     [McpServerTool, Description("Remove a highlight by sending an empty text for that id")]
     public Task<ItemResponse<RaindropHighlights>> Delete(long raindropId, string highlightId)
     {
-        var payload = new HighlightsPayload
+        var payload = new HighlightsBulkUpdate
         {
             Highlights = [ new Highlight { Id = highlightId, Text = string.Empty } ]
         };

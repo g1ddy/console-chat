@@ -15,5 +15,5 @@ public interface IHighlightsApi
     Task<ItemResponse<RaindropHighlights>> GetHighlights(long id);
 
     [Put("/raindrop/{id}")]
-    Task<ItemResponse<RaindropHighlights>> UpdateHighlights(long id, [Body] HighlightsPayload payload);
+    Task<ItemResponse<RaindropHighlights>> UpdateHighlights(long id, [Body] HighlightsBulkUpdate payload);
 }

@@ -31,4 +31,26 @@ public class TagsTests : TestBase
             await raindropsTool.Delete(raindropId);
         }
     }
+
+    [Fact(Skip="Requires live Raindrop API")]
+    public async Task CrudForCollection()
+    {
+        var raindropsTool = Provider.GetRequiredService<RaindropsTools>();
+        var createResponse = await raindropsTool.Create(null, "https://example.com/tag/collection", "Tags CrudForCollection - Raindrop", tags: [ "TagCollectionTestOne" ]);
+        long raindropId = createResponse.Item.Id;
+        var tagsTool = Provider.GetRequiredService<TagsTools>();
+        try
+        {
+            await tagsTool.Rename("TagCollectionTestOne", "TagCollectionTestTwo", 0);
+            var list = await tagsTool.List();
+            Assert.Contains(list.Items, t => t == "TagCollectionTestTwo");
+            await tagsTool.Delete("TagCollectionTestTwo", 0);
+            var finalList = await tagsTool.List();
+            Assert.DoesNotContain(finalList.Items, t => t == "TagCollectionTestTwo");
+        }
+        finally
+        {
+            await raindropsTool.Delete(raindropId);
+        }
+    }
 }
