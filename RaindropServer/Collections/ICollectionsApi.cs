@@ -20,6 +20,6 @@ public interface ICollectionsApi
     [Delete("/collection/{id}")]
     Task<SuccessResponse> DeleteCollection(int id);
 
-    [Put("/collection/{parentId}/children")]
-    Task<ItemResponse<Collection>> UpdateChildren(int parentId, [Body] ChildCollectionsUpdate update);
+    [Get("/collections/childrens")]
+    Task<ItemsResponse<Collection>> ListChildCollections();
 }

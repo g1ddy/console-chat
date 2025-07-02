@@ -19,4 +19,8 @@ public interface IRaindropsApi
 
     [Get("/raindrops/{collectionId}")]
     Task<ItemsResponse<Raindrop>> SearchRaindrops(int collectionId, [AliasAs("search")] string query);
+
+    [Put("/raindrops/{collectionId}")]
+    Task<SuccessResponse> UpdateRaindrops(int collectionId, [Body] RaindropsBulkUpdate update,
+        [AliasAs("nested")] bool? nested = null, [AliasAs("search")] string? search = null);
 }

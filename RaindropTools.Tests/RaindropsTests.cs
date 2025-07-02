@@ -16,6 +16,7 @@ public class RaindropsTests : TestBase
         try
         {
             await tools.Update(id, title: "upd");
+            await tools.UpdateMany(0, new RaindropsBulkUpdate { Ids = [ id ], Important = true });
             await tools.Search(0, "example");
             var get = await tools.Get(id);
             Assert.Equal("upd", get.Item.Title);

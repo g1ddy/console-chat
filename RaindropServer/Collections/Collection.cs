@@ -16,15 +16,11 @@ public class Collection
     public ParentRef? Parent { get; set; }
 
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    public int? ParentId { get; set; }
-
-    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public string? Color { get; set; }
 
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    public string? Cover { get; set; }
+    public List<string>? Cover { get; set; }
 
-    [JsonPropertyName("public")]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public bool? Public { get; set; }
 }

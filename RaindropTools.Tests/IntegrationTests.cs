@@ -2,6 +2,7 @@ using RaindropTools.Collections;
 using RaindropTools.Raindrops;
 using RaindropTools.Highlights;
 using RaindropTools.Tags;
+using RaindropTools.Common;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace RaindropTools.Tests;
@@ -21,7 +22,7 @@ public class IntegrationTests : TestBase
     {
         var collections = Provider.GetRequiredService<CollectionsTools>();
         int rootId = (await collections.Create(new Collection { Title = "root" })).Item.Id;
-        int childId = (await collections.Create(new Collection { Title = "child", ParentId = rootId })).Item.Id;
+        int childId = (await collections.Create(new Collection { Title = "child", Parent = new ParentRef { Id = rootId } })).Item.Id;
 
         var bookmarks = Provider.GetRequiredService<RaindropsTools>();
         long b1 = (await bookmarks.Create(rootId, "https://example.com/1", "b1", tags: ["t1"])).Item.Id;
@@ -35,7 +36,7 @@ public class IntegrationTests : TestBase
             await bookmarks.Update(b2, link: "https://example.com/updated", collectionId: childId);
             await tags.Rename("t2", "t22");
             await tags.List();
-            await collections.UpdateChildren(rootId, new ChildCollectionsUpdate { Children = [ childId ] });
+            await collections.ListChildren();
         }
         finally
         {

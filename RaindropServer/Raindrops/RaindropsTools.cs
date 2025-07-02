@@ -56,4 +56,8 @@ public class RaindropsTools
 
     [McpServerTool, Description("Search bookmarks in a collection")]
     public Task<ItemsResponse<Raindrop>> Search(int collectionId, string query) => _api.SearchRaindrops(collectionId, query);
+
+    [McpServerTool, Description("Bulk update bookmarks in a collection")]
+    public Task<SuccessResponse> UpdateMany(int collectionId, RaindropsBulkUpdate update, bool? nested = null, string? search = null)
+        => _api.UpdateRaindrops(collectionId, update, nested, search);
 }

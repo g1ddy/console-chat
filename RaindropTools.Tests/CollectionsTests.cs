@@ -1,4 +1,5 @@
 using RaindropTools.Collections;
+using RaindropTools.Common;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace RaindropTools.Tests;
@@ -27,14 +28,15 @@ public class CollectionsTests : TestBase
     }
 
     [Fact(Skip="Requires live Raindrop API")]
-    public async Task UpdateChildren()
+    public async Task ListChildren()
     {
         var tools = Provider.GetRequiredService<CollectionsTools>();
         int parent = (await tools.Create(new Collection { Title = "parent" })).Item.Id;
-        int child = (await tools.Create(new Collection { Title = "child", ParentId = parent })).Item.Id;
+        int child = (await tools.Create(new Collection { Title = "child", Parent = new ParentRef { Id = parent } })).Item.Id;
         try
         {
-            await tools.UpdateChildren(parent, new ChildCollectionsUpdate { Children = [ child ] });
+            var result = await tools.ListChildren();
+            Assert.Contains(result.Items, c => c.Id == child);
         }
         finally
         {

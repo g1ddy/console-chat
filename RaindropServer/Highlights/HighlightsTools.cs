@@ -35,7 +35,7 @@ public class HighlightsTools
         return _api.UpdateHighlights(raindropId, payload);
     }
 
-    [McpServerTool, Description("Update an existing highlight")]
+    [McpServerTool, Description("Update an existing highlight using the same endpoint as creation")]
     public Task<ItemResponse<RaindropHighlights>> Update(long raindropId, string highlightId, string? text = null, string? color = null, string? note = null)
     {
         var payload = new HighlightsPayload
@@ -45,7 +45,7 @@ public class HighlightsTools
         return _api.UpdateHighlights(raindropId, payload);
     }
 
-    [McpServerTool, Description("Delete a highlight by id")]
+    [McpServerTool, Description("Remove a highlight by sending an empty text for that id")]
     public Task<ItemResponse<RaindropHighlights>> Delete(long raindropId, string highlightId)
     {
         var payload = new HighlightsPayload

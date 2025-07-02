@@ -29,6 +29,6 @@ public class CollectionsTools
     [McpServerTool, Description("Delete a collection")]
     public Task<SuccessResponse> Delete(int id) => _api.DeleteCollection(id);
 
-    [McpServerTool, Description("Update order of child collections")]
-    public Task<ItemResponse<Collection>> UpdateChildren(int parentId, ChildCollectionsUpdate update) => _api.UpdateChildren(parentId, update);
+    [McpServerTool, Description("List nested child collections")]
+    public Task<ItemsResponse<Collection>> ListChildren() => _api.ListChildCollections();
 }
