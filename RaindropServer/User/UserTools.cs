@@ -1,5 +1,6 @@
 using System.ComponentModel;
 using ModelContextProtocol.Server;
+using RaindropTools.Common;
 
 namespace RaindropTools.User;
 
@@ -14,12 +15,5 @@ public class UserTools
     }
 
     [McpServerTool, Description("Get current user information")]
-    public Task<string> Get() => _api.GetUser();
-
-    [McpServerTool, Description("Update current user profile")]
-    public Task<string> Update(string? email = null, string? name = null)
-    {
-        var payload = new { email, name };
-        return _api.UpdateUser(payload);
-    }
+    public Task<ItemResponse<UserInfo>> Get() => _api.GetUser();
 }

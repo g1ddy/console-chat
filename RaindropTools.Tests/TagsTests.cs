@@ -15,19 +15,20 @@ public class TagsTests : TestBase
     [Fact(Skip="Requires live Raindrop API")]
     public async Task Crud()
     {
-        var drops = Provider.GetRequiredService<RaindropsTools>();
-        var create = await drops.Create(0, "https://example.com/tag", "t", tags: [ "one" ]);
-        long id = create.Item.Id;
-        var tags = Provider.GetRequiredService<TagsTools>();
+        var raindropsTool = Provider.GetRequiredService<RaindropsTools>();
+        var createResponse = await raindropsTool.Create(null, "https://example.com/tag", "Tags Crud - Raindrop", tags: [ "TagRenameTestOne" ]);
+        long raindropId = createResponse.Item.Id;
+        var tagsTool = Provider.GetRequiredService<TagsTools>();
         try
         {
-            await tags.Rename("one", "two");
-            await tags.List();
+            await tagsTool.Rename("TagRenameTestOne", "TagRenameTestTwo");
+            var list = await tagsTool.List();
+            Assert.Contains(list.Items, t => t == "TagRenameTestTwo");
         }
         finally
         {
-            await tags.Delete("two");
-            await drops.Delete(id);
+            await tagsTool.Delete("TagRenameTestTwo");
+            await raindropsTool.Delete(raindropId);
         }
     }
 }

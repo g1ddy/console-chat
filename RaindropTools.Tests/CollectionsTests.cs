@@ -11,37 +11,40 @@ public class CollectionsTests : TestBase
     [Fact(Skip="Requires live Raindrop API")]
     public async Task Crud()
     {
-        var tools = Provider.GetRequiredService<CollectionsTools>();
-        var create = await tools.Create(new Collection { Title = "test" });
-        int id = create.Item.Id;
+        var collections = Provider.GetRequiredService<CollectionsTools>();
+        var createResponse = await collections.Create(new Collection { Title = "Collections Crud - Create" });
+        int collectionId = createResponse.Item.Id;
         try
         {
-            await tools.Update(id, new Collection { Title = "updated" });
-            await tools.List();
-            var get = await tools.Get(id);
-            Assert.Equal("updated", get.Item.Title);
+            await collections.Update(collectionId, new Collection { Title = "Collections Crud - Updated" });
+            var list = await collections.List();
+            Assert.Contains(list.Items, c => c.Id == collectionId);
+            var retrieved = await collections.Get(collectionId);
+            Assert.Equal("Collections Crud - Updated", retrieved.Item.Title);
         }
         finally
         {
-            await tools.Delete(id);
+            await collections.Delete(collectionId);
         }
     }
 
     [Fact(Skip="Requires live Raindrop API")]
     public async Task ListChildren()
     {
-        var tools = Provider.GetRequiredService<CollectionsTools>();
-        int parent = (await tools.Create(new Collection { Title = "parent" })).Item.Id;
-        int child = (await tools.Create(new Collection { Title = "child", Parent = new ParentRef { Id = parent } })).Item.Id;
+        var collections = Provider.GetRequiredService<CollectionsTools>();
+        int parentCollectionId = (await collections.Create(new Collection { Title = "Collections ListChildren - Parent" })).Item.Id;
+        int childCollectionId = (await collections.Create(new Collection { Title = "Collections ListChildren - Child", Parent = new ParentRef { Id = parentCollectionId } })).Item.Id;
         try
         {
-            var result = await tools.ListChildren();
-            Assert.Contains(result.Items, c => c.Id == child);
+            var result = await collections.ListChildren();
+            Assert.Contains(result.Items, c => c.Id == childCollectionId);
         }
         finally
         {
-            await tools.Delete(child);
-            await tools.Delete(parent);
+            await collections.Delete(childCollectionId);
+            await collections.Delete(parentCollectionId);
+            var finalList = await collections.List();
+            Assert.DoesNotContain(finalList.Items, c => c.Id == parentCollectionId);
         }
     }
 }

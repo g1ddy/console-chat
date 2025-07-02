@@ -1,18 +1,22 @@
 using Refit;
+using RaindropTools.Common;
 
 namespace RaindropTools.Tags;
 
 public interface ITagsApi
 {
     [Get("/tags")]
-    Task<string> ListTags();
+    Task<ItemsResponse<string>> ListTags();
 
-    [Put("/tags")] 
-    Task<string> RenameTag([Body] object payload);
+    [Put("/tags")]
+    Task<SuccessResponse> RenameTag([Body] object payload);
 
     [Put("/tags/{collectionId}")]
-    Task<string> RenameTagForCollection(int collectionId, [Body] object payload);
+    Task<SuccessResponse> RenameTagForCollection(int collectionId, [Body] object payload);
 
-    [Delete("/tag/{tag}")]
-    Task<string> DeleteTag(string tag);
+    [Delete("/tags")]
+    Task<SuccessResponse> DeleteTags([Body] object payload);
+
+    [Delete("/tags/{collectionId}")]
+    Task<SuccessResponse> DeleteTagsForCollection(int collectionId, [Body] object payload);
 }

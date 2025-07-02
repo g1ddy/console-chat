@@ -15,8 +15,8 @@ public class RaindropsTools
         _api = api;
     }
 
-    [McpServerTool, Description("Create a new bookmark in the specified collection")]
-    public Task<ItemResponse<Raindrop>> Create(int collectionId, string url, string? title = null,
+    [McpServerTool, Description("Create a new bookmark")]
+    public Task<ItemResponse<Raindrop>> Create(int? collectionId, string url, string? title = null,
         string? excerpt = null, IEnumerable<string>? tags = null, bool? important = null)
     {
         var payload = new Raindrop

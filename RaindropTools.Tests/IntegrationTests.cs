@@ -21,29 +21,34 @@ public class IntegrationTests : TestBase
     public async Task FullFlow()
     {
         var collections = Provider.GetRequiredService<CollectionsTools>();
-        int rootId = (await collections.Create(new Collection { Title = "root" })).Item.Id;
-        int childId = (await collections.Create(new Collection { Title = "child", Parent = new ParentRef { Id = rootId } })).Item.Id;
+        int rootCollectionId = (await collections.Create(new Collection { Title = "Integration Root Collection" })).Item.Id;
+        int childCollectionId = (await collections.Create(new Collection { Title = "Integration Child Collection", Parent = new ParentRef { Id = rootCollectionId } })).Item.Id;
 
-        var bookmarks = Provider.GetRequiredService<RaindropsTools>();
-        long b1 = (await bookmarks.Create(rootId, "https://example.com/1", "b1", tags: ["t1"])).Item.Id;
-        long b2 = (await bookmarks.Create(rootId, "https://example.com/2", "b2", tags: ["t2"])).Item.Id;
+        var raindropsTool = Provider.GetRequiredService<RaindropsTools>();
+        long firstRaindropId = (await raindropsTool.Create(rootCollectionId, "https://example.com/1", "Integration Raindrop One", tags: ["TagOne"])).Item.Id;
+        long secondRaindropId = (await raindropsTool.Create(rootCollectionId, "https://example.com/2", "Integration Raindrop Two", tags: ["TagTwo"])).Item.Id;
 
         var highlights = Provider.GetRequiredService<HighlightsTools>();
         var tags = Provider.GetRequiredService<TagsTools>();
         try
         {
-            await highlights.Create(b1, "hl");
-            await bookmarks.Update(b2, link: "https://example.com/updated", collectionId: childId);
-            await tags.Rename("t2", "t22");
-            await tags.List();
-            await collections.ListChildren();
+            var highlight = await highlights.Create(firstRaindropId, "Integration Highlight");
+            string highlightId = highlight.Item.Highlights.Last().Id!;
+            await raindropsTool.Update(secondRaindropId, link: "https://example.com/updated", collectionId: childCollectionId);
+            await tags.Rename("TagTwo", "TagTwoRenamed");
+            var tagList = await tags.List();
+            Assert.Contains(tagList.Items, t => t == "TagTwoRenamed");
+            var childCollections = await collections.ListChildren();
+            Assert.Contains(childCollections.Items, c => c.Id == childCollectionId);
         }
         finally
         {
-            await bookmarks.Delete(b1);
-            await bookmarks.Delete(b2);
-            await collections.Delete(childId);
-            await collections.Delete(rootId);
+            await raindropsTool.Delete(firstRaindropId);
+            await raindropsTool.Delete(secondRaindropId);
+            await collections.Delete(childCollectionId);
+            await collections.Delete(rootCollectionId);
+            var finalTags = await tags.List();
+            Assert.DoesNotContain(finalTags.Items, t => t == "TagTwoRenamed");
         }
     }
 }

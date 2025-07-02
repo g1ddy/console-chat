@@ -1,5 +1,6 @@
 using System.ComponentModel;
 using ModelContextProtocol.Server;
+using RaindropTools.Common;
 
 namespace RaindropTools.Tags;
 
@@ -14,10 +15,10 @@ public class TagsTools
     }
 
     [McpServerTool, Description("List all tags")]
-    public Task<string> List() => _api.ListTags();
+    public Task<ItemsResponse<string>> List() => _api.ListTags();
 
     [McpServerTool, Description("Rename a tag")]
-    public Task<string> Rename(string oldTag, string newTag, int? collectionId = null)
+    public Task<SuccessResponse> Rename(string oldTag, string newTag, int? collectionId = null)
     {
         var payload = new { replace = newTag, tags = new[] { oldTag } };
         return collectionId is null
@@ -26,5 +27,11 @@ public class TagsTools
     }
 
     [McpServerTool, Description("Delete a tag")]
-    public Task<string> Delete(string tag) => _api.DeleteTag(tag);
+    public Task<SuccessResponse> Delete(string tag, int? collectionId = null)
+    {
+        var payload = new { tags = new[] { tag } };
+        return collectionId is null
+            ? _api.DeleteTags(payload)
+            : _api.DeleteTagsForCollection(collectionId.Value, payload);
+    }
 }

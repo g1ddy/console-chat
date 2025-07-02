@@ -10,20 +10,21 @@ public class RaindropsTests : TestBase
     [Fact(Skip="Requires live Raindrop API")]
     public async Task Crud()
     {
-        var tools = Provider.GetRequiredService<RaindropsTools>();
-        var create = await tools.Create(0, "https://example.com", "title");
-        long id = create.Item.Id;
+        var raindropsTool = Provider.GetRequiredService<RaindropsTools>();
+        var createResponse = await raindropsTool.Create(null, "https://example.com", "Raindrops Crud - Create");
+        long raindropId = createResponse.Item.Id;
         try
         {
-            await tools.Update(id, title: "upd");
-            await tools.UpdateMany(0, new RaindropsBulkUpdate { Ids = [ id ], Important = true });
-            await tools.Search(0, "example");
-            var get = await tools.Get(id);
-            Assert.Equal("upd", get.Item.Title);
+            await raindropsTool.Update(raindropId, title: "Raindrops Crud - Updated");
+            await raindropsTool.UpdateMany(0, new RaindropsBulkUpdate { Ids = [ raindropId ], Important = true });
+            var search = await raindropsTool.Search(0, "example");
+            Assert.Contains(search.Items, r => r.Id == raindropId);
+            var retrieved = await raindropsTool.Get(raindropId);
+            Assert.Equal("Raindrops Crud - Updated", retrieved.Item.Title);
         }
         finally
         {
-            await tools.Delete(id);
+            await raindropsTool.Delete(raindropId);
         }
     }
 }

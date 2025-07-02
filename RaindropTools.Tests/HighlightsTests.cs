@@ -19,25 +19,27 @@ public class HighlightsTests : TestBase
     public async Task Crud()
     {
         var collections = Provider.GetRequiredService<CollectionsTools>();
-        int colId = (await collections.Create(new Collection { Title = "hl" })).Item.Id;
-        var drops = Provider.GetRequiredService<RaindropsTools>();
-        long dropId = (await drops.Create(colId, "https://example.com/hl", "h")).Item.Id;
+        int collectionId = (await collections.Create(new Collection { Title = "Highlights Crud - Collection" })).Item.Id;
+        var raindropService = Provider.GetRequiredService<RaindropsTools>();
+        long raindropId = (await raindropService.Create(collectionId, "https://example.com/hl", "Highlights Crud - Raindrop")).Item.Id;
         var highlights = Provider.GetRequiredService<HighlightsTools>();
         try
         {
-            var create = await highlights.Create(dropId, "test");
-            string hId = create.Item.Highlights.Last().Id;
-            await highlights.Update(dropId, hId, text: "upd");
-            await highlights.List();
-            await highlights.ListByCollection(colId);
-            var get = await highlights.Get(dropId);
-            Assert.Contains(get.Item.Highlights, h => h.Id == hId);
-            await highlights.Delete(dropId, hId);
+            var newHighlight = await highlights.Create(raindropId, "Highlights Crud - New");
+            string highlightId = newHighlight.Item.Highlights.Last().Id!;
+            await highlights.Update(raindropId, highlightId, text: "Highlights Crud - Updated");
+            var listAll = await highlights.List();
+            Assert.True(listAll.Items.Count > 0);
+            var listByCollection = await highlights.ListByCollection(collectionId);
+            Assert.Contains(listByCollection.Items, h => h.Id == highlightId);
+            var retrieved = await highlights.Get(raindropId);
+            Assert.Contains(retrieved.Item.Highlights, h => h.Id == highlightId);
+            await highlights.Delete(raindropId, highlightId);
         }
         finally
         {
-            await drops.Delete(dropId);
-            await collections.Delete(colId);
+            await raindropService.Delete(raindropId);
+            await collections.Delete(collectionId);
         }
     }
 }
