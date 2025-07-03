@@ -18,9 +18,12 @@ public interface IRaindropsApi
     Task<SuccessResponse> DeleteRaindrop(long id);
 
     [Get("/raindrops/{collectionId}")]
-    Task<ItemsResponse<Raindrop>> SearchRaindrops(int collectionId, [AliasAs("search")] string query);
+    Task<ItemsResponse<Raindrop>> GetRaindrops(int collectionId, string? search = null);
+
+    [Post("/raindrops")]
+    Task<ItemsResponse<Raindrop>> CreateRaindrops([Body] RaindropsCreateMany payload);
 
     [Put("/raindrops/{collectionId}")]
     Task<SuccessResponse> UpdateRaindrops(int collectionId, [Body] RaindropsBulkUpdate update,
-        [AliasAs("nested")] bool? nested = null, [AliasAs("search")] string? search = null);
+        bool? nested = null, string? search = null);
 }

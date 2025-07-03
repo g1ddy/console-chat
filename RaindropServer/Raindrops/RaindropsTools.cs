@@ -54,8 +54,19 @@ public class RaindropsTools
     [McpServerTool, Description("Delete a bookmark by id")]
     public Task<SuccessResponse> Delete(long id) => _api.DeleteRaindrop(id);
 
+    [McpServerTool, Description("List bookmarks in a collection")]
+    public Task<ItemsResponse<Raindrop>> List(int collectionId, string? search = null)
+        => _api.GetRaindrops(collectionId, search);
+
+    [McpServerTool, Description("Create multiple bookmarks")]
+    public Task<ItemsResponse<Raindrop>> CreateMany(int collectionId, IEnumerable<Raindrop> raindrops)
+    {
+        var payload = new RaindropsCreateMany { CollectionId = collectionId, Items = raindrops.ToList() };
+        return _api.CreateRaindrops(payload);
+    }
+
     [McpServerTool, Description("Search bookmarks in a collection")]
-    public Task<ItemsResponse<Raindrop>> Search(int collectionId, string query) => _api.SearchRaindrops(collectionId, query);
+    public Task<ItemsResponse<Raindrop>> Search(int collectionId, string query) => _api.GetRaindrops(collectionId, query);
 
     [McpServerTool, Description("Bulk update bookmarks in a collection")]
     public Task<SuccessResponse> UpdateMany(int collectionId, RaindropsBulkUpdate update, bool? nested = null, string? search = null)

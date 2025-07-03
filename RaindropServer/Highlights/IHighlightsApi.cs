@@ -6,10 +6,10 @@ namespace RaindropTools.Highlights;
 public interface IHighlightsApi
 {
     [Get("/highlights")]
-    Task<ItemsResponse<Highlight>> ListHighlights([AliasAs("page")] int? page = null, [AliasAs("perpage")] int? perPage = null);
+    Task<ItemsResponse<Highlight>> ListHighlights(int? page = null, int? perPage = null);
 
     [Get("/highlights/{collectionId}")]
-    Task<ItemsResponse<Highlight>> ListHighlightsByCollection(int collectionId, [AliasAs("page")] int? page = null, [AliasAs("perpage")] int? perPage = null);
+    Task<ItemsResponse<Highlight>> ListHighlightsByCollection(int collectionId, int? page = null, int? perPage = null);
 
     [Get("/raindrop/{id}")]
     Task<ItemResponse<RaindropHighlights>> GetHighlights(long id);
