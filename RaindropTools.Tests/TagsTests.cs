@@ -23,7 +23,7 @@ public class TagsTests : TestBase
         {
             await tagsTool.Rename("TagRenameTestOne", "TagRenameTestTwo");
             var list = await tagsTool.List();
-            Assert.Contains(list.Items, t => t == "TagRenameTestTwo");
+            Assert.Contains(list.Items, t => t.Id == "TagRenameTestTwo");
         }
         finally
         {
@@ -43,10 +43,10 @@ public class TagsTests : TestBase
         {
             await tagsTool.Rename("TagCollectionTestOne", "TagCollectionTestTwo", 0);
             var list = await tagsTool.List();
-            Assert.Contains(list.Items, t => t == "TagCollectionTestTwo");
+            Assert.Contains(list.Items, t => t.Id == "TagCollectionTestTwo");
             await tagsTool.Delete("TagCollectionTestTwo", 0);
             var finalList = await tagsTool.List();
-            Assert.DoesNotContain(finalList.Items, t => t == "TagCollectionTestTwo");
+            Assert.DoesNotContain(finalList.Items, t => t.Id == "TagCollectionTestTwo");
         }
         finally
         {

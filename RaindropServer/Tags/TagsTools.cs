@@ -14,8 +14,11 @@ public class TagsTools
         _api = api;
     }
 
-    [McpServerTool, Description("List all tags")]
-    public Task<ItemsResponse<string>> List() => _api.ListTags();
+    [McpServerTool, Description("List all tags or tags for a collection")]
+    public Task<ItemsResponse<TagInfo>> List(int? collectionId = null)
+        => collectionId is null
+            ? _api.ListTags()
+            : _api.ListTagsForCollection(collectionId.Value);
 
     [McpServerTool, Description("Rename a tag")]
     public Task<SuccessResponse> Rename(string oldTag, string newTag, int? collectionId = null)

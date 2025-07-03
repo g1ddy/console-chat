@@ -23,6 +23,5 @@ public class Highlight
 
     public string? LastUpdate { get; set; }
 
-    [JsonPropertyName("raindropRef")]
     public long? RaindropRef { get; set; }
 }

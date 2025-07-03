@@ -9,7 +9,6 @@ public class UserInfo
 
     public string? Email { get; set; }
 
-    [JsonPropertyName("fullName")]
     public string? FullName { get; set; }
 
     public bool Pro { get; set; }

@@ -37,7 +37,7 @@ public class IntegrationTests : TestBase
             await raindropsTool.Update(secondRaindropId, link: "https://example.com/updated", collectionId: childCollectionId);
             await tags.Rename("TagTwo", "TagTwoRenamed");
             var tagList = await tags.List();
-            Assert.Contains(tagList.Items, t => t == "TagTwoRenamed");
+            Assert.Contains(tagList.Items, t => t.Id == "TagTwoRenamed");
             var childCollections = await collections.ListChildren();
             Assert.Contains(childCollections.Items, c => c.Id == childCollectionId);
         }
@@ -48,7 +48,7 @@ public class IntegrationTests : TestBase
             await collections.Delete(childCollectionId);
             await collections.Delete(rootCollectionId);
             var finalTags = await tags.List();
-            Assert.DoesNotContain(finalTags.Items, t => t == "TagTwoRenamed");
+            Assert.DoesNotContain(finalTags.Items, t => t.Id == "TagTwoRenamed");
         }
     }
 }

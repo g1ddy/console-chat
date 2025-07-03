@@ -6,7 +6,10 @@ namespace RaindropTools.Tags;
 public interface ITagsApi
 {
     [Get("/tags")]
-    Task<ItemsResponse<string>> ListTags();
+    Task<ItemsResponse<TagInfo>> ListTags();
+
+    [Get("/tags/{collectionId}")]
+    Task<ItemsResponse<TagInfo>> ListTagsForCollection(int collectionId);
 
     [Put("/tags")]
     Task<SuccessResponse> RenameTag([Body] object payload);
