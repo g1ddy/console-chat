@@ -18,4 +18,6 @@ public interface IChatConsole
     void DisplayError(Exception ex);
     Task<IReadOnlyList<ChatMessage>> DisplayStreamingUpdatesAsync(IAsyncEnumerable<ChatResponseUpdate> updates);
     IReadOnlyList<string> PromptMultiSelection(string title, IEnumerable<(string Name, bool Selected)> items);
+
+    bool DebugEnabled { get; set; }
 }

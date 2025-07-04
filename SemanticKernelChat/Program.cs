@@ -43,6 +43,7 @@ builder.Services.AddSingleton<IChatCommandStrategy, SetMcpServerStateCommandStra
 builder.Services.AddSingleton<IChatCommandStrategy, ListToolsCommandStrategy>();
 builder.Services.AddSingleton<IChatCommandStrategy, ListPromptsCommandStrategy>();
 builder.Services.AddSingleton<IChatCommandStrategy, UsePromptCommandStrategy>();
+builder.Services.AddSingleton<IChatCommandStrategy, DebugCommandStrategy>();
 
 builder.Services.AddSingleton<ITextCompletion, CommandCompletion>();
 

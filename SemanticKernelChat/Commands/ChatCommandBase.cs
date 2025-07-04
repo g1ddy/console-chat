@@ -21,6 +21,9 @@ public abstract class ChatCommandBase : AsyncCommand<ChatCommandBase.Settings>
     {
         [CommandOption("--file <PATH>")]
         public string? FilePath { get; set; }
+
+        [CommandOption("--debug")]
+        public bool Debug { get; set; }
     }
 
     private readonly IChatHistoryService _history;
@@ -70,6 +73,7 @@ public abstract class ChatCommandBase : AsyncCommand<ChatCommandBase.Settings>
 
     public override async Task<int> ExecuteAsync(CommandContext context, Settings settings)
     {
+        _console.DebugEnabled = settings.Debug;
         _console.WriteWelcomeMessage();
 
         while (true)

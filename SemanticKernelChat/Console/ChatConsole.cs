@@ -6,6 +6,7 @@ using Microsoft.Extensions.AI;
 
 using Spectre.Console;
 using Spectre.Console.Rendering;
+using Spectre.Console.Json;
 
 namespace SemanticKernelChat.Console;
 
@@ -13,6 +14,7 @@ public class ChatConsole : IChatConsole
 {
     private readonly IChatLineEditor _editor;
     private readonly IAnsiConsole _console;
+    public bool DebugEnabled { get; set; }
 
     public ChatConsole(IChatLineEditor editor, IAnsiConsole console)
     {
@@ -209,6 +211,7 @@ public class ChatConsole : IChatConsole
         var messageUpdates = new List<ChatResponseUpdate>();
         var builder = new StringBuilder();
         var panel = CreateAssistantPanel(new Markup(builder.ToString()));
+        var toolResults = new List<(string Name, string Result)>();
 
         var callNames = new Dictionary<string, string>();
         await _console.Live(panel)
@@ -218,7 +221,7 @@ public class ChatConsole : IChatConsole
                 await foreach (var update in updates)
                 {
                     messageUpdates.Add(update);
-                    AppendUpdate(builder, callNames, update);
+                    AppendUpdate(builder, callNames, update, toolResults);
                     panel = CreateAssistantPanel(new Markup(builder.ToString()));
                     ctx.UpdateTarget(panel);
                     ctx.Refresh();
@@ -226,6 +229,23 @@ public class ChatConsole : IChatConsole
             });
 
         var response = Microsoft.Extensions.AI.ChatResponseExtensions.ToChatResponse(messageUpdates);
+
+        if (DebugEnabled && toolResults.Count > 0)
+        {
+            foreach (var (name, result) in toolResults)
+            {
+                _console.WriteLine($"[grey]{name} result:[/]");
+                try
+                {
+                    _console.Write(new Spectre.Console.Json.JsonText(result));
+                }
+                catch
+                {
+                    _console.WriteLine(result);
+                }
+            }
+        }
+
         return [.. response.Messages];
     }
 
@@ -244,7 +264,8 @@ public class ChatConsole : IChatConsole
     private static void AppendUpdate(
         StringBuilder builder,
         Dictionary<string, string> callNames,
-        ChatResponseUpdate update)
+        ChatResponseUpdate update,
+        List<(string Name, string Result)> toolResults)
     {
         var contents = update.Contents ?? Array.Empty<AIContent>();
         CollectFunctionCallNames(contents, callNames);
@@ -260,6 +281,7 @@ public class ChatConsole : IChatConsole
             string toolName = GetToolName(callNames, result.CallId, update.AuthorName, update.Role);
 
             _ = builder.Append($"[grey]:wrench: {toolName.EscapeMarkup()} Result...[/]");
+            toolResults.Add((toolName, result.Result?.ToString() ?? string.Empty));
         }
     }
 }

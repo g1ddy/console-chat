@@ -21,6 +21,7 @@
     <PackageReference Include="RadLine" Version="0.8.0" />
     <PackageReference Include="Spectre.Console" Version="0.48.0" />
     <PackageReference Include="Spectre.Console.Cli" Version="0.48.0" />
+    <PackageReference Include="Spectre.Console.Json" Version="0.48.0" />
   </ItemGroup>
 
   <ItemGroup>
