@@ -11,7 +11,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConsoleChat.Tests", "Consol
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RaindropServer", "RaindropServer\RaindropServer.csproj", "{E78AA48A-7C6E-46D7-88AC-2ACB482FDB04}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RaindropServer.Tests", "RaindropTools.Tests\RaindropServer.Tests.csproj", "{B75BB13B-2CA5-462E-90FA-9C98957ED7F4}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RaindropServer.Tests", "RaindropServer.Tests\RaindropServer.Tests.csproj", "{B75BB13B-2CA5-462E-90FA-9C98957ED7F4}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
