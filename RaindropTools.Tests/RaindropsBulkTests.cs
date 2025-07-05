@@ -22,6 +22,8 @@ public class RaindropsBulkTests : TestBase
         var ids = created.Items.Select(r => r.Id).ToList();
         try
         {
+            // add a delay before searching
+            await Task.Delay(5000);
             var list = await tool.List(0, "Bulk Endpoints");
             Assert.True(ids.All(id => list.Items.Any(r => r.Id == id)));
 
@@ -33,6 +35,8 @@ public class RaindropsBulkTests : TestBase
             };
             await tool.UpdateMany(0, update);
 
+            // add a delay before searching
+            await Task.Delay(5000);
             var updated = await tool.Search(0, "Bulk Endpoints");
             foreach (var id in ids)
             {

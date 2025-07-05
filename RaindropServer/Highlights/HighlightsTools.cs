@@ -26,31 +26,31 @@ public class HighlightsTools
     public Task<ItemResponse<RaindropHighlights>> Get(long raindropId) => _api.GetHighlights(raindropId);
 
     [McpServerTool, Description("Create a highlight for a bookmark")]
-    public Task<ItemResponse<RaindropHighlights>> Create(long raindropId, string text, string? color = null, string? note = null)
+    public Task<ItemResponse<HighlightsBulkUpdateRequest>> Create(long raindropId, string text, string? color = null, string? note = null)
     {
-        var payload = new HighlightsBulkUpdate
+        var payload = new HighlightsBulkUpdateRequest
         {
-            Highlights = [ new Highlight { Text = text, Color = color, Note = note } ]
+            Highlights = [ new HighlightsBulkUpdate { Text = text, Color = color, Note = note } ]
         };
         return _api.UpdateHighlights(raindropId, payload);
     }
 
     [McpServerTool, Description("Update an existing highlight")]
-    public Task<ItemResponse<RaindropHighlights>> Update(long raindropId, string highlightId, string? text = null, string? color = null, string? note = null)
+    public Task<ItemResponse<HighlightsBulkUpdateRequest>> Update(long raindropId, string highlightId, string? text = null, string? color = null, string? note = null)
     {
-        var payload = new HighlightsBulkUpdate
+        var payload = new HighlightsBulkUpdateRequest
         {
-            Highlights = [ new Highlight { Id = highlightId, Text = text, Color = color, Note = note } ]
+            Highlights = [ new HighlightsBulkUpdate { Id = highlightId, Text = text, Color = color, Note = note } ]
         };
         return _api.UpdateHighlights(raindropId, payload);
     }
 
     [McpServerTool, Description("Remove a highlight by sending an empty text for that id")]
-    public Task<ItemResponse<RaindropHighlights>> Delete(long raindropId, string highlightId)
+    public Task<ItemResponse<HighlightsBulkUpdateRequest>> Delete(long raindropId, string highlightId)
     {
-        var payload = new HighlightsBulkUpdate
+        var payload = new HighlightsBulkUpdateRequest
         {
-            Highlights = [ new Highlight { Id = highlightId, Text = string.Empty } ]
+            Highlights = [ new HighlightsBulkUpdate { Id = highlightId, Text = string.Empty } ]
         };
         return _api.UpdateHighlights(raindropId, payload);
     }

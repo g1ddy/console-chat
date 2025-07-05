@@ -16,6 +16,7 @@ public class Collection
 
     public string? Color { get; set; }
 
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public List<string>? Cover { get; set; }
 
     public bool? Public { get; set; }

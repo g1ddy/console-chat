@@ -17,6 +17,8 @@ public class RaindropsTests : TestBase
         {
             await raindropsTool.Update(raindropId, title: "Raindrops Crud - Updated");
             await raindropsTool.UpdateMany(0, new RaindropsBulkUpdate { Ids = [ raindropId ], Important = true });
+            // add a delay before searching
+            await Task.Delay(5000);
             var search = await raindropsTool.Search(0, "example");
             Assert.Contains(search.Items, r => r.Id == raindropId);
             var retrieved = await raindropsTool.Get(raindropId);
