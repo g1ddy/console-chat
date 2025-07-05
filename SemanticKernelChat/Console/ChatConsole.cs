@@ -239,7 +239,7 @@ public class ChatConsole : IChatConsole
                 {
                     _console.Write(new Spectre.Console.Json.JsonText(result));
                 }
-                catch
+                catch (System.Text.Json.JsonException)
                 {
                     _console.WriteLine(result);
                 }

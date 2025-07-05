@@ -6,7 +6,7 @@ public sealed class DebugCommandStrategy : IChatCommandStrategy
 {
     public IEnumerable<string>? GetCompletions(string prefix, string word, string suffix)
     {
-        var tokens = (prefix + word).TrimStart().Split(' ', StringSplitOptions.TrimEntries);
+        var tokens = (prefix + word).TrimStart().Split(' ', StringSplitOptions.RemoveEmptyEntries);
         if (tokens.Length == 1)
         {
             return new[] { CliConstants.Commands.Debug };
