@@ -1,9 +1,7 @@
 using System.ComponentModel;
-using System.Collections.Generic;
 using Microsoft.SemanticKernel;
-using Spectre.Console;
-using Spectre.Console.Rendering;
 using SemanticKernelChat.Console;
+using Spectre.Console;
 
 namespace SemanticKernelChat.Plugins;
 
@@ -21,16 +19,16 @@ public sealed class RenderableFunctions
 
     public sealed record ItemCount(string Name, int Count);
 
-    [KernelFunction, Description("Displays a table of items and counts in the console.")]
-    public string SampleTable(IReadOnlyList<ItemCount> items)
+    [KernelFunction(nameof(RenderTable)), Description("Displays a table of items and counts in the console.")]
+    public string RenderTable(IReadOnlyList<ItemCount> items)
     {
         var table = new Table().RoundedBorder();
-        table.AddColumn("Item");
-        table.AddColumn("Count");
+        _ = table.AddColumn("Item");
+        _ = table.AddColumn("Count");
 
         foreach (var item in items)
         {
-            table.AddRow(item.Name, item.Count.ToString());
+            _ = table.AddRow(item.Name, item.Count.ToString());
         }
 
         _console.Write(table);
@@ -58,8 +56,8 @@ public sealed class RenderableFunctions
         }
     }
 
-    [KernelFunction, Description("Displays a simple tree structure in the console.")]
-    public string SampleTree(TreeNode root)
+    [KernelFunction(nameof(RenderTree)), Description("Displays a simple tree structure in the console.")]
+    public string RenderTree(TreeNode root)
     {
         var tree = new Tree(root.Value);
         AddChildren(tree, root.Children);
@@ -84,8 +82,8 @@ public sealed class RenderableFunctions
 
     public sealed record ChartItem(string Name, int Value, Color Color);
 
-    [KernelFunction, Description("Displays a bar chart of values in the console.")]
-    public string SampleChart(IReadOnlyList<ChartItem> items, [Description("The title of the chart")] string title)
+    [KernelFunction(nameof(RenderChart)), Description("Displays a bar chart of values in the console.")]
+    public string RenderChart(IReadOnlyList<ChartItem> items, [Description("The title of the chart")] string title)
     {
         var chart = new BarChart()
             .Width(40)
@@ -94,7 +92,7 @@ public sealed class RenderableFunctions
 
         foreach (var item in items)
         {
-            chart.AddItem(item.Name, item.Value, item.Color);
+            _ = chart.AddItem(item.Name, item.Value, item.Color);
         }
 
         _console.Write(chart);

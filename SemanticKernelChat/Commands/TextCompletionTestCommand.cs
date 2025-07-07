@@ -1,14 +1,11 @@
 using Microsoft.Extensions.AI;
+using Microsoft.SemanticKernel;
+
 using SemanticKernelChat.Console;
 using SemanticKernelChat.Infrastructure;
-using Spectre.Console;
-using Spectre.Console.Cli;
 using SemanticKernelChat.Plugins;
-using Microsoft.SemanticKernel;
-using System.Linq;
-using System.Collections.Generic;
-using System;
-using Microsoft.Extensions.DependencyInjection;
+
+using Spectre.Console;
 
 namespace SemanticKernelChat.Commands;
 
@@ -33,15 +30,16 @@ public sealed class TextCompletionTestCommand : ChatCommandBase
 
         public Task<string?> ReadLine(CancellationToken cancellationToken)
         {
-            _inputs.TryDequeue(out var input);
+            _ = _inputs.TryDequeue(out var input);
+            System.Console.WriteLine(input);
             return Task.FromResult(input);
         }
     }
 
     private static readonly string[] ScriptedInputs =
     [
-        "This is a demo of non-streaming chat!",
         $"{CliConstants.Commands.Debug} on",
+        "This is a demo of non-streaming chat!",
         "This is a demo of streaming chat!",
         $"{CliConstants.Commands.Use} BugReport",
         CliConstants.Commands.Exit
@@ -97,9 +95,15 @@ public sealed class TextCompletionTestCommand : ChatCommandBase
 
         var kernelFunctions = new[]
         {
-            KernelFunctionFactory.CreateFromMethod(() => functions.SampleTable(tableData)),
-            KernelFunctionFactory.CreateFromMethod(() => functions.SampleTree(treeData)),
-            KernelFunctionFactory.CreateFromMethod(() => functions.SampleChart(chartData, "Fruit Sales"))
+            KernelFunctionFactory.CreateFromMethod(
+                () => functions.RenderTable(tableData),
+                new KernelFunctionFromMethodOptions { FunctionName = nameof(RenderableFunctions.RenderTable) }),
+            KernelFunctionFactory.CreateFromMethod(
+                () => functions.RenderTree(treeData),
+                new KernelFunctionFromMethodOptions { FunctionName = nameof(RenderableFunctions.RenderTree) }),
+            KernelFunctionFactory.CreateFromMethod(
+                () => functions.RenderChart(chartData, "Fruit Sales"),
+                new KernelFunctionFromMethodOptions { FunctionName = nameof(RenderableFunctions.RenderChart) })
         };
 
         var plugin = KernelPluginFactory.CreateFromFunctions("RenderableFunctions", kernelFunctions);

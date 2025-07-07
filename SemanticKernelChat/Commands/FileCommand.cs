@@ -1,6 +1,7 @@
-using System.IO;
 using Microsoft.Extensions.AI;
+
 using SemanticKernelChat.Console;
+
 using Spectre.Console;
 using Spectre.Console.Cli;
 
@@ -51,11 +52,11 @@ public sealed class FileCommand : AsyncCommand<ChatCommandBase.Settings>
             return -1;
         }
 
-        const string Prompt = "Please read the attached file, summarize it, and be ready to answer questions.";
+        const string prompt = "Please read the attached file, summarize it, and be ready to answer questions.";
         var mediaType = $"application/pdf;name={Path.GetFileName(settings.FilePath)}";
         var contents = new AIContent[]
         {
-            new TextContent(Prompt),
+            new TextContent(prompt),
             new DataContent(data, mediaType)
         };
 

@@ -1,7 +1,4 @@
-using SemanticKernelChat;
 using SemanticKernelChat.Console;
-using System.Collections.Generic;
-using Spectre.Console.Cli;
 
 namespace SemanticKernelChat.Commands;
 
@@ -16,6 +13,6 @@ public sealed class ChatCommand : ChatCommandBase
     {
     }
 
-    protected override Task SendAndDisplayAsync() =>
-        Controller.SendAndDisplayAsync(History);
+    protected override Task SendAndDisplayAsync()
+        => Controller.SendAndDisplayAsync(History);
 }

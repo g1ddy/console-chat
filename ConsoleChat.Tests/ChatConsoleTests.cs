@@ -1,11 +1,9 @@
+using ConsoleChat.Tests.TestUtilities;
+
 using Microsoft.Extensions.AI;
 
 using SemanticKernelChat;
 using SemanticKernelChat.Console;
-using SemanticKernelChat.Infrastructure;
-using System.Linq;
-
-using ConsoleChat.Tests.TestUtilities;
 
 using Spectre.Console;
 using Spectre.Console.Testing;
