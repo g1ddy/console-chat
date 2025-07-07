@@ -55,7 +55,7 @@ public class ChatControllerTests
         await console.Received(1).DisplayThinkingIndicator(Arg.Any<Func<Task>>());
         console.Received(1).DisplayError(Arg.Any<Exception>());
         console.DidNotReceive().WriteChatMessages(Arg.Any<ChatMessage[]>());
-        Assert.Equal(1, history.Messages.Count);
+        Assert.Single(history.Messages);
     }
 
     [Fact]
@@ -104,7 +104,7 @@ public class ChatControllerTests
 
         _ = await console.Received(1).DisplayStreamingUpdatesAsync(Arg.Any<IAsyncEnumerable<ChatResponseUpdate>>());
         console.Received(1).DisplayError(Arg.Any<Exception>());
-        Assert.Equal(1, history.Messages.Count);
+        Assert.Single(history.Messages);
     }
 
     [Fact]
