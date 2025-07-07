@@ -1,6 +1,8 @@
 using ModelContextProtocol.Server;
 using System.ComponentModel;
 
+namespace McpServer;
+
 [McpServerToolType]
 public static class UtilityTools
 {

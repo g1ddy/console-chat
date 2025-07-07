@@ -1,3 +1,5 @@
+using McpServer;
+
 namespace ConsoleChat.Tests;
 
 public class McpFunctionTests
