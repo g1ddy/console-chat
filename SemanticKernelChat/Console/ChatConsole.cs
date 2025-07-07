@@ -23,7 +23,7 @@ public class ChatConsole : IChatConsole
         _console = console;
     }
 
-    public static (string headerText, Justify justify, Style style) GetUserStyle(ChatRole messageRole)
+    public static (string headerText, Justify justify, Style style) GetUserStyle(ChatRole? messageRole)
     {
         var headerText = messageRole.ToString();
         var justify = Justify.Left;
@@ -51,22 +51,6 @@ public class ChatConsole : IChatConsole
         headerText += $" | [grey]({DateTime.Now.ToShortTimeString()})[/]";
 
         return (headerText, justify, style);
-    }
-
-    private static bool TryGetContent<TContent>(IEnumerable<AIContent> contents, [NotNullWhen(true)] out TContent? content)
-        where TContent : AIContent
-    {
-        foreach (var item in contents)
-        {
-            if (item is TContent match)
-            {
-                content = match;
-                return true;
-            }
-        }
-
-        content = null;
-        return false;
     }
 
     private static void CollectFunctionCallNames(IEnumerable<AIContent> contents, Dictionary<string, string> callNames)
@@ -149,34 +133,35 @@ public class ChatConsole : IChatConsole
         foreach (var message in messages)
         {
             string markupText = message.Text?.EscapeMarkup() ?? string.Empty;
-            string? toolResultRaw = null;
-            if (message.Role == ChatRole.Tool &&
-                TryGetContent<FunctionResultContent>(message.Contents, out var result))
-            {
-                string toolName = GetToolName(callNames, result.CallId, message.AuthorName, message.Role);
-                markupText = $"[grey]:wrench: {toolName.EscapeMarkup()} Result...[/]";
-                toolResultRaw = result.Result?.ToString();
-            }
-
-            var rows = new List<IRenderable>(FormatPanelContent(markupText, toolResultRaw));
+            var renderables = new List<IRenderable> { new Markup(markupText) };
+            var contents = message.Contents;
 
             if (DebugEnabled)
             {
-                foreach (var call in message.Contents.OfType<FunctionCallContent>())
+                foreach (var call in contents.OfType<FunctionCallContent>())
                 {
                     string toolName = GetToolName(callNames, call.CallId, message.AuthorName, message.Role);
                     string toolMarkup = $"[grey]:wrench: {toolName.EscapeMarkup()} Parameters...[/]";
-                    rows.AddRange(FormatPanelContent(toolMarkup, SerializeArguments(call.Arguments)));
+                    renderables.AddRange(FormatPanelContent(toolMarkup, SerializeArguments(call.Arguments)));
+                }
+
+                if (message.Role == ChatRole.Tool)
+                {
+                    foreach (var result in contents.OfType<FunctionResultContent>())
+                    {
+                        string toolName = GetToolName(callNames, result.CallId, message.AuthorName, message.Role);
+                        string toolMarkup = $"[grey]:wrench: {toolName.EscapeMarkup()} Result...[/]";
+                        renderables.AddRange(FormatPanelContent(toolMarkup, result.Result?.ToString()));
+                    }
                 }
             }
 
-            IRenderable markupResponse = new Rows(rows);
-
             var (headerText, justify, style) = GetUserStyle(message.Role);
             var header = new PanelHeader(headerText, justify);
+            var rows = new Rows(renderables);
 
             _console.Write(
-                new Panel(markupResponse)
+                new Panel(rows)
                     .RoundedBorder()
                     .BorderStyle(style)
                     .Header(header)
@@ -262,20 +247,20 @@ public class ChatConsole : IChatConsole
     {
         var messageUpdates = new List<ChatResponseUpdate>();
         var textBuilder = new StringBuilder();
-        var rows = new List<IRenderable> { new Markup(string.Empty) };
-        var panel = CreateAssistantPanel(new Rows(rows));
+        var renderables = new List<Panel>();
+        var rows = new Rows(renderables);
 
         var callNames = new Dictionary<string, string>();
-        await _console.Live(panel)
+        await _console.Live(rows)
             .AutoClear(false)
             .StartAsync(async ctx =>
             {
                 await foreach (var update in updates)
                 {
                     messageUpdates.Add(update);
-                    AppendUpdate(rows, textBuilder, callNames, update);
-                    panel = CreateAssistantPanel(new Rows(rows));
-                    ctx.UpdateTarget(panel);
+                    AppendUpdate(renderables, textBuilder, callNames, update);
+                    rows = new Rows(renderables);
+                    ctx.UpdateTarget(rows);
                     ctx.Refresh();
                 }
             });
@@ -285,20 +270,8 @@ public class ChatConsole : IChatConsole
         return [.. response.Messages];
     }
 
-    private static Panel CreateAssistantPanel(IRenderable content)
-    {
-        var (headerText, justify, style) = GetUserStyle(ChatRole.Assistant);
-        var header = new PanelHeader(headerText, justify);
-
-        return new Panel(content)
-            .RoundedBorder()
-            .BorderStyle(style)
-            .Header(header)
-            .Expand();
-    }
-
     private void AppendUpdate(
-        List<IRenderable> rows,
+        List<Panel> panels,
         StringBuilder textBuilder,
         Dictionary<string, string> callNames,
         ChatResponseUpdate update)
@@ -306,27 +279,63 @@ public class ChatConsole : IChatConsole
         var contents = update.Contents ?? Array.Empty<AIContent>();
         CollectFunctionCallNames(contents, callNames);
 
+        _ = textBuilder.Append(update.Text?.EscapeMarkup() ?? string.Empty);
+
+        var (headerText, justify, style) = GetUserStyle(update.Role);
+        var header = new PanelHeader(headerText, justify);
+
         if (update.Role == ChatRole.Assistant)
         {
-            _ = textBuilder.Append(update.Text?.EscapeMarkup() ?? string.Empty);
-            rows[0] = new Markup(textBuilder.ToString());
+            var markupText = new Markup(textBuilder.ToString());
+            var assistantPanel = new Panel(markupText)
+                .RoundedBorder()
+                .BorderStyle(style)
+                .Header(header)
+                .Expand();
+
+            // update first or default or insert new row to panels
+            if (panels.Count > 0)
+            {
+                panels[0] = assistantPanel;
+            }
+            else
+            {
+                panels.Add(assistantPanel);
+            }
         }
 
         if (DebugEnabled)
         {
+            var renderables = new List<IRenderable>();
+
             foreach (var call in contents.OfType<FunctionCallContent>())
             {
                 string toolName = GetToolName(callNames, call.CallId, update.AuthorName, update.Role);
                 string toolMarkup = $"[grey]:wrench: {toolName.EscapeMarkup()} Parameters...[/]";
-                rows.AddRange(FormatPanelContent(toolMarkup, SerializeArguments(call.Arguments)));
+                renderables.AddRange(FormatPanelContent(toolMarkup, SerializeArguments(call.Arguments)));
             }
-        }
 
-        foreach (var result in contents.OfType<FunctionResultContent>())
-        {
-            string toolName = GetToolName(callNames, result.CallId, update.AuthorName, update.Role);
-            string toolMarkup = $"[grey]:wrench: {toolName.EscapeMarkup()} Result...[/]";
-            rows.AddRange(FormatPanelContent(toolMarkup, result.Result?.ToString()));
+            if (update.Role == ChatRole.Tool)
+            {
+                foreach (var result in contents.OfType<FunctionResultContent>())
+                {
+                    string toolName = GetToolName(callNames, result.CallId, update.AuthorName, update.Role);
+                    string toolMarkup = $"[grey]:wrench: {toolName.EscapeMarkup()} Result...[/]";
+                    renderables.AddRange(FormatPanelContent(toolMarkup, result.Result?.ToString()));
+                }
+            }
+
+            if (renderables.Any())
+            {
+                var rows = new Rows(renderables);
+                var toolsPanel = new Panel(rows)
+                    .RoundedBorder()
+                    .BorderStyle(style)
+                    .Header(header)
+                    .Expand();
+
+                panels.Add(toolsPanel);
+            }
         }
     }
 }
