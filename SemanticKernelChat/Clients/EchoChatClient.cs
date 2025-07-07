@@ -1,5 +1,6 @@
 using System.Runtime.CompilerServices;
 using Microsoft.Extensions.AI;
+using Spectre.Console;
 
 namespace SemanticKernelChat.Clients;
 
@@ -63,18 +64,18 @@ public sealed class EchoChatClient : IChatClient
             {
                 ["root"] = new Dictionary<string, object?>
                 {
-                    ["Name"] = "Root",
+                    ["Value"] = "Root",
                     ["Children"] = new[]
                     {
                         new Dictionary<string, object?>
                         {
-                            ["Name"] = "Branch 1",
+                            ["Value"] = "Branch 1",
                             ["Children"] = new[]
                             {
-                                new Dictionary<string, object?> { ["Name"] = "Leaf" }
+                                new Dictionary<string, object?> { ["Value"] = "Leaf" }
                             }
                         },
-                        new Dictionary<string, object?> { ["Name"] = "Branch 2" }
+                        new Dictionary<string, object?> { ["Value"] = "Branch 2" }
                     }
                 }
             };
@@ -83,8 +84,8 @@ public sealed class EchoChatClient : IChatClient
             {
                 ["items"] = new[]
                 {
-                    new Dictionary<string, object?> { ["Name"] = "Apples", ["Value"] = 12, ["Color"] = "Red" },
-                    new Dictionary<string, object?> { ["Name"] = "Bananas", ["Value"] = 7, ["Color"] = "Yellow" }
+                    new Dictionary<string, object?> { ["Name"] = "Apples", ["Value"] = 12, ["Color"] = Color.Red },
+                    new Dictionary<string, object?> { ["Name"] = "Bananas", ["Value"] = 7, ["Color"] = Color.Yellow }
                 },
                 ["title"] = "Fruit Sales"
             };
