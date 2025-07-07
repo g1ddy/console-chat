@@ -80,6 +80,27 @@ public class ChatConsoleTests
     }
 
     [Fact]
+    public void WriteChatMessages_DebugJson_Embedded_In_Panel()
+    {
+        var testConsole = new TestConsole();
+
+        var resultMessage = new ChatMessage(ChatRole.Tool, new AIContent[]
+        {
+            new FunctionResultContent("id", "{\"a\":1}")
+        });
+
+        var completion = new CommandCompletion(Enumerable.Empty<IChatCommandStrategy>());
+        var console = new ChatConsole(new ChatLineEditor(completion), testConsole)
+        {
+            DebugEnabled = true
+        };
+
+        console.WriteChatMessages(resultMessage);
+
+        Assert.Contains("\"a\": 1", testConsole.Output);
+    }
+
+    [Fact]
     public async Task SendAndDisplayAsync_Writes_Response()
     {
         var history = new ChatHistoryService();
@@ -175,6 +196,26 @@ public class ChatConsoleTests
         _ = await console.DisplayStreamingUpdatesAsync(updates);
 
         Assert.Contains("Tool Result", testConsole.Output);
+    }
+
+    [Fact]
+    public async Task DisplayStreamingUpdatesAsync_DebugJson_Embedded()
+    {
+        var testConsole = new TestConsole();
+
+        var updates = AsAsyncEnumerable([
+            new ChatResponseUpdate(ChatRole.Tool, new[] { new FunctionResultContent("id", "{\"x\":2}") })
+        ]);
+
+        var completion = new CommandCompletion(Enumerable.Empty<IChatCommandStrategy>());
+        var console = new ChatConsole(new ChatLineEditor(completion), testConsole)
+        {
+            DebugEnabled = true
+        };
+
+        _ = await console.DisplayStreamingUpdatesAsync(updates);
+
+        Assert.Contains("\"x\": 2", testConsole.Output);
     }
 
 
