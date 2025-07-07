@@ -8,6 +8,7 @@ using Microsoft.Extensions.AI;
 using Spectre.Console;
 using Spectre.Console.Rendering;
 using Spectre.Console.Json;
+using System.Text.Json;
 
 namespace SemanticKernelChat.Console;
 
@@ -105,19 +106,32 @@ public class ChatConsole : IChatConsole
             : defaultName;
     }
 
+    private static bool IsValidJson(string text)
+    {
+        try
+        {
+            _ = JsonDocument.Parse(text);
+            return true;
+        }
+        catch (JsonException)
+        {
+            return false;
+        }
+    }
+
     private IEnumerable<IRenderable> FormatPanelContent(string markup, string? rawJson)
     {
         var rows = new List<IRenderable> { new Markup(markup) };
 
-        if (DebugEnabled && !string.IsNullOrEmpty(rawJson))
+        if (DebugEnabled && !string.IsNullOrWhiteSpace(rawJson))
         {
-            try
+            if (IsValidJson(rawJson))
             {
                 rows.Add(new JsonText(rawJson));
             }
-            catch (System.Text.Json.JsonException)
+            else
             {
-                rows.Add(new Markup($"[grey]{Markup.Escape(rawJson)}[/]"));
+                rows.Add(new Markup($"[orange1]:warning: {Markup.Escape(rawJson)}[/]"));
             }
         }
 
