@@ -1,5 +1,6 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
+using System.Collections.Generic;
 using System.Text;
 
 using Microsoft.Extensions.AI;
@@ -104,22 +105,43 @@ public class ChatConsole : IChatConsole
             : defaultName;
     }
 
+    private IEnumerable<IRenderable> FormatPanelContent(string markup, string? rawJson)
+    {
+        var rows = new List<IRenderable> { new Markup(markup) };
+
+        if (DebugEnabled && !string.IsNullOrEmpty(rawJson))
+        {
+            try
+            {
+                rows.Add(new JsonText(rawJson));
+            }
+            catch (System.Text.Json.JsonException)
+            {
+                rows.Add(new Markup($"[grey]{Markup.Escape(rawJson)}[/]"));
+            }
+        }
+
+        return rows;
+    }
+
     public void WriteChatMessages(params ChatMessage[] messages)
     {
         var callNames = CollectFunctionCallNames(messages);
 
         foreach (var message in messages)
         {
-            IRenderable markupResponse = new Markup(message.Text.EscapeMarkup());
-            string? toolNameForDebug = null;
+            string markupText = message.Text.EscapeMarkup();
             string? toolResultRaw = null;
             if (message.Role == ChatRole.Tool &&
                 TryGetContent<FunctionResultContent>(message.Contents, out var result))
             {
-                toolNameForDebug = GetToolName(callNames, result.CallId, message.AuthorName, message.Role);
-                markupResponse = new Markup($"[grey]:wrench: {toolNameForDebug.EscapeMarkup()} Result...[/]");
+                string toolName = GetToolName(callNames, result.CallId, message.AuthorName, message.Role);
+                markupText = $"[grey]:wrench: {toolName.EscapeMarkup()} Result...[/]";
                 toolResultRaw = result.Result?.ToString();
             }
+
+            var rows = FormatPanelContent(markupText, toolResultRaw);
+            IRenderable markupResponse = new Rows(rows);
 
             var (headerText, justify, style) = GetUserStyle(message.Role);
             var header = new PanelHeader(headerText, justify);
@@ -131,19 +153,6 @@ public class ChatConsole : IChatConsole
                     .Header(header)
                     .Expand());
 
-            if (DebugEnabled && toolNameForDebug is not null)
-            {
-                _console.WriteLine($"[grey]{toolNameForDebug} result:[/]");
-                var raw = toolResultRaw ?? string.Empty;
-                try
-                {
-                    _console.Write(new JsonText(raw));
-                }
-                catch (System.Text.Json.JsonException)
-                {
-                    _console.WriteLine(raw);
-                }
-            }
         }
     }
 
@@ -226,8 +235,9 @@ public class ChatConsole : IChatConsole
         IAsyncEnumerable<ChatResponseUpdate> updates)
     {
         var messageUpdates = new List<ChatResponseUpdate>();
-        var builder = new StringBuilder();
-        var panel = CreateAssistantPanel(new Markup(builder.ToString()));
+        var textBuilder = new StringBuilder();
+        var rows = new List<IRenderable> { new Markup(string.Empty) };
+        var panel = CreateAssistantPanel(new Rows(rows));
 
         var callNames = new Dictionary<string, string>();
         await _console.Live(panel)
@@ -237,8 +247,8 @@ public class ChatConsole : IChatConsole
                 await foreach (var update in updates)
                 {
                     messageUpdates.Add(update);
-                    AppendUpdate(builder, callNames, update);
-                    panel = CreateAssistantPanel(new Markup(builder.ToString()));
+                    AppendUpdate(rows, textBuilder, callNames, update);
+                    panel = CreateAssistantPanel(new Rows(rows));
                     ctx.UpdateTarget(panel);
                     ctx.Refresh();
                 }
@@ -264,7 +274,8 @@ public class ChatConsole : IChatConsole
     }
 
     private void AppendUpdate(
-        StringBuilder builder,
+        List<IRenderable> rows,
+        StringBuilder textBuilder,
         Dictionary<string, string> callNames,
         ChatResponseUpdate update)
     {
@@ -273,29 +284,15 @@ public class ChatConsole : IChatConsole
 
         if (update.Role == ChatRole.Assistant)
         {
-            _ = builder.Append(update.Text.EscapeMarkup());
+            _ = textBuilder.Append(update.Text.EscapeMarkup());
+            rows[0] = new Markup(textBuilder.ToString());
         }
 
         foreach (var result in contents.OfType<FunctionResultContent>())
         {
-            _ = builder.Append('\n');
             string toolName = GetToolName(callNames, result.CallId, update.AuthorName, update.Role);
-
-            _ = builder.Append($"[grey]:wrench: {toolName.EscapeMarkup()} Result...[/]");
-
-            if (DebugEnabled)
-            {
-                _console.WriteLine($"[grey]{toolName} result:[/]");
-                var raw = result.Result?.ToString() ?? string.Empty;
-                try
-                {
-                    _console.Write(new JsonText(raw));
-                }
-                catch (System.Text.Json.JsonException)
-                {
-                    _console.WriteLine(raw);
-                }
-            }
+            string toolMarkup = $"[grey]:wrench: {toolName.EscapeMarkup()} Result...[/]";
+            rows.AddRange(FormatPanelContent(toolMarkup, result.Result?.ToString()));
         }
     }
 }
