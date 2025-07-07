@@ -37,7 +37,7 @@ public class RaindropsBulkTests : TestBase
 
             // add a delay before searching
             await Task.Delay(5000);
-            var updated = await tool.SearchAsync(0, "Bulk Endpoints");
+            var updated = await tool.ListAsync(0, "Bulk Endpoints");
             foreach (var id in ids)
             {
                 var item = updated.Items.First(r => r.Id == id);

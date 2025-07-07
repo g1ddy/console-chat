@@ -54,7 +54,7 @@ public class RaindropsTools
     [McpServerTool, Description("Delete a bookmark by id")]
     public Task<SuccessResponse> DeleteAsync(long id) => _api.DeleteRaindropAsync(id);
 
-    [McpServerTool, Description("List bookmarks in a collection")]
+    [McpServerTool, Description("List bookmarks in a collection. Can be filtered by an optional search query.")]
     public Task<ItemsResponse<Raindrop>> ListAsync(int collectionId, string? search = null)
         => _api.GetRaindropsAsync(collectionId, search);
 
@@ -65,8 +65,6 @@ public class RaindropsTools
         return _api.CreateRaindropsAsync(payload);
     }
 
-    [McpServerTool, Description("Search bookmarks in a collection")]
-    public Task<ItemsResponse<Raindrop>> SearchAsync(int collectionId, string query) => _api.GetRaindropsAsync(collectionId, query);
 
     [McpServerTool, Description("Bulk update bookmarks in a collection")]
     public Task<SuccessResponse> UpdateManyAsync(int collectionId, RaindropsBulkUpdate update, bool? nested = null, string? search = null)
