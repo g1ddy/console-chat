@@ -6,6 +6,8 @@ using Spectre.Console.Cli;
 using SemanticKernelChat.Plugins;
 using Microsoft.SemanticKernel;
 using System.Linq;
+using System.Collections.Generic;
+using System;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace SemanticKernelChat.Commands;
@@ -72,7 +74,40 @@ public sealed class TextCompletionTestCommand : ChatCommandBase
     {
         var chatConsole = new ChatConsole(new FakeLineEditor(ScriptedInputs), ansiConsole);
         var functions = new RenderableFunctions(chatConsole);
-        var plugin = KernelPluginFactory.CreateFromObject(functions);
+
+        var tableData = new[]
+        {
+            new RenderableFunctions.ItemCount("Apples", 12),
+            new RenderableFunctions.ItemCount("Bananas", 7)
+        };
+
+        var treeData = new RenderableFunctions.TreeItem(
+            "Root",
+            new[]
+            {
+                new RenderableFunctions.TreeItem(
+                    "Branch 1",
+                    new[]
+                    {
+                        new RenderableFunctions.TreeItem("Leaf", null)
+                    }),
+                new RenderableFunctions.TreeItem("Branch 2", null)
+            });
+
+        var chartData = new[]
+        {
+            new RenderableFunctions.ChartItem("Apples", 12, Color.Red),
+            new RenderableFunctions.ChartItem("Bananas", 7, Color.Yellow)
+        };
+
+        var kernelFunctions = new[]
+        {
+            KernelFunctionFactory.CreateFromMethod(() => functions.SampleTable(tableData)),
+            KernelFunctionFactory.CreateFromMethod(() => functions.SampleTree(treeData)),
+            KernelFunctionFactory.CreateFromMethod(() => functions.SampleChart(chartData))
+        };
+
+        var plugin = KernelPluginFactory.CreateFromFunctions("RenderableFunctions", kernelFunctions);
 #pragma warning disable SKEXP0001
         var kernel = Kernel.CreateBuilder().Build();
         var aiFunctions = plugin.AsAIFunctions(kernel).ToList();

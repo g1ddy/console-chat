@@ -59,9 +59,50 @@ public sealed class EchoChatClient : IChatClient
 
             var callContents = new List<AIContent>
             {
-                new FunctionCallContent("tool_call_table", "RenderableFunctions_SampleTable"),
-                new FunctionCallContent("tool_call_tree", "RenderableFunctions_SampleTree"),
-                new FunctionCallContent("tool_call_chart", "RenderableFunctions_SampleChart")
+                new FunctionCallContent(
+                    "tool_call_table",
+                    "RenderableFunctions_SampleTable",
+                    new Dictionary<string, object?>
+                    {
+                        ["items"] = new[]
+                        {
+                            new Dictionary<string, object?> { ["Name"] = "Apples", ["Count"] = 12 },
+                            new Dictionary<string, object?> { ["Name"] = "Bananas", ["Count"] = 7 }
+                        }
+                    }),
+                new FunctionCallContent(
+                    "tool_call_tree",
+                    "RenderableFunctions_SampleTree",
+                    new Dictionary<string, object?>
+                    {
+                        ["root"] = new Dictionary<string, object?>
+                        {
+                            ["Name"] = "Root",
+                            ["Children"] = new[]
+                            {
+                                new Dictionary<string, object?>
+                                {
+                                    ["Name"] = "Branch 1",
+                                    ["Children"] = new[]
+                                    {
+                                        new Dictionary<string, object?> { ["Name"] = "Leaf" }
+                                    }
+                                },
+                                new Dictionary<string, object?> { ["Name"] = "Branch 2" }
+                            }
+                        }
+                    }),
+                new FunctionCallContent(
+                    "tool_call_chart",
+                    "RenderableFunctions_SampleChart",
+                    new Dictionary<string, object?>
+                    {
+                        ["items"] = new[]
+                        {
+                            new Dictionary<string, object?> { ["Name"] = "Apples", ["Value"] = 12, ["Color"] = "Red" },
+                            new Dictionary<string, object?> { ["Name"] = "Bananas", ["Value"] = 7, ["Color"] = "Yellow" }
+                        }
+                    })
             };
 
             await Task.Delay(100, cancellationToken);
