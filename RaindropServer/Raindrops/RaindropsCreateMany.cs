@@ -2,10 +2,10 @@ using System.Text.Json.Serialization;
 
 namespace RaindropServer.Raindrops;
 
-public class RaindropsCreateMany
+public record RaindropsCreateMany
 {
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    public int? CollectionId { get; set; }
+    public int? CollectionId { get; init; }
 
-    public List<Raindrop> Items { get; set; } = new();
+    public List<Raindrop> Items { get; init; } = new();
 }

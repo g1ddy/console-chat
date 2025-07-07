@@ -2,8 +2,8 @@ using System.Text.Json.Serialization;
 
 namespace RaindropServer.Common;
 
-public class IdRef
+public record IdRef
 {
     [JsonPropertyName("$id")]
-    public int Id { get; set; }
+    public int Id { get; init; }
 }

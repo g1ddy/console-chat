@@ -1,6 +1,6 @@
 namespace RaindropServer.Highlights;
 
-public class HighlightsBulkUpdateRequest
+public record HighlightsBulkUpdateRequest
 {
-    public List<HighlightsBulkUpdate> Highlights { get; set; } = new();
+    public List<HighlightsBulkUpdate> Highlights { get; init; } = new();
 }

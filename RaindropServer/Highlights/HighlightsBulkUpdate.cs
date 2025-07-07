@@ -2,20 +2,20 @@ using System.Text.Json.Serialization;
 
 namespace RaindropServer.Highlights;
 
-public class HighlightsBulkUpdate
+public record HighlightsBulkUpdate
 {
     [JsonPropertyName("_id")]
-    public string? Id { get; set; }
+    public string? Id { get; init; }
 
-    public string? Text { get; set; }
+    public string? Text { get; init; }
 
-    public string? Note { get; set; }
+    public string? Note { get; init; }
 
-    public string? Color { get; set; }
-
-    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    public string? Created { get; set; }
+    public string? Color { get; init; }
 
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    public string? LastUpdate { get; set; }
+    public string? Created { get; init; }
+
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string? LastUpdate { get; init; }
 }
