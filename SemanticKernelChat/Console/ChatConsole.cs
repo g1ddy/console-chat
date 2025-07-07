@@ -130,7 +130,7 @@ public class ChatConsole : IChatConsole
 
         foreach (var message in messages)
         {
-            string markupText = message.Text.EscapeMarkup();
+            string markupText = message.Text?.EscapeMarkup() ?? string.Empty;
             string? toolResultRaw = null;
             if (message.Role == ChatRole.Tool &&
                 TryGetContent<FunctionResultContent>(message.Contents, out var result))
@@ -284,7 +284,7 @@ public class ChatConsole : IChatConsole
 
         if (update.Role == ChatRole.Assistant)
         {
-            _ = textBuilder.Append(update.Text.EscapeMarkup());
+            _ = textBuilder.Append(update.Text?.EscapeMarkup() ?? string.Empty);
             rows[0] = new Markup(textBuilder.ToString());
         }
 
