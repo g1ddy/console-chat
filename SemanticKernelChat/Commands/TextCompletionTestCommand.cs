@@ -38,6 +38,7 @@ public sealed class TextCompletionTestCommand : ChatCommandBase
     private static readonly string[] ScriptedInputs =
     [
         "This is a demo of non-streaming chat!",
+        $"{CliConstants.Commands.Debug} on",
         "This is a demo of streaming chat!",
         $"{CliConstants.Commands.Use} BugReport",
         CliConstants.Commands.Exit
