@@ -144,15 +144,15 @@ public class ChatConsole : IChatConsole
                     string toolMarkup = $"[grey]:wrench: {toolName.EscapeMarkup()} Parameters...[/]";
                     renderables.AddRange(FormatPanelContent(toolMarkup, SerializeArguments(call.Arguments)));
                 }
+            }
 
-                if (message.Role == ChatRole.Tool)
+            if (message.Role == ChatRole.Tool)
+            {
+                foreach (var result in contents.OfType<FunctionResultContent>())
                 {
-                    foreach (var result in contents.OfType<FunctionResultContent>())
-                    {
-                        string toolName = GetToolName(callNames, result.CallId, message.AuthorName, message.Role);
-                        string toolMarkup = $"[grey]:wrench: {toolName.EscapeMarkup()} Result...[/]";
-                        renderables.AddRange(FormatPanelContent(toolMarkup, result.Result?.ToString()));
-                    }
+                    string toolName = GetToolName(callNames, result.CallId, message.AuthorName, message.Role);
+                    string toolMarkup = $"[grey]:wrench: {toolName.EscapeMarkup()} Result...[/]";
+                    renderables.AddRange(FormatPanelContent(toolMarkup, result.Result?.ToString()));
                 }
             }
 
@@ -304,38 +304,38 @@ public class ChatConsole : IChatConsole
             }
         }
 
+        var renderables = new List<IRenderable>();
+
         if (DebugEnabled)
         {
-            var renderables = new List<IRenderable>();
-
             foreach (var call in contents.OfType<FunctionCallContent>())
             {
                 string toolName = GetToolName(callNames, call.CallId, update.AuthorName, update.Role);
                 string toolMarkup = $"[grey]:wrench: {toolName.EscapeMarkup()} Parameters...[/]";
                 renderables.AddRange(FormatPanelContent(toolMarkup, SerializeArguments(call.Arguments)));
             }
+        }
 
-            if (update.Role == ChatRole.Tool)
+        if (update.Role == ChatRole.Tool)
+        {
+            foreach (var result in contents.OfType<FunctionResultContent>())
             {
-                foreach (var result in contents.OfType<FunctionResultContent>())
-                {
-                    string toolName = GetToolName(callNames, result.CallId, update.AuthorName, update.Role);
-                    string toolMarkup = $"[grey]:wrench: {toolName.EscapeMarkup()} Result...[/]";
-                    renderables.AddRange(FormatPanelContent(toolMarkup, result.Result?.ToString()));
-                }
+                string toolName = GetToolName(callNames, result.CallId, update.AuthorName, update.Role);
+                string toolMarkup = $"[grey]:wrench: {toolName.EscapeMarkup()} Result...[/]";
+                renderables.AddRange(FormatPanelContent(toolMarkup, result.Result?.ToString()));
             }
+        }
 
-            if (renderables.Any())
-            {
-                var rows = new Rows(renderables);
-                var toolsPanel = new Panel(rows)
-                    .RoundedBorder()
-                    .BorderStyle(style)
-                    .Header(header)
-                    .Expand();
+        if (renderables.Any())
+        {
+            var rows = new Rows(renderables);
+            var toolsPanel = new Panel(rows)
+                .RoundedBorder()
+                .BorderStyle(style)
+                .Header(header)
+                .Expand();
 
-                panels.Add(toolsPanel);
-            }
+            panels.Add(toolsPanel);
         }
     }
 }
