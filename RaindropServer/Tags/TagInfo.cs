@@ -1,6 +1,6 @@
 using System.Text.Json.Serialization;
 
-namespace RaindropTools.Tags;
+namespace RaindropServer.Tags;
 
 public class TagInfo
 {

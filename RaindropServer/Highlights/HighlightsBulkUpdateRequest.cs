@@ -1,4 +1,4 @@
-namespace RaindropTools.Highlights;
+namespace RaindropServer.Highlights;
 
 public class HighlightsBulkUpdateRequest
 {

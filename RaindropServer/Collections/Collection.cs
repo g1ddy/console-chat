@@ -1,7 +1,7 @@
 using System.Text.Json.Serialization;
-using RaindropTools.Common;
+using RaindropServer.Common;
 
-namespace RaindropTools.Collections;
+namespace RaindropServer.Collections;
 
 public class Collection
 {

@@ -1,7 +1,7 @@
 using Refit;
-using RaindropTools.Common;
+using RaindropServer.Common;
 
-namespace RaindropTools.Collections;
+namespace RaindropServer.Collections;
 
 public interface ICollectionsApi
 {

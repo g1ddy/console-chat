@@ -1,4 +1,4 @@
-namespace RaindropTools.Common;
+namespace RaindropServer.Common;
 
 public record ItemResponse<T>(bool Result, T Item);
 

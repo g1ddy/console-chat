@@ -1,7 +1,7 @@
 using Refit;
-using RaindropTools.Common;
+using RaindropServer.Common;
 
-namespace RaindropTools.User;
+namespace RaindropServer.User;
 
 public interface IUserApi
 {

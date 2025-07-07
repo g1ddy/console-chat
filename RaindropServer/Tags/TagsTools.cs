@@ -1,8 +1,8 @@
 using System.ComponentModel;
 using ModelContextProtocol.Server;
-using RaindropTools.Common;
+using RaindropServer.Common;
 
-namespace RaindropTools.Tags;
+namespace RaindropServer.Tags;
 
 [McpServerToolType]
 public class TagsTools

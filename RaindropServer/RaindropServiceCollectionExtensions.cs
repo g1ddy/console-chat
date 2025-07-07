@@ -3,13 +3,13 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Refit;
 using System.Net.Http.Headers;
-using RaindropTools.Collections;
-using RaindropTools.Raindrops;
-using RaindropTools.Highlights;
-using RaindropTools.Tags;
-using RaindropTools.User;
+using RaindropServer.Collections;
+using RaindropServer.Raindrops;
+using RaindropServer.Highlights;
+using RaindropServer.Tags;
+using RaindropServer.User;
 
-namespace RaindropTools;
+namespace RaindropServer;
 
 /// <summary>
 /// Extension methods for registering Raindrop API services.

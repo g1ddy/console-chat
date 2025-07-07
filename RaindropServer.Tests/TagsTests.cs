@@ -1,8 +1,8 @@
-using RaindropTools.Raindrops;
-using RaindropTools.Tags;
+using RaindropServer.Raindrops;
+using RaindropServer.Tags;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace RaindropTools.Tests;
+namespace RaindropServer.Tests;
 
 public class TagsTests : TestBase
 {

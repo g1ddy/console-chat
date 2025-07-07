@@ -1,7 +1,7 @@
 using System.Text.Json.Serialization;
-using RaindropTools.Common;
+using RaindropServer.Common;
 
-namespace RaindropTools.Raindrops;
+namespace RaindropServer.Raindrops;
 
 public class RaindropsBulkUpdate
 {

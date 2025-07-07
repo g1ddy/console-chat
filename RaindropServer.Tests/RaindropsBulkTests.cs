@@ -1,9 +1,9 @@
 using Microsoft.Extensions.DependencyInjection;
-using RaindropTools.Raindrops;
+using RaindropServer.Raindrops;
 using System.Linq;
 using System.Collections.Generic;
 
-namespace RaindropTools.Tests;
+namespace RaindropServer.Tests;
 
 public class RaindropsBulkTests : TestBase
 {

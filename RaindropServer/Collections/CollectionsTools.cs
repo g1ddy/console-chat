@@ -1,8 +1,8 @@
 using System.ComponentModel;
 using ModelContextProtocol.Server;
-using RaindropTools.Common;
+using RaindropServer.Common;
 
-namespace RaindropTools.Collections;
+namespace RaindropServer.Collections;
 
 [McpServerToolType]
 public class CollectionsTools

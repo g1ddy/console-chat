@@ -1,7 +1,7 @@
-using RaindropTools.Raindrops;
+using RaindropServer.Raindrops;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace RaindropTools.Tests;
+namespace RaindropServer.Tests;
 
 public class RaindropsTests : TestBase
 {

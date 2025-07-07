@@ -1,7 +1,7 @@
 using Refit;
-using RaindropTools.Common;
+using RaindropServer.Common;
 
-namespace RaindropTools.Highlights;
+namespace RaindropServer.Highlights;
 
 public interface IHighlightsApi
 {

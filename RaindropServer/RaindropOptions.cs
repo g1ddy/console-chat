@@ -1,4 +1,4 @@
-namespace RaindropTools;
+namespace RaindropServer;
 
 /// <summary>
 /// Options for configuring the Raindrop API client.

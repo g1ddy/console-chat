@@ -1,10 +1,10 @@
-using RaindropTools.Collections;
-using RaindropTools.Raindrops;
-using RaindropTools.Highlights;
+using RaindropServer.Collections;
+using RaindropServer.Raindrops;
+using RaindropServer.Highlights;
 using Microsoft.Extensions.DependencyInjection;
 using System.Linq;
 
-namespace RaindropTools.Tests;
+namespace RaindropServer.Tests;
 
 public class HighlightsTests : TestBase
 {
