@@ -31,12 +31,6 @@ public sealed class EchoChatClient : IChatClient
         {
             // If the last message was a tool response, we assume it has a function result
             responseContents.Add(new TextContent("I got what I need!" + Environment.NewLine));
-            foreach (var result in lastMessage.Contents.OfType<FunctionResultContent>())
-            {
-                responseContents.Add(new TextContent($"Tool id: {result.CallId}" + Environment.NewLine));
-                responseContents.Add(new TextContent($"Tool result: {result.Result}" + Environment.NewLine));
-
-            }
         }
 
         var responseMessage = new ChatMessage(ChatRole.Assistant, responseContents);
@@ -113,21 +107,6 @@ public sealed class EchoChatClient : IChatClient
             {
                 await Task.Delay(100, cancellationToken);
                 yield return new ChatResponseUpdate(ChatRole.Assistant, c.ToString());
-            }
-
-            foreach (var result in lastMessage.Contents.OfType<FunctionResultContent>())
-            {
-                var lines = new[]
-                {
-                    $"Tool id: {result.CallId}" + Environment.NewLine,
-                    $"Tool result: {result.Result}" + Environment.NewLine
-                };
-
-                foreach (var line in lines)
-                {
-                    await Task.Delay(200, cancellationToken);
-                    yield return new ChatResponseUpdate(ChatRole.Assistant, line);
-                }
             }
         }
         else
