@@ -27,14 +27,14 @@ public class McpFunctionTests
     [Fact]
     public void Echo_Returns_Prefixed_Message()
     {
-        string result = EchoTool.Echo("test");
+        string result = EchoTools.Echo("test");
         Assert.Equal("Hello from C#: test", result);
     }
 
     [Fact]
     public void ReverseEcho_Returns_Reversed_Message()
     {
-        string result = EchoTool.ReverseEcho("abc");
+        string result = EchoTools.ReverseEcho("abc");
         Assert.Equal("cba", result);
     }
 }
