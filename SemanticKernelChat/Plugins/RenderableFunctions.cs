@@ -1,4 +1,5 @@
 using System.ComponentModel;
+using System.Collections.Generic;
 using Microsoft.SemanticKernel;
 using Spectre.Console;
 using Spectre.Console.Rendering;
@@ -18,37 +19,84 @@ public sealed class RenderableFunctions
         _console = console;
     }
 
-    [KernelFunction, Description("Displays a table of fruit counts in the console.")]
-    public string SampleTable()
+    public sealed record ItemCount(string Name, int Count);
+
+    [KernelFunction, Description("Displays a table of items and counts in the console.")]
+    public string SampleTable(IReadOnlyList<ItemCount> items)
     {
         var table = new Table().RoundedBorder();
-        table.AddColumn("Fruit");
+        table.AddColumn("Item");
         table.AddColumn("Count");
-        table.AddRow("Apples", "12");
-        table.AddRow("Bananas", "7");
+
+        foreach (var item in items)
+        {
+            table.AddRow(item.Name, item.Count.ToString());
+        }
+
         _console.Write(table);
-        return "Displayed fruit table";
+        return "Displayed item table";
+    }
+
+    public class TreeNode
+    {
+        public string Value { get; set; }
+        public TreeNode? Parent { get; set; }
+        public List<TreeNode> Children { get; set; }
+
+        public bool IsLeaf => Children == null || Children.Count == 0;
+
+        public TreeNode(string value)
+        {
+            Value = value;
+            Children = new List<TreeNode>();
+        }
+
+        public void AddChild(TreeNode child)
+        {
+            Children.Add(child);
+            child.Parent = this;
+        }
     }
 
     [KernelFunction, Description("Displays a simple tree structure in the console.")]
-    public string SampleTree()
+    public string SampleTree(TreeNode root)
     {
-        var tree = new Tree("Root");
-        tree.AddNode("Branch 1").AddNode("Leaf");
-        tree.AddNode("Branch 2");
+        var tree = new Tree(root.Value);
+        AddChildren(tree, root.Children);
+
         _console.Write(tree);
         return "Displayed tree";
     }
 
-    [KernelFunction, Description("Displays a bar chart of fruit sales in the console.")]
-    public string SampleChart()
+    private static void AddChildren(IHasTreeNodes parent, IReadOnlyList<TreeNode>? children)
+    {
+        if (children is null)
+        {
+            return;
+        }
+
+        foreach (var child in children)
+        {
+            var node = parent.AddNode(child.Value);
+            AddChildren(node, child.Children);
+        }
+    }
+
+    public sealed record ChartItem(string Name, int Value, Color Color);
+
+    [KernelFunction, Description("Displays a bar chart of values in the console.")]
+    public string SampleChart(IReadOnlyList<ChartItem> items, [Description("The title of the chart")] string title)
     {
         var chart = new BarChart()
             .Width(40)
-            .Label("[bold green]Fruit Sales[/]")
+            .Label($"[bold green]{title.EscapeMarkup()}[/]")
             .CenterLabel();
-        chart.AddItem("Apples", 12, Color.Red);
-        chart.AddItem("Bananas", 7, Color.Yellow);
+
+        foreach (var item in items)
+        {
+            chart.AddItem(item.Name, item.Value, item.Color);
+        }
+
         _console.Write(chart);
         return "Displayed chart";
     }
