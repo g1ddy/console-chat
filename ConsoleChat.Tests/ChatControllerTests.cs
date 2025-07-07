@@ -1,11 +1,11 @@
+using ConsoleChat.Tests.TestUtilities;
+
 using Microsoft.Extensions.AI;
+
 using NSubstitute;
+
 using SemanticKernelChat;
 using SemanticKernelChat.Console;
-using SemanticKernelChat.Infrastructure;
-using System.Collections.Generic;
-
-using ConsoleChat.Tests.TestUtilities;
 
 namespace ConsoleChat.Tests;
 

@@ -1,9 +1,5 @@
 using Microsoft.Extensions.AI;
-using System.Collections.Generic;
-using System.Linq;
-
 using SemanticKernelChat.Console;
-using SemanticKernelChat.Infrastructure;
 using Spectre.Console.Cli;
 
 namespace SemanticKernelChat.Commands;

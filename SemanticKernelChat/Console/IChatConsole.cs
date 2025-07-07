@@ -1,5 +1,4 @@
 using Microsoft.Extensions.AI;
-using ModelContextProtocol.Client;
 using Spectre.Console.Rendering;
 
 namespace SemanticKernelChat.Console;
@@ -13,7 +12,7 @@ public interface IChatConsole
     void WriteUserPrompt();
     void WriteLine(string text);
     void Write(IRenderable renderable);
-    Task<string?> ReadMultilineInputAsync();
+    Task<string?> ReadMultilineInputAsync(CancellationToken cancellationToken = default);
     Task DisplayThinkingIndicator(Func<Task> action);
     void DisplayError(Exception ex);
     Task<IReadOnlyList<ChatMessage>> DisplayStreamingUpdatesAsync(IAsyncEnumerable<ChatResponseUpdate> updates);

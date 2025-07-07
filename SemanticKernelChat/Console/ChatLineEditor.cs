@@ -1,4 +1,3 @@
-using System.IO;
 using RadLine;
 
 namespace SemanticKernelChat.Console;

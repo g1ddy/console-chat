@@ -1,7 +1,4 @@
 using Microsoft.Extensions.AI;
-using System;
-using System.Linq;
-using System.Collections.Generic;
 using SemanticKernelChat.Infrastructure;
 
 namespace SemanticKernelChat.Console;

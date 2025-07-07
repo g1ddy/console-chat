@@ -1,6 +1,6 @@
 using Microsoft.Extensions.AI;
-using SemanticKernelChat.Infrastructure;
 using ModelContextProtocol.Protocol;
+using SemanticKernelChat.Infrastructure;
 
 namespace SemanticKernelChat.Console;
 
@@ -20,10 +20,12 @@ public sealed class UsePromptCommandStrategy : IChatCommandStrategy
         {
             return new[] { CliConstants.Commands.Use };
         }
+
         if (tokens.Length == 2 && tokens[0].Equals(CliConstants.Commands.Use, StringComparison.OrdinalIgnoreCase))
         {
             return _prompts.Prompts.Select(p => p.Name).ToList();
         }
+
         return null;
     }
 

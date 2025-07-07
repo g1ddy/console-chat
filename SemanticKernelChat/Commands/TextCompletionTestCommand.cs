@@ -1,14 +1,11 @@
 using Microsoft.Extensions.AI;
+using Microsoft.SemanticKernel;
+
 using SemanticKernelChat.Console;
 using SemanticKernelChat.Infrastructure;
-using Spectre.Console;
-using Spectre.Console.Cli;
 using SemanticKernelChat.Plugins;
-using Microsoft.SemanticKernel;
-using System.Linq;
-using System.Collections.Generic;
-using System;
-using Microsoft.Extensions.DependencyInjection;
+
+using Spectre.Console;
 
 namespace SemanticKernelChat.Commands;
 
@@ -33,7 +30,8 @@ public sealed class TextCompletionTestCommand : ChatCommandBase
 
         public Task<string?> ReadLine(CancellationToken cancellationToken)
         {
-            _inputs.TryDequeue(out var input);
+            _ = _inputs.TryDequeue(out var input);
+            System.Console.WriteLine(input);
             return Task.FromResult(input);
         }
     }

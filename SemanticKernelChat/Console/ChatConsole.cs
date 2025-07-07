@@ -1,14 +1,13 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
-using System.Collections.Generic;
 using System.Text;
+using System.Text.Json;
 
 using Microsoft.Extensions.AI;
 
 using Spectre.Console;
-using Spectre.Console.Rendering;
 using Spectre.Console.Json;
-using System.Text.Json;
+using Spectre.Console.Rendering;
 
 namespace SemanticKernelChat.Console;
 
@@ -166,7 +165,6 @@ public class ChatConsole : IChatConsole
                     .BorderStyle(style)
                     .Header(header)
                     .Expand());
-
         }
     }
 
@@ -196,10 +194,10 @@ public class ChatConsole : IChatConsole
 
         foreach (var item in items)
         {
-            prompt.AddChoice(item);
+            _ = prompt.AddChoice(item);
             if (item.Selected)
             {
-                prompt.Select(item);
+                _ = prompt.Select(item);
             }
         }
 
@@ -209,11 +207,13 @@ public class ChatConsole : IChatConsole
         if (result.Count > 0)
         {
             var table = new Table().Border(TableBorder.Rounded).BorderColor(Color.Grey);
-            table.AddColumn("[bold]Selected[/]");
+            _ = table.AddColumn("[bold]Selected[/]");
+
             foreach (var selection in result)
             {
-                table.AddRow($"[yellow]*[/] {selection.Name.EscapeMarkup()}");
+                _ = table.AddRow($"[yellow]*[/] {selection.Name.EscapeMarkup()}");
             }
+
             _console.Write(table);
         }
         else
@@ -228,10 +228,8 @@ public class ChatConsole : IChatConsole
     /// Reads user input using RadLine's multiline editor.
     /// Returns <c>null</c> when the input stream ends.
     /// </summary>
-    public async Task<string?> ReadMultilineInputAsync()
-    {
-        return await _editor.ReadLine(CancellationToken.None);
-    }
+    public async Task<string?> ReadMultilineInputAsync(CancellationToken cancellationToken = default)
+        => await _editor.ReadLine(CancellationToken.None);
 
     public async Task DisplayThinkingIndicator(Func<Task> action)
     {
@@ -241,9 +239,7 @@ public class ChatConsole : IChatConsole
     }
 
     public void DisplayError(Exception ex)
-    {
-        _console.WriteException(ex, ExceptionFormats.ShortenEverything);
-    }
+        => _console.WriteException(ex, ExceptionFormats.ShortenEverything);
 
     public async Task<IReadOnlyList<ChatMessage>> DisplayStreamingUpdatesAsync(
         IAsyncEnumerable<ChatResponseUpdate> updates)
@@ -269,8 +265,6 @@ public class ChatConsole : IChatConsole
             });
 
         var response = Microsoft.Extensions.AI.ChatResponseExtensions.ToChatResponse(messageUpdates);
-
-
 
         return [.. response.Messages];
     }
