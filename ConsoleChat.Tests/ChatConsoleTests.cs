@@ -98,8 +98,10 @@ public class ChatConsoleTests
         Assert.Contains("\"a\": 1", testConsole.Output);
     }
 
-    [Fact]
-    public void WriteChatMessages_Debug_Call_Parameters()
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void WriteChatMessages_Call_Parameters_Visibility(bool debugEnabled)
     {
         var testConsole = new TestConsole();
 
@@ -111,30 +113,19 @@ public class ChatConsoleTests
         var completion = new CommandCompletion(Enumerable.Empty<IChatCommandStrategy>());
         var console = new ChatConsole(new ChatLineEditor(completion), testConsole)
         {
-            DebugEnabled = true
+            DebugEnabled = debugEnabled
         };
 
         console.WriteChatMessages(callMessage);
 
-        Assert.Contains("\"p\": 1", testConsole.Output);
-    }
-
-    [Fact]
-    public void WriteChatMessages_No_Debug_Hides_Call_Parameters()
-    {
-        var testConsole = new TestConsole();
-
-        var callMessage = new ChatMessage(ChatRole.Assistant, new AIContent[]
+        if (debugEnabled)
         {
-            new FunctionCallContent("id", "Tool", new Dictionary<string, object?> { ["p"] = 1 })
-        });
-
-        var completion = new CommandCompletion(Enumerable.Empty<IChatCommandStrategy>());
-        var console = new ChatConsole(new ChatLineEditor(completion), testConsole);
-
-        console.WriteChatMessages(callMessage);
-
-        Assert.DoesNotContain("\"p\": 1", testConsole.Output);
+            Assert.Contains("\"p\": 1", testConsole.Output);
+        }
+        else
+        {
+            Assert.DoesNotContain("\"p\": 1", testConsole.Output);
+        }
     }
 
     [Fact]
@@ -255,8 +246,10 @@ public class ChatConsoleTests
         Assert.Contains("\"x\": 2", testConsole.Output);
     }
 
-    [Fact]
-    public async Task DisplayStreamingUpdatesAsync_Debug_Call_Parameters()
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task DisplayStreamingUpdatesAsync_Call_Parameters_Visibility(bool debugEnabled)
     {
         var testConsole = new TestConsole();
 
@@ -267,29 +260,19 @@ public class ChatConsoleTests
         var completion = new CommandCompletion(Enumerable.Empty<IChatCommandStrategy>());
         var console = new ChatConsole(new ChatLineEditor(completion), testConsole)
         {
-            DebugEnabled = true
+            DebugEnabled = debugEnabled
         };
 
         _ = await console.DisplayStreamingUpdatesAsync(updates);
 
-        Assert.Contains("\"v\": 5", testConsole.Output);
-    }
-
-    [Fact]
-    public async Task DisplayStreamingUpdatesAsync_No_Debug_Hides_Call_Parameters()
-    {
-        var testConsole = new TestConsole();
-
-        var updates = AsAsyncEnumerable([
-            new ChatResponseUpdate(ChatRole.Assistant, new[] { new FunctionCallContent("id", "Tool", new Dictionary<string, object?> { ["v"] = 5 }) })
-        ]);
-
-        var completion = new CommandCompletion(Enumerable.Empty<IChatCommandStrategy>());
-        var console = new ChatConsole(new ChatLineEditor(completion), testConsole);
-
-        _ = await console.DisplayStreamingUpdatesAsync(updates);
-
-        Assert.DoesNotContain("\"v\": 5", testConsole.Output);
+        if (debugEnabled)
+        {
+            Assert.Contains("\"v\": 5", testConsole.Output);
+        }
+        else
+        {
+            Assert.DoesNotContain("\"v\": 5", testConsole.Output);
+        }
     }
 
 
