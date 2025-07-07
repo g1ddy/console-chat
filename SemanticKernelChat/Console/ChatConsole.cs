@@ -118,6 +118,11 @@ public class ChatConsole : IChatConsole
         }
     }
 
+    private static string? SerializeArguments(IDictionary<string, object?>? args)
+    {
+        return args?.Count > 0 ? JsonSerializer.Serialize(args) : null;
+    }
+
     private IEnumerable<IRenderable> FormatPanelContent(string markup, string? rawJson)
     {
         var rows = new List<IRenderable> { new Markup(markup) };
@@ -153,7 +158,18 @@ public class ChatConsole : IChatConsole
                 toolResultRaw = result.Result?.ToString();
             }
 
-            var rows = FormatPanelContent(markupText, toolResultRaw);
+            var rows = new List<IRenderable>(FormatPanelContent(markupText, toolResultRaw));
+
+            if (DebugEnabled)
+            {
+                foreach (var call in message.Contents.OfType<FunctionCallContent>())
+                {
+                    string toolName = GetToolName(callNames, call.CallId, message.AuthorName, message.Role);
+                    string toolMarkup = $"[grey]:wrench: {toolName.EscapeMarkup()} Parameters...[/]";
+                    rows.AddRange(FormatPanelContent(toolMarkup, SerializeArguments(call.Arguments)));
+                }
+            }
+
             IRenderable markupResponse = new Rows(rows);
 
             var (headerText, justify, style) = GetUserStyle(message.Role);
@@ -294,6 +310,16 @@ public class ChatConsole : IChatConsole
         {
             _ = textBuilder.Append(update.Text?.EscapeMarkup() ?? string.Empty);
             rows[0] = new Markup(textBuilder.ToString());
+        }
+
+        if (DebugEnabled)
+        {
+            foreach (var call in contents.OfType<FunctionCallContent>())
+            {
+                string toolName = GetToolName(callNames, call.CallId, update.AuthorName, update.Role);
+                string toolMarkup = $"[grey]:wrench: {toolName.EscapeMarkup()} Parameters...[/]";
+                rows.AddRange(FormatPanelContent(toolMarkup, SerializeArguments(call.Arguments)));
+            }
         }
 
         foreach (var result in contents.OfType<FunctionResultContent>())

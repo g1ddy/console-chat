@@ -51,9 +51,10 @@ public sealed class TextCompletionTestCommand : ChatCommandBase
         IChatHistoryService history,
         IChatClient chatClient,
         McpToolCollection tools,
+        IReadOnlyList<AIFunction> functions,
         IEnumerable<IChatCommandStrategy> strategies,
         IAnsiConsole ansiConsole)
-        : this(history, CreateController(chatClient, tools, ansiConsole), strategies)
+        : this(history, CreateController(chatClient, tools, functions, ansiConsole), strategies)
     {
     }
 
@@ -68,50 +69,11 @@ public sealed class TextCompletionTestCommand : ChatCommandBase
     private static (IChatController controller, IChatConsole console) CreateController(
         IChatClient chatClient,
         McpToolCollection tools,
+        IReadOnlyList<AIFunction> functions,
         IAnsiConsole ansiConsole)
     {
         var chatConsole = new ChatConsole(new FakeLineEditor(ScriptedInputs), ansiConsole);
-        var functions = new RenderableFunctions(chatConsole);
-
-        var tableData = new[]
-        {
-            new RenderableFunctions.ItemCount("Apples", 12),
-            new RenderableFunctions.ItemCount("Bananas", 7)
-        };
-
-        var leaf = new RenderableFunctions.TreeNode("Leaf");
-        var branch1 = new RenderableFunctions.TreeNode("Branch 1");
-        branch1.AddChild(leaf);
-        var branch2 = new RenderableFunctions.TreeNode("Branch 2");
-        var treeData = new RenderableFunctions.TreeNode("Root");
-        treeData.AddChild(branch1);
-        treeData.AddChild(branch2);
-
-        var chartData = new[]
-        {
-            new RenderableFunctions.ChartItem("Apples", 12, Color.Red),
-            new RenderableFunctions.ChartItem("Bananas", 7, Color.Yellow)
-        };
-
-        var kernelFunctions = new[]
-        {
-            KernelFunctionFactory.CreateFromMethod(
-                () => functions.RenderTable(tableData),
-                new KernelFunctionFromMethodOptions { FunctionName = nameof(RenderableFunctions.RenderTable) }),
-            KernelFunctionFactory.CreateFromMethod(
-                () => functions.RenderTree(treeData),
-                new KernelFunctionFromMethodOptions { FunctionName = nameof(RenderableFunctions.RenderTree) }),
-            KernelFunctionFactory.CreateFromMethod(
-                () => functions.RenderChart(chartData, "Fruit Sales"),
-                new KernelFunctionFromMethodOptions { FunctionName = nameof(RenderableFunctions.RenderChart) })
-        };
-
-        var plugin = KernelPluginFactory.CreateFromFunctions("RenderableFunctions", kernelFunctions);
-#pragma warning disable SKEXP0001
-        var kernel = Kernel.CreateBuilder().Build();
-        var aiFunctions = plugin.AsAIFunctions(kernel).ToList();
-#pragma warning restore SKEXP0001
-        var controller = new ChatController(chatConsole, chatClient, tools, aiFunctions);
+        var controller = new ChatController(chatConsole, chatClient, tools, functions);
         return (controller, chatConsole);
     }
 
