@@ -92,9 +92,9 @@ public sealed class EchoChatClient : IChatClient
 
             var callContents = new List<AIContent>
             {
-                new FunctionCallContent("tool_call_table", "RenderableFunctions_SampleTable", tableParams),
-                new FunctionCallContent("tool_call_tree", "RenderableFunctions_SampleTree", treeParams),
-                new FunctionCallContent("tool_call_chart", "RenderableFunctions_SampleChart", chartParams)
+                new FunctionCallContent("tool_call_table", "RenderableFunctions_RenderTable", tableParams),
+                new FunctionCallContent("tool_call_tree", "RenderableFunctions_RenderTree", treeParams),
+                new FunctionCallContent("tool_call_chart", "RenderableFunctions_RenderChart", chartParams)
             };
 
             await Task.Delay(100, cancellationToken);

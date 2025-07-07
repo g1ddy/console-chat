@@ -97,9 +97,15 @@ public sealed class TextCompletionTestCommand : ChatCommandBase
 
         var kernelFunctions = new[]
         {
-            KernelFunctionFactory.CreateFromMethod(() => functions.SampleTable(tableData)),
-            KernelFunctionFactory.CreateFromMethod(() => functions.SampleTree(treeData)),
-            KernelFunctionFactory.CreateFromMethod(() => functions.SampleChart(chartData, "Fruit Sales"))
+            KernelFunctionFactory.CreateFromMethod(
+                () => functions.RenderTable(tableData),
+                new KernelFunctionFromMethodOptions { FunctionName = nameof(RenderableFunctions.RenderTable) }),
+            KernelFunctionFactory.CreateFromMethod(
+                () => functions.RenderTree(treeData),
+                new KernelFunctionFromMethodOptions { FunctionName = nameof(RenderableFunctions.RenderTree) }),
+            KernelFunctionFactory.CreateFromMethod(
+                () => functions.RenderChart(chartData, "Fruit Sales"),
+                new KernelFunctionFromMethodOptions { FunctionName = nameof(RenderableFunctions.RenderChart) })
         };
 
         var plugin = KernelPluginFactory.CreateFromFunctions("RenderableFunctions", kernelFunctions);

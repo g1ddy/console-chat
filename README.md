@@ -56,9 +56,9 @@ It registers all tools in the `McpServer` assembly. Example tools include `Curre
 
 The chat client itself exposes a few rich rendering helpers implemented as Semantic Kernel functions:
 
-- `SampleTable` – shows a `Table` of fruit counts.
-- `SampleTree` – displays a small `Tree` structure.
-- `SampleChart` – renders a `BarChart` of fruit sales.
+- `RenderTable` – shows a `Table` of fruit counts.
+- `RenderTree` – displays a small `Tree` structure.
+- `RenderChart` – renders a `BarChart` of fruit sales.
 
 When invoked from chat these functions write directly to the console via `ChatConsole`.
 
