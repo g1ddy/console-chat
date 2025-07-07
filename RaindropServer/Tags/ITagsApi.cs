@@ -6,20 +6,20 @@ namespace RaindropServer.Tags;
 public interface ITagsApi
 {
     [Get("/tags")]
-    Task<ItemsResponse<TagInfo>> ListTags();
+    Task<ItemsResponse<TagInfo>> ListTagsAsync();
 
     [Get("/tags/{collectionId}")]
-    Task<ItemsResponse<TagInfo>> ListTagsForCollection(int collectionId);
+    Task<ItemsResponse<TagInfo>> ListTagsForCollectionAsync(int collectionId);
 
     [Put("/tags")]
-    Task<SuccessResponse> RenameTag([Body] object payload);
+    Task<SuccessResponse> RenameTagAsync([Body] object payload);
 
     [Put("/tags/{collectionId}")]
-    Task<SuccessResponse> RenameTagForCollection(int collectionId, [Body] object payload);
+    Task<SuccessResponse> RenameTagForCollectionAsync(int collectionId, [Body] object payload);
 
     [Delete("/tags")]
-    Task<SuccessResponse> DeleteTags([Body] object payload);
+    Task<SuccessResponse> DeleteTagsAsync([Body] object payload);
 
     [Delete("/tags/{collectionId}")]
-    Task<SuccessResponse> DeleteTagsForCollection(int collectionId, [Body] object payload);
+    Task<SuccessResponse> DeleteTagsForCollectionAsync(int collectionId, [Body] object payload);
 }

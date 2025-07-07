@@ -6,20 +6,20 @@ namespace RaindropServer.Collections;
 public interface ICollectionsApi
 {
     [Get("/collections")]
-    Task<ItemsResponse<Collection>> ListCollections();
+    Task<ItemsResponse<Collection>> ListCollectionsAsync();
 
     [Get("/collection/{id}")]
-    Task<ItemResponse<Collection>> GetCollection(int id);
+    Task<ItemResponse<Collection>> GetCollectionAsync(int id);
 
     [Post("/collection")]
-    Task<ItemResponse<Collection>> CreateCollection([Body] Collection collection);
+    Task<ItemResponse<Collection>> CreateCollectionAsync([Body] Collection collection);
 
     [Put("/collection/{id}")]
-    Task<ItemResponse<Collection>> UpdateCollection(int id, [Body] Collection collection);
+    Task<ItemResponse<Collection>> UpdateCollectionAsync(int id, [Body] Collection collection);
 
     [Delete("/collection/{id}")]
-    Task<SuccessResponse> DeleteCollection(int id);
+    Task<SuccessResponse> DeleteCollectionAsync(int id);
 
     [Get("/collections/childrens")]
-    Task<ItemsResponse<Collection>> ListChildCollections();
+    Task<ItemsResponse<Collection>> ListChildCollectionsAsync();
 }

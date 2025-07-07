@@ -6,14 +6,14 @@ namespace RaindropServer.Highlights;
 public interface IHighlightsApi
 {
     [Get("/highlights")]
-    Task<ItemsResponse<Highlight>> ListHighlights(int? page = null, int? perPage = null);
+    Task<ItemsResponse<Highlight>> ListHighlightsAsync(int? page = null, int? perPage = null);
 
     [Get("/highlights/{collectionId}")]
-    Task<ItemsResponse<Highlight>> ListHighlightsByCollection(int collectionId, int? page = null, int? perPage = null);
+    Task<ItemsResponse<Highlight>> ListHighlightsByCollectionAsync(int collectionId, int? page = null, int? perPage = null);
 
     [Get("/raindrop/{id}")]
-    Task<ItemResponse<RaindropHighlights>> GetHighlights(long id);
+    Task<ItemResponse<RaindropHighlights>> GetHighlightsAsync(long id);
 
     [Put("/raindrop/{id}")]
-    Task<ItemResponse<HighlightsBulkUpdateRequest>> UpdateHighlights(long id, [Body] HighlightsBulkUpdateRequest payload);
+    Task<ItemResponse<HighlightsBulkUpdateRequest>> UpdateHighlightsAsync(long id, [Body] HighlightsBulkUpdateRequest payload);
 }

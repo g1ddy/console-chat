@@ -16,7 +16,7 @@ public class RaindropsTools
     }
 
     [McpServerTool, Description("Create a new bookmark")]
-    public Task<ItemResponse<Raindrop>> Create(int? collectionId, string url, string? title = null,
+    public Task<ItemResponse<Raindrop>> CreateAsync(int? collectionId, string url, string? title = null,
         string? excerpt = null, IEnumerable<string>? tags = null, bool? important = null)
     {
         var payload = new Raindrop
@@ -28,14 +28,14 @@ public class RaindropsTools
             Important = important,
             CollectionId = collectionId
         };
-        return _api.CreateRaindrop(payload);
+        return _api.CreateRaindropAsync(payload);
     }
 
     [McpServerTool, Description("Get a bookmark by id")]
-    public Task<ItemResponse<Raindrop>> Get(long id) => _api.GetRaindrop(id);
+    public Task<ItemResponse<Raindrop>> GetAsync(long id) => _api.GetRaindropAsync(id);
 
     [McpServerTool, Description("Update an existing bookmark")]
-    public Task<ItemResponse<Raindrop>> Update(long id, string? title = null, string? excerpt = null,
+    public Task<ItemResponse<Raindrop>> UpdateAsync(long id, string? title = null, string? excerpt = null,
         string? link = null, IEnumerable<string>? tags = null, bool? important = null,
         int? collectionId = null)
     {
@@ -48,27 +48,25 @@ public class RaindropsTools
             Important = important,
             CollectionId = collectionId
         };
-        return _api.UpdateRaindrop(id, payload);
+        return _api.UpdateRaindropAsync(id, payload);
     }
 
     [McpServerTool, Description("Delete a bookmark by id")]
-    public Task<SuccessResponse> Delete(long id) => _api.DeleteRaindrop(id);
+    public Task<SuccessResponse> DeleteAsync(long id) => _api.DeleteRaindropAsync(id);
 
-    [McpServerTool, Description("List bookmarks in a collection")]
-    public Task<ItemsResponse<Raindrop>> List(int collectionId, string? search = null)
-        => _api.GetRaindrops(collectionId, search);
+    [McpServerTool, Description("List bookmarks in a collection. Can be filtered by an optional search query.")]
+    public Task<ItemsResponse<Raindrop>> ListAsync(int collectionId, string? search = null)
+        => _api.GetRaindropsAsync(collectionId, search);
 
     [McpServerTool, Description("Create multiple bookmarks")]
-    public Task<ItemsResponse<Raindrop>> CreateMany(int collectionId, IEnumerable<Raindrop> raindrops)
+    public Task<ItemsResponse<Raindrop>> CreateManyAsync(int collectionId, IEnumerable<Raindrop> raindrops)
     {
         var payload = new RaindropsCreateMany { CollectionId = collectionId, Items = raindrops.ToList() };
-        return _api.CreateRaindrops(payload);
+        return _api.CreateRaindropsAsync(payload);
     }
 
-    [McpServerTool, Description("Search bookmarks in a collection")]
-    public Task<ItemsResponse<Raindrop>> Search(int collectionId, string query) => _api.GetRaindrops(collectionId, query);
 
     [McpServerTool, Description("Bulk update bookmarks in a collection")]
-    public Task<SuccessResponse> UpdateMany(int collectionId, RaindropsBulkUpdate update, bool? nested = null, string? search = null)
-        => _api.UpdateRaindrops(collectionId, update, nested, search);
+    public Task<SuccessResponse> UpdateManyAsync(int collectionId, RaindropsBulkUpdate update, bool? nested = null, string? search = null)
+        => _api.UpdateRaindropsAsync(collectionId, update, nested, search);
 }
