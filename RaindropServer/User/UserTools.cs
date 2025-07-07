@@ -15,5 +15,5 @@ public class UserTools
     }
 
     [McpServerTool, Description("Get current user information")]
-    public Task<ItemResponse<UserInfo>> GetAsync() => _api.GetUserAsync();
+    public Task<ItemResponse<UserInfo>> GetAsync() => _api.GetAsync();
 }

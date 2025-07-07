@@ -16,11 +16,12 @@ public class TagsTools
         _api = api;
     }
 
+
     [McpServerTool, Description("List all tags or tags for a collection")]
     public Task<ItemsResponse<TagInfo>> ListAsync(int? collectionId = null)
         => collectionId is null
-            ? _api.ListTagsAsync()
-            : _api.ListTagsForCollectionAsync(collectionId.Value);
+            ? _api.ListAsync()
+            : _api.ListForCollectionAsync(collectionId.Value);
 
     [McpServerTool, Description("Rename a tag")]
     public Task<SuccessResponse> RenameAsync(string oldTag, string newTag, int? collectionId = null)
@@ -31,8 +32,8 @@ public class TagsTools
     {
         var payload = new TagRenameRequest { Replace = newTag, Tags = tags.ToList() };
         return collectionId is null
-            ? _api.RenameTagAsync(payload)
-            : _api.RenameTagForCollectionAsync(collectionId.Value, payload);
+            ? _api.UpdateAsync(payload)
+            : _api.UpdateForCollectionAsync(collectionId.Value, payload);
     }
 
     [McpServerTool, Description("Delete a tag")]
@@ -44,7 +45,7 @@ public class TagsTools
     {
         var payload = new TagDeleteRequest { Tags = tags.ToList() };
         return collectionId is null
-            ? _api.DeleteTagsAsync(payload)
-            : _api.DeleteTagsForCollectionAsync(collectionId.Value, payload);
+            ? _api.DeleteAsync(payload)
+            : _api.DeleteForCollectionAsync(collectionId.Value, payload);
     }
 }
