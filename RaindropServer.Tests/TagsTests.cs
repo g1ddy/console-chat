@@ -16,19 +16,19 @@ public class TagsTests : TestBase
     public async Task Crud()
     {
         var raindropsTool = Provider.GetRequiredService<RaindropsTools>();
-        var createResponse = await raindropsTool.Create(null, "https://example.com/tag", "Tags Crud - Raindrop", tags: [ "TagRenameTestOne" ]);
+        var createResponse = await raindropsTool.CreateAsync(null, "https://example.com/tag", "Tags Crud - Raindrop", tags: [ "TagRenameTestOne" ]);
         long raindropId = createResponse.Item.Id;
         var tagsTool = Provider.GetRequiredService<TagsTools>();
         try
         {
-            await tagsTool.Rename("TagRenameTestOne", "TagRenameTestTwo");
-            var list = await tagsTool.List();
+            await tagsTool.RenameAsync("TagRenameTestOne", "TagRenameTestTwo");
+            var list = await tagsTool.ListAsync();
             Assert.Contains(list.Items, t => t.Id == "TagRenameTestTwo");
         }
         finally
         {
-            await tagsTool.Delete("TagRenameTestTwo");
-            await raindropsTool.Delete(raindropId);
+            await tagsTool.DeleteAsync("TagRenameTestTwo");
+            await raindropsTool.DeleteAsync(raindropId);
         }
     }
 
@@ -36,21 +36,21 @@ public class TagsTests : TestBase
     public async Task CrudForCollection()
     {
         var raindropsTool = Provider.GetRequiredService<RaindropsTools>();
-        var createResponse = await raindropsTool.Create(null, "https://example.com/tag/collection", "Tags CrudForCollection - Raindrop", tags: [ "TagCollectionTestOne" ]);
+        var createResponse = await raindropsTool.CreateAsync(null, "https://example.com/tag/collection", "Tags CrudForCollection - Raindrop", tags: [ "TagCollectionTestOne" ]);
         long raindropId = createResponse.Item.Id;
         var tagsTool = Provider.GetRequiredService<TagsTools>();
         try
         {
-            await tagsTool.Rename("TagCollectionTestOne", "TagCollectionTestTwo", 0);
-            var list = await tagsTool.List();
+            await tagsTool.RenameAsync("TagCollectionTestOne", "TagCollectionTestTwo", 0);
+            var list = await tagsTool.ListAsync();
             Assert.Contains(list.Items, t => t.Id == "TagCollectionTestTwo");
-            await tagsTool.Delete("TagCollectionTestTwo", 0);
-            var finalList = await tagsTool.List();
+            await tagsTool.DeleteAsync("TagCollectionTestTwo", 0);
+            var finalList = await tagsTool.ListAsync();
             Assert.DoesNotContain(finalList.Items, t => t.Id == "TagCollectionTestTwo");
         }
         finally
         {
-            await raindropsTool.Delete(raindropId);
+            await raindropsTool.DeleteAsync(raindropId);
         }
     }
 }
