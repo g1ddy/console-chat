@@ -111,11 +111,14 @@ public class ChatConsole : IChatConsole
         foreach (var message in messages)
         {
             IRenderable markupResponse = new Markup(message.Text.EscapeMarkup());
+            string? toolNameForDebug = null;
+            string? toolResultRaw = null;
             if (message.Role == ChatRole.Tool &&
                 TryGetContent<FunctionResultContent>(message.Contents, out var result))
             {
-                string toolName = GetToolName(callNames, result.CallId, message.AuthorName, message.Role);
-                markupResponse = new Markup($"[grey]:wrench: {toolName.EscapeMarkup()} Result...[/]");
+                toolNameForDebug = GetToolName(callNames, result.CallId, message.AuthorName, message.Role);
+                markupResponse = new Markup($"[grey]:wrench: {toolNameForDebug.EscapeMarkup()} Result...[/]");
+                toolResultRaw = result.Result?.ToString();
             }
 
             var (headerText, justify, style) = GetUserStyle(message.Role);
@@ -127,6 +130,20 @@ public class ChatConsole : IChatConsole
                     .BorderStyle(style)
                     .Header(header)
                     .Expand());
+
+            if (DebugEnabled && toolNameForDebug is not null)
+            {
+                _console.WriteLine($"[grey]{toolNameForDebug} result:[/]");
+                var raw = toolResultRaw ?? string.Empty;
+                try
+                {
+                    _console.Write(new JsonText(raw));
+                }
+                catch (System.Text.Json.JsonException)
+                {
+                    _console.WriteLine(raw);
+                }
+            }
         }
     }
 
@@ -211,7 +228,6 @@ public class ChatConsole : IChatConsole
         var messageUpdates = new List<ChatResponseUpdate>();
         var builder = new StringBuilder();
         var panel = CreateAssistantPanel(new Markup(builder.ToString()));
-        var toolResults = new List<(string Name, string Result)>();
 
         var callNames = new Dictionary<string, string>();
         await _console.Live(panel)
@@ -221,7 +237,7 @@ public class ChatConsole : IChatConsole
                 await foreach (var update in updates)
                 {
                     messageUpdates.Add(update);
-                    AppendUpdate(builder, callNames, update, toolResults);
+                    AppendUpdate(builder, callNames, update);
                     panel = CreateAssistantPanel(new Markup(builder.ToString()));
                     ctx.UpdateTarget(panel);
                     ctx.Refresh();
@@ -230,21 +246,7 @@ public class ChatConsole : IChatConsole
 
         var response = Microsoft.Extensions.AI.ChatResponseExtensions.ToChatResponse(messageUpdates);
 
-        if (DebugEnabled && toolResults.Count > 0)
-        {
-            foreach (var (name, result) in toolResults)
-            {
-                _console.WriteLine($"[grey]{name} result:[/]");
-                try
-                {
-                    _console.Write(new Spectre.Console.Json.JsonText(result));
-                }
-                catch (System.Text.Json.JsonException)
-                {
-                    _console.WriteLine(result);
-                }
-            }
-        }
+
 
         return [.. response.Messages];
     }
@@ -261,11 +263,10 @@ public class ChatConsole : IChatConsole
             .Expand();
     }
 
-    private static void AppendUpdate(
+    private void AppendUpdate(
         StringBuilder builder,
         Dictionary<string, string> callNames,
-        ChatResponseUpdate update,
-        List<(string Name, string Result)> toolResults)
+        ChatResponseUpdate update)
     {
         var contents = update.Contents ?? Array.Empty<AIContent>();
         CollectFunctionCallNames(contents, callNames);
@@ -281,7 +282,20 @@ public class ChatConsole : IChatConsole
             string toolName = GetToolName(callNames, result.CallId, update.AuthorName, update.Role);
 
             _ = builder.Append($"[grey]:wrench: {toolName.EscapeMarkup()} Result...[/]");
-            toolResults.Add((toolName, result.Result?.ToString() ?? string.Empty));
+
+            if (DebugEnabled)
+            {
+                _console.WriteLine($"[grey]{toolName} result:[/]");
+                var raw = result.Result?.ToString() ?? string.Empty;
+                try
+                {
+                    _console.Write(new JsonText(raw));
+                }
+                catch (System.Text.Json.JsonException)
+                {
+                    _console.WriteLine(raw);
+                }
+            }
         }
     }
 }
