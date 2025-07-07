@@ -84,12 +84,14 @@ public class ChatHistorySummarizationReducer : IChatHistoryReducer
 
                 truncatedHistory = AssemblySummarizedHistory(summaryMessage, systemMessage);
             }
-            catch
+            catch (Exception ex)
             {
                 if (FailOnError)
                 {
                     throw;
                 }
+
+                System.Console.Error.WriteLine($"Summarization failed: {ex.Message}");
             }
         }
 

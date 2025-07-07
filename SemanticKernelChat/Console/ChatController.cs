@@ -72,11 +72,15 @@ public class ChatController : IChatController
             int desiredCount = _summaryKeepLast + 1;
             if (newHistory.Count > desiredCount)
             {
+                bool hasSystem = newHistory[0].Role == ChatRole.System;
+                int prefixCount = hasSystem ? 2 : 1; // keep system and summary
+
                 var trimmed = new List<ChatMessage>(desiredCount);
-                trimmed.Add(newHistory[0]);
+                trimmed.AddRange(newHistory.Take(prefixCount));
                 trimmed.AddRange(newHistory.Skip(newHistory.Count - _summaryKeepLast));
                 newHistory = trimmed;
             }
+
             history.Replace(newHistory);
         }
     }
