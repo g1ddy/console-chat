@@ -138,6 +138,7 @@ public class ChatControllerTests
 
         var controller = new ChatController(console, client, McpCollectionFactory.CreateToolCollection(), [], summaryThreshold:5, summaryKeepLast:2);
 
+        await controller.SummarizeAsync(history);
         await controller.SendAndDisplayAsync(history);
 
         Assert.Equal(4, history.Messages.Count);

@@ -63,32 +63,32 @@ public class ChatController : IChatController
         };
     }
 
-    private async Task MaybeSummarizeAsync(IChatHistoryService history)
+    public async Task SummarizeAsync(IChatHistoryService history)
     {
         IEnumerable<ChatMessage>? reduced = await _reducer.ReduceAsync(history.Messages, CancellationToken.None);
-        if (reduced is not null)
+        if (reduced is null)
         {
-            var newHistory = reduced.ToList();
-            int desiredCount = _summaryKeepLast + 1;
-            if (newHistory.Count > desiredCount)
-            {
-                bool hasSystem = newHistory[0].Role == ChatRole.System;
-                int prefixCount = hasSystem ? 2 : 1; // keep system and summary
-
-                var trimmed = new List<ChatMessage>(desiredCount);
-                trimmed.AddRange(newHistory.Take(prefixCount));
-                trimmed.AddRange(newHistory.Skip(newHistory.Count - _summaryKeepLast));
-                newHistory = trimmed;
-            }
-
-            history.Replace(newHistory);
+            return;
         }
+
+        var newHistory = reduced.ToList();
+        int desiredCount = _summaryKeepLast + 1;
+        if (newHistory.Count > desiredCount)
+        {
+            bool hasSystem = newHistory[0].Role == ChatRole.System;
+            int prefixCount = hasSystem ? 2 : 1; // keep system and summary
+
+            var trimmed = new List<ChatMessage>(desiredCount);
+            trimmed.AddRange(newHistory.Take(prefixCount));
+            trimmed.AddRange(newHistory.Skip(newHistory.Count - _summaryKeepLast));
+            newHistory = trimmed;
+        }
+
+        history.Replace(newHistory);
     }
 
     public async Task SendAndDisplayAsync(IChatHistoryService history)
     {
-        await MaybeSummarizeAsync(history);
-
         ChatMessage[] responses = [];
         Exception? error = null;
         await _console.DisplayThinkingIndicator(async () =>
@@ -118,8 +118,6 @@ public class ChatController : IChatController
         IChatHistoryService history,
         Action<IReadOnlyList<ChatMessage>>? finalCallback = null)
     {
-        await MaybeSummarizeAsync(history);
-
         var updates = _chatClient.GetStreamingResponseAsync(history.Messages, CreateChatOptions());
         Exception? error = null;
         IReadOnlyList<ChatMessage> messages = [];
