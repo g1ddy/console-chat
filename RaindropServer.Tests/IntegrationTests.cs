@@ -1,11 +1,11 @@
-using RaindropTools.Collections;
-using RaindropTools.Raindrops;
-using RaindropTools.Highlights;
-using RaindropTools.Tags;
-using RaindropTools.Common;
+using RaindropServer.Collections;
+using RaindropServer.Raindrops;
+using RaindropServer.Highlights;
+using RaindropServer.Tags;
+using RaindropServer.Common;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace RaindropTools.Tests;
+namespace RaindropServer.Tests;
 
 public class IntegrationTests : TestBase
 {

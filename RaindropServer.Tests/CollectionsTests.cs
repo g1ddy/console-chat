@@ -1,8 +1,8 @@
-using RaindropTools.Collections;
-using RaindropTools.Common;
+using RaindropServer.Collections;
+using RaindropServer.Common;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace RaindropTools.Tests;
+namespace RaindropServer.Tests;
 
 public class CollectionsTests : TestBase
 {

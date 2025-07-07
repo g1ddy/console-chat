@@ -1,6 +1,6 @@
 using System.Text.Json.Serialization;
 
-namespace RaindropTools.Highlights;
+namespace RaindropServer.Highlights;
 
 public class HighlightsBulkUpdate
 {

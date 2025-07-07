@@ -1,6 +1,6 @@
 using System.Text.Json.Serialization;
 
-namespace RaindropTools.User;
+namespace RaindropServer.User;
 
 public class UserInfo
 {

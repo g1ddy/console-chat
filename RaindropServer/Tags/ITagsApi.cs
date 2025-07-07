@@ -1,7 +1,7 @@
 using Refit;
-using RaindropTools.Common;
+using RaindropServer.Common;
 
-namespace RaindropTools.Tags;
+namespace RaindropServer.Tags;
 
 public interface ITagsApi
 {

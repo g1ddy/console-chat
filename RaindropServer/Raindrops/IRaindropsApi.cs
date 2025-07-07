@@ -1,7 +1,7 @@
 using Refit;
-using RaindropTools.Common;
+using RaindropServer.Common;
 
-namespace RaindropTools.Raindrops;
+namespace RaindropServer.Raindrops;
 
 public interface IRaindropsApi
 {

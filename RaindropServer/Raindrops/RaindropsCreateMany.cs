@@ -1,6 +1,6 @@
 using System.Text.Json.Serialization;
 
-namespace RaindropTools.Raindrops;
+namespace RaindropServer.Raindrops;
 
 public class RaindropsCreateMany
 {
