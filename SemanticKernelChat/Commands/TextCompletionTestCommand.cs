@@ -81,18 +81,13 @@ public sealed class TextCompletionTestCommand : ChatCommandBase
             new RenderableFunctions.ItemCount("Bananas", 7)
         };
 
-        var treeData = new RenderableFunctions.TreeItem(
-            "Root",
-            new[]
-            {
-                new RenderableFunctions.TreeItem(
-                    "Branch 1",
-                    new[]
-                    {
-                        new RenderableFunctions.TreeItem("Leaf", null)
-                    }),
-                new RenderableFunctions.TreeItem("Branch 2", null)
-            });
+        var leaf = new RenderableFunctions.TreeNode("Leaf");
+        var branch1 = new RenderableFunctions.TreeNode("Branch 1");
+        branch1.AddChild(leaf);
+        var branch2 = new RenderableFunctions.TreeNode("Branch 2");
+        var treeData = new RenderableFunctions.TreeNode("Root");
+        treeData.AddChild(branch1);
+        treeData.AddChild(branch2);
 
         var chartData = new[]
         {
@@ -104,7 +99,7 @@ public sealed class TextCompletionTestCommand : ChatCommandBase
         {
             KernelFunctionFactory.CreateFromMethod(() => functions.SampleTable(tableData)),
             KernelFunctionFactory.CreateFromMethod(() => functions.SampleTree(treeData)),
-            KernelFunctionFactory.CreateFromMethod(() => functions.SampleChart(chartData))
+            KernelFunctionFactory.CreateFromMethod(() => functions.SampleChart(chartData, "Fruit Sales"))
         };
 
         var plugin = KernelPluginFactory.CreateFromFunctions("RenderableFunctions", kernelFunctions);

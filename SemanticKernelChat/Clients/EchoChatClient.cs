@@ -57,52 +57,50 @@ public sealed class EchoChatClient : IChatClient
                 yield return new ChatResponseUpdate(ChatRole.Assistant, c.ToString());
             }
 
-            var callContents = new List<AIContent>
+            var tableParams = new Dictionary<string, object?>
             {
-                new FunctionCallContent(
-                    "tool_call_table",
-                    "RenderableFunctions_SampleTable",
-                    new Dictionary<string, object?>
+                ["items"] = new[]
+                {
+                    new Dictionary<string, object?> { ["Name"] = "Apples", ["Count"] = 12 },
+                    new Dictionary<string, object?> { ["Name"] = "Bananas", ["Count"] = 7 }
+                }
+            };
+
+            var treeParams = new Dictionary<string, object?>
+            {
+                ["root"] = new Dictionary<string, object?>
+                {
+                    ["Name"] = "Root",
+                    ["Children"] = new[]
                     {
-                        ["items"] = new[]
+                        new Dictionary<string, object?>
                         {
-                            new Dictionary<string, object?> { ["Name"] = "Apples", ["Count"] = 12 },
-                            new Dictionary<string, object?> { ["Name"] = "Bananas", ["Count"] = 7 }
-                        }
-                    }),
-                new FunctionCallContent(
-                    "tool_call_tree",
-                    "RenderableFunctions_SampleTree",
-                    new Dictionary<string, object?>
-                    {
-                        ["root"] = new Dictionary<string, object?>
-                        {
-                            ["Name"] = "Root",
+                            ["Name"] = "Branch 1",
                             ["Children"] = new[]
                             {
-                                new Dictionary<string, object?>
-                                {
-                                    ["Name"] = "Branch 1",
-                                    ["Children"] = new[]
-                                    {
-                                        new Dictionary<string, object?> { ["Name"] = "Leaf" }
-                                    }
-                                },
-                                new Dictionary<string, object?> { ["Name"] = "Branch 2" }
+                                new Dictionary<string, object?> { ["Name"] = "Leaf" }
                             }
-                        }
-                    }),
-                new FunctionCallContent(
-                    "tool_call_chart",
-                    "RenderableFunctions_SampleChart",
-                    new Dictionary<string, object?>
-                    {
-                        ["items"] = new[]
-                        {
-                            new Dictionary<string, object?> { ["Name"] = "Apples", ["Value"] = 12, ["Color"] = "Red" },
-                            new Dictionary<string, object?> { ["Name"] = "Bananas", ["Value"] = 7, ["Color"] = "Yellow" }
-                        }
-                    })
+                        },
+                        new Dictionary<string, object?> { ["Name"] = "Branch 2" }
+                    }
+                }
+            };
+
+            var chartParams = new Dictionary<string, object?>
+            {
+                ["items"] = new[]
+                {
+                    new Dictionary<string, object?> { ["Name"] = "Apples", ["Value"] = 12, ["Color"] = "Red" },
+                    new Dictionary<string, object?> { ["Name"] = "Bananas", ["Value"] = 7, ["Color"] = "Yellow" }
+                },
+                ["title"] = "Fruit Sales"
+            };
+
+            var callContents = new List<AIContent>
+            {
+                new FunctionCallContent("tool_call_table", "RenderableFunctions_SampleTable", tableParams),
+                new FunctionCallContent("tool_call_tree", "RenderableFunctions_SampleTree", treeParams),
+                new FunctionCallContent("tool_call_chart", "RenderableFunctions_SampleChart", chartParams)
             };
 
             await Task.Delay(100, cancellationToken);

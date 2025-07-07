@@ -1,4 +1,5 @@
 using System.ComponentModel;
+using System.Collections.Generic;
 using Microsoft.SemanticKernel;
 using Spectre.Console;
 using Spectre.Console.Rendering;
@@ -33,22 +34,41 @@ public sealed class RenderableFunctions
         }
 
         _console.Write(table);
-        return "Displayed fruit table";
+        return "Displayed item table";
     }
 
-    public sealed record TreeItem(string Name, IReadOnlyList<TreeItem>? Children);
+    public class TreeNode
+    {
+        public string Value { get; set; }
+        public TreeNode? Parent { get; set; }
+        public List<TreeNode> Children { get; set; }
+
+        public bool IsLeaf => Children == null || Children.Count == 0;
+
+        public TreeNode(string value)
+        {
+            Value = value;
+            Children = new List<TreeNode>();
+        }
+
+        public void AddChild(TreeNode child)
+        {
+            Children.Add(child);
+            child.Parent = this;
+        }
+    }
 
     [KernelFunction, Description("Displays a simple tree structure in the console.")]
-    public string SampleTree(TreeItem root)
+    public string SampleTree(TreeNode root)
     {
-        var tree = new Tree(root.Name);
+        var tree = new Tree(root.Value);
         AddChildren(tree, root.Children);
 
         _console.Write(tree);
         return "Displayed tree";
     }
 
-    private static void AddChildren(IHasTreeNodes parent, IReadOnlyList<TreeItem>? children)
+    private static void AddChildren(IHasTreeNodes parent, IReadOnlyList<TreeNode>? children)
     {
         if (children is null)
         {
@@ -57,7 +77,7 @@ public sealed class RenderableFunctions
 
         foreach (var child in children)
         {
-            var node = parent.AddNode(child.Name);
+            var node = parent.AddNode(child.Value);
             AddChildren(node, child.Children);
         }
     }
@@ -65,11 +85,11 @@ public sealed class RenderableFunctions
     public sealed record ChartItem(string Name, int Value, Color Color);
 
     [KernelFunction, Description("Displays a bar chart of values in the console.")]
-    public string SampleChart(IReadOnlyList<ChartItem> items)
+    public string SampleChart(IReadOnlyList<ChartItem> items, [Description("The title of the chart")] string title)
     {
         var chart = new BarChart()
             .Width(40)
-            .Label("[bold green]Fruit Sales[/]")
+            .Label($"[bold green]{title.EscapeMarkup()}[/]")
             .CenterLabel();
 
         foreach (var item in items)
