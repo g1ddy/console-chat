@@ -6,6 +6,7 @@ using Spectre.Console.Cli;
 using SemanticKernelChat.Plugins;
 using Microsoft.SemanticKernel;
 using System.Linq;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace SemanticKernelChat.Commands;
 

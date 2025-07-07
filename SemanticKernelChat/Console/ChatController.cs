@@ -1,4 +1,5 @@
 using Microsoft.Extensions.AI;
+using System;
 using System.Linq;
 using System.Collections.Generic;
 using SemanticKernelChat.Infrastructure;
@@ -18,6 +19,7 @@ public class ChatController : IChatController
 
     private readonly int _summaryThreshold;
     private readonly int _summaryKeepLast;
+    private readonly IChatHistoryReducer _reducer;
     private const string SummarizationPrompt = "Summarize the previous conversation in a concise form.";
 
     public McpToolCollection ToolCollection => _toolCollection;
@@ -50,37 +52,43 @@ public class ChatController : IChatController
         _functions = functions;
         _summaryThreshold = summaryThreshold;
         _summaryKeepLast = summaryKeepLast;
+
+        int targetCount = _summaryKeepLast + 1;
+        int thresholdCount = _summaryThreshold - targetCount;
+        _reducer = new ChatHistorySummarizationReducer(chatClient, targetCount, thresholdCount)
+        {
+            SummarizationInstructions = SummarizationPrompt,
+            UseSingleSummary = true,
+            FailOnError = false
+        };
     }
 
-    private async Task MaybeSummarizeAsync(IChatHistoryService history)
+    public async Task SummarizeAsync(IChatHistoryService history)
     {
-        if (history.Messages.Count <= _summaryThreshold)
+        IEnumerable<ChatMessage>? reduced = await _reducer.ReduceAsync(history.Messages, CancellationToken.None);
+        if (reduced is null)
         {
             return;
         }
 
-        int summarizeCount = history.Messages.Count - _summaryKeepLast;
-        if (summarizeCount <= 0)
+        var newHistory = reduced.ToList();
+        int desiredCount = _summaryKeepLast + 1;
+        if (newHistory.Count > desiredCount)
         {
-            return;
+            bool hasSystem = newHistory[0].Role == ChatRole.System;
+            int prefixCount = hasSystem ? 2 : 1; // keep system and summary
+
+            var trimmed = new List<ChatMessage>(desiredCount);
+            trimmed.AddRange(newHistory.Take(prefixCount));
+            trimmed.AddRange(newHistory.Skip(newHistory.Count - _summaryKeepLast));
+            newHistory = trimmed;
         }
-
-        var toSummarize = history.Messages.Take(summarizeCount).ToList();
-        toSummarize.Add(new ChatMessage(ChatRole.User, SummarizationPrompt));
-
-        var response = await _chatClient.GetResponseAsync(toSummarize);
-        var summaryMessage = response.Messages.Last();
-
-        var newHistory = new List<ChatMessage> { summaryMessage };
-        newHistory.AddRange(history.Messages.Skip(summarizeCount));
 
         history.Replace(newHistory);
     }
 
     public async Task SendAndDisplayAsync(IChatHistoryService history)
     {
-        await MaybeSummarizeAsync(history);
-
         ChatMessage[] responses = [];
         Exception? error = null;
         await _console.DisplayThinkingIndicator(async () =>
@@ -110,8 +118,6 @@ public class ChatController : IChatController
         IChatHistoryService history,
         Action<IReadOnlyList<ChatMessage>>? finalCallback = null)
     {
-        await MaybeSummarizeAsync(history);
-
         var updates = _chatClient.GetStreamingResponseAsync(history.Messages, CreateChatOptions());
         Exception? error = null;
         IReadOnlyList<ChatMessage> messages = [];

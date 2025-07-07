@@ -37,13 +37,13 @@ builder.Services.AddSingleton<IReadOnlyList<AIFunction>>(provider =>
 #pragma warning restore SKEXP0001
 });
 
+builder.Services.AddSingleton<IChatCommandStrategy, DebugCommandStrategy>();
 builder.Services.AddSingleton<IChatCommandStrategy, ExitCommandStrategy>();
-builder.Services.AddSingleton<IChatCommandStrategy, ToggleMcpServerCommandStrategy>();
-builder.Services.AddSingleton<IChatCommandStrategy, SetMcpServerStateCommandStrategy>();
 builder.Services.AddSingleton<IChatCommandStrategy, ListToolsCommandStrategy>();
 builder.Services.AddSingleton<IChatCommandStrategy, ListPromptsCommandStrategy>();
+builder.Services.AddSingleton<IChatCommandStrategy, SetMcpServerStateCommandStrategy>();
+builder.Services.AddSingleton<IChatCommandStrategy, ToggleMcpServerCommandStrategy>();
 builder.Services.AddSingleton<IChatCommandStrategy, UsePromptCommandStrategy>();
-builder.Services.AddSingleton<IChatCommandStrategy, DebugCommandStrategy>();
 
 builder.Services.AddSingleton<ITextCompletion, CommandCompletion>();
 
