@@ -1,6 +1,6 @@
 namespace RaindropServer.Tags;
 
-public class TagDeleteRequest
+public record TagDeleteRequest
 {
     public List<string> Tags { get; init; } = new();
 }

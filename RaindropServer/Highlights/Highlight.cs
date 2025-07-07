@@ -2,26 +2,26 @@ using System.Text.Json.Serialization;
 
 namespace RaindropServer.Highlights;
 
-public class Highlight
+public record Highlight
 {
     [JsonPropertyName("_id")]
-    public string? Id { get; set; }
+    public string? Id { get; init; }
 
-    public string? Text { get; set; }
+    public string? Text { get; init; }
 
-    public string? Title { get; set; }
+    public string? Title { get; init; }
 
-    public string? Color { get; set; }
+    public string? Color { get; init; }
 
-    public string? Note { get; set; }
+    public string? Note { get; init; }
 
-    public string? Created { get; set; }
+    public string? Created { get; init; }
 
-    public List<string>? Tags { get; set; }
+    public List<string>? Tags { get; init; }
 
-    public string? Link { get; set; }
+    public string? Link { get; init; }
 
-    public string? LastUpdate { get; set; }
+    public string? LastUpdate { get; init; }
 
-    public long? RaindropRef { get; set; }
+    public long? RaindropRef { get; init; }
 }

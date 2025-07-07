@@ -2,10 +2,10 @@ using System.Text.Json.Serialization;
 
 namespace RaindropServer.Tags;
 
-public class TagInfo
+public record TagInfo
 {
     [JsonPropertyName("_id")]
-    public string Id { get; set; } = string.Empty;
+    public string Id { get; init; } = string.Empty;
 
-    public int Count { get; set; }
+    public int Count { get; init; }
 }
