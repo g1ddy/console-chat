@@ -11,22 +11,24 @@ internal static class CliConstants
     public class Commands
     {
         public static readonly HashSet<string> All = [
-            Help,
-            Exit,
-            Enable,
+            Debug,
             Disable,
-            Toggle,
+            Enable,
+            Exit,
+            Help,
             List,
+            Toggle,
             Use,
             Summarize,
         ];
 
-        public const string Help = "/help";
-        public const string Exit = "/exit";
-        public const string Enable = "/enable";
+        public const string Debug = "/debug";
         public const string Disable = "/disable";
-        public const string Toggle = "/toggle";
+        public const string Enable = "/enable";
+        public const string Exit = "/exit";
+        public const string Help = "/help";
         public const string List = "/list";
+        public const string Toggle = "/toggle";
         public const string Use = "/use";
         public const string Summarize = "/summarize";
     }

@@ -28,7 +28,6 @@
   <ItemGroup>
     <ProjectReference Include="..\McpServer\McpServer.csproj" />
     <ProjectReference Include="..\SemanticKernelChat\SemanticKernelChat.csproj" />
-    <ProjectReference Include="..\RaindropTools\RaindropTools.csproj" />
   </ItemGroup>
 
   <ItemGroup>

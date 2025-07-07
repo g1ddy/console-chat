@@ -6,6 +6,7 @@ using Microsoft.Extensions.AI;
 
 using Spectre.Console;
 using Spectre.Console.Rendering;
+using Spectre.Console.Json;
 
 namespace SemanticKernelChat.Console;
 
@@ -13,6 +14,7 @@ public class ChatConsole : IChatConsole
 {
     private readonly IChatLineEditor _editor;
     private readonly IAnsiConsole _console;
+    public bool DebugEnabled { get; set; }
 
     public ChatConsole(IChatLineEditor editor, IAnsiConsole console)
     {
@@ -109,11 +111,14 @@ public class ChatConsole : IChatConsole
         foreach (var message in messages)
         {
             IRenderable markupResponse = new Markup(message.Text.EscapeMarkup());
+            string? toolNameForDebug = null;
+            string? toolResultRaw = null;
             if (message.Role == ChatRole.Tool &&
                 TryGetContent<FunctionResultContent>(message.Contents, out var result))
             {
-                string toolName = GetToolName(callNames, result.CallId, message.AuthorName, message.Role);
-                markupResponse = new Markup($"[grey]:wrench: {toolName.EscapeMarkup()} Result...[/]");
+                toolNameForDebug = GetToolName(callNames, result.CallId, message.AuthorName, message.Role);
+                markupResponse = new Markup($"[grey]:wrench: {toolNameForDebug.EscapeMarkup()} Result...[/]");
+                toolResultRaw = result.Result?.ToString();
             }
 
             var (headerText, justify, style) = GetUserStyle(message.Role);
@@ -125,6 +130,20 @@ public class ChatConsole : IChatConsole
                     .BorderStyle(style)
                     .Header(header)
                     .Expand());
+
+            if (DebugEnabled && toolNameForDebug is not null)
+            {
+                _console.WriteLine($"[grey]{toolNameForDebug} result:[/]");
+                var raw = toolResultRaw ?? string.Empty;
+                try
+                {
+                    _console.Write(new JsonText(raw));
+                }
+                catch (System.Text.Json.JsonException)
+                {
+                    _console.WriteLine(raw);
+                }
+            }
         }
     }
 
@@ -226,6 +245,9 @@ public class ChatConsole : IChatConsole
             });
 
         var response = Microsoft.Extensions.AI.ChatResponseExtensions.ToChatResponse(messageUpdates);
+
+
+
         return [.. response.Messages];
     }
 
@@ -241,7 +263,7 @@ public class ChatConsole : IChatConsole
             .Expand();
     }
 
-    private static void AppendUpdate(
+    private void AppendUpdate(
         StringBuilder builder,
         Dictionary<string, string> callNames,
         ChatResponseUpdate update)
@@ -260,6 +282,20 @@ public class ChatConsole : IChatConsole
             string toolName = GetToolName(callNames, result.CallId, update.AuthorName, update.Role);
 
             _ = builder.Append($"[grey]:wrench: {toolName.EscapeMarkup()} Result...[/]");
+
+            if (DebugEnabled)
+            {
+                _console.WriteLine($"[grey]{toolName} result:[/]");
+                var raw = result.Result?.ToString() ?? string.Empty;
+                try
+                {
+                    _console.Write(new JsonText(raw));
+                }
+                catch (System.Text.Json.JsonException)
+                {
+                    _console.WriteLine(raw);
+                }
+            }
         }
     }
 }
