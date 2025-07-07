@@ -1,5 +1,12 @@
 using System.Runtime.CompilerServices;
+
 using Microsoft.Extensions.AI;
+
+using SemanticKernelChat.Plugins;
+
+using Spectre.Console;
+
+using static SemanticKernelChat.Plugins.RenderableFunctions;
 
 namespace SemanticKernelChat.Clients;
 
@@ -54,37 +61,31 @@ public sealed class EchoChatClient : IChatClient
             {
                 ["items"] = new[]
                 {
-                    new Dictionary<string, object?> { ["Name"] = "Apples", ["Count"] = 12 },
-                    new Dictionary<string, object?> { ["Name"] = "Bananas", ["Count"] = 7 }
+                    new ItemCount("Apples", 12),
+                    new ItemCount("Bananas", 7)
                 }
             };
 
+            var treeData = new RenderableFunctions.TreeNode("Root");
+            var leaf = new RenderableFunctions.TreeNode("Leaf");
+            var branch1 = new RenderableFunctions.TreeNode("Branch 1");
+            branch1.AddChild(leaf);
+            treeData.AddChild(branch1);
+
+            var branch2 = new RenderableFunctions.TreeNode("Branch 2");
+            treeData.AddChild(branch2);
+
             var treeParams = new Dictionary<string, object?>
             {
-                ["root"] = new Dictionary<string, object?>
-                {
-                    ["Name"] = "Root",
-                    ["Children"] = new[]
-                    {
-                        new Dictionary<string, object?>
-                        {
-                            ["Name"] = "Branch 1",
-                            ["Children"] = new[]
-                            {
-                                new Dictionary<string, object?> { ["Name"] = "Leaf" }
-                            }
-                        },
-                        new Dictionary<string, object?> { ["Name"] = "Branch 2" }
-                    }
-                }
+                ["root"] = treeData
             };
 
             var chartParams = new Dictionary<string, object?>
             {
                 ["items"] = new[]
                 {
-                    new Dictionary<string, object?> { ["Name"] = "Apples", ["Value"] = 12, ["Color"] = "Red" },
-                    new Dictionary<string, object?> { ["Name"] = "Bananas", ["Value"] = 7, ["Color"] = "Yellow" }
+                    new ChartItem("Apples", 12, Color.Red),
+                    new ChartItem("Bananas", 7, Color.Yellow)
                 },
                 ["title"] = "Fruit Sales"
             };
@@ -93,7 +94,7 @@ public sealed class EchoChatClient : IChatClient
             {
                 new FunctionCallContent("tool_call_table", "RenderableFunctions_RenderTable", tableParams),
                 new FunctionCallContent("tool_call_tree", "RenderableFunctions_RenderTree", treeParams),
-                new FunctionCallContent("tool_call_chart", "RenderableFunctions_RenderChart", chartParams)
+                new FunctionCallContent("tool_call_chart", "RenderableFunctions_RenderChart", chartParams),
             };
 
             await Task.Delay(100, cancellationToken);
