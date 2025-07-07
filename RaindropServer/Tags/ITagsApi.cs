@@ -12,14 +12,14 @@ public interface ITagsApi
     Task<ItemsResponse<TagInfo>> ListTagsForCollectionAsync(int collectionId);
 
     [Put("/tags")]
-    Task<SuccessResponse> RenameTagAsync([Body] object payload);
+    Task<SuccessResponse> RenameTagAsync([Body] TagBulkUpdateRequest payload);
 
     [Put("/tags/{collectionId}")]
-    Task<SuccessResponse> RenameTagForCollectionAsync(int collectionId, [Body] object payload);
+    Task<SuccessResponse> RenameTagForCollectionAsync(int collectionId, [Body] TagBulkUpdateRequest payload);
 
     [Delete("/tags")]
-    Task<SuccessResponse> DeleteTagsAsync([Body] object payload);
+    Task<SuccessResponse> DeleteTagsAsync([Body] TagBulkUpdateRequest payload);
 
     [Delete("/tags/{collectionId}")]
-    Task<SuccessResponse> DeleteTagsForCollectionAsync(int collectionId, [Body] object payload);
+    Task<SuccessResponse> DeleteTagsForCollectionAsync(int collectionId, [Body] TagBulkUpdateRequest payload);
 }
