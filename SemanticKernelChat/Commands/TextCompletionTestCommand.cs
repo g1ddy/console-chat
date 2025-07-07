@@ -1,9 +1,7 @@
 using Microsoft.Extensions.AI;
-using Microsoft.SemanticKernel;
 
 using SemanticKernelChat.Console;
 using SemanticKernelChat.Infrastructure;
-using SemanticKernelChat.Plugins;
 
 using Spectre.Console;
 

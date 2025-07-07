@@ -38,7 +38,6 @@ public sealed class RenderableFunctions
     public class TreeNode
     {
         public string Value { get; set; }
-        public TreeNode? Parent { get; set; }
         public List<TreeNode> Children { get; set; }
 
         public bool IsLeaf => Children == null || Children.Count == 0;
@@ -50,10 +49,7 @@ public sealed class RenderableFunctions
         }
 
         public void AddChild(TreeNode child)
-        {
-            Children.Add(child);
-            child.Parent = this;
-        }
+            => Children.Add(child);
     }
 
     [KernelFunction(nameof(RenderTree)), Description("Displays a simple tree structure in the console.")]
