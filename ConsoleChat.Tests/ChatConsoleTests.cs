@@ -129,6 +129,45 @@ public class ChatConsoleTests
     }
 
     [Fact]
+    public void WriteChatMessages_Debug_Call_Parameters()
+    {
+        var testConsole = new TestConsole();
+
+        var callMessage = new ChatMessage(ChatRole.Assistant, new AIContent[]
+        {
+            new FunctionCallContent("id", "Tool", new Dictionary<string, object?> { ["p"] = 1 })
+        });
+
+        var completion = new CommandCompletion(Enumerable.Empty<IChatCommandStrategy>());
+        var console = new ChatConsole(new ChatLineEditor(completion), testConsole)
+        {
+            DebugEnabled = true
+        };
+
+        console.WriteChatMessages(callMessage);
+
+        Assert.Contains("\"p\": 1", testConsole.Output);
+    }
+
+    [Fact]
+    public void WriteChatMessages_No_Debug_Hides_Call_Parameters()
+    {
+        var testConsole = new TestConsole();
+
+        var callMessage = new ChatMessage(ChatRole.Assistant, new AIContent[]
+        {
+            new FunctionCallContent("id", "Tool", new Dictionary<string, object?> { ["p"] = 1 })
+        });
+
+        var completion = new CommandCompletion(Enumerable.Empty<IChatCommandStrategy>());
+        var console = new ChatConsole(new ChatLineEditor(completion), testConsole);
+
+        console.WriteChatMessages(callMessage);
+
+        Assert.DoesNotContain("\"p\": 1", testConsole.Output);
+    }
+
+    [Fact]
     public async Task SendAndDisplayAsync_Writes_Response()
     {
         var history = new ChatHistoryService();
