@@ -6,7 +6,7 @@ public sealed class DebugCommandStrategy : IChatCommandStrategy
 {
     public IEnumerable<string>? GetCompletions(string prefix, string word, string suffix)
     {
-        var tokens = (prefix + word).TrimStart().Split(' ', StringSplitOptions.RemoveEmptyEntries);
+        var tokens = CommandTokenizer.SplitArguments((prefix + word).TrimStart());
         if (tokens.Length == 1)
         {
             return new[] { CliConstants.Commands.Debug };
@@ -20,7 +20,7 @@ public sealed class DebugCommandStrategy : IChatCommandStrategy
 
     public bool CanExecute(string input)
     {
-        var tokens = input.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+        var tokens = CommandTokenizer.SplitArguments(input);
         if (tokens.Length == 1)
         {
             return tokens[0].Equals(CliConstants.Commands.Debug, StringComparison.OrdinalIgnoreCase);
@@ -35,7 +35,7 @@ public sealed class DebugCommandStrategy : IChatCommandStrategy
 
     public Task<bool> ExecuteAsync(string input, IChatHistoryService history, IChatController controller, IChatConsole console)
     {
-        var tokens = input.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+        var tokens = CommandTokenizer.SplitArguments(input);
         if (tokens.Length == 1)
         {
             console.DebugEnabled = !console.DebugEnabled;

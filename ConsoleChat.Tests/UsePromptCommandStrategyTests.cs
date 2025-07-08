@@ -28,7 +28,7 @@ public class UsePromptCommandStrategyTests
     public void GetCompletions_Returns_Prompt_Names()
     {
         var strategy = new UsePromptCommandStrategy(CreateCollection());
-        var completions = strategy.GetCompletions("/use ", "", "");
+        var completions = strategy.GetCompletions("/use ", "s", "");
 
         Assert.NotNull(completions);
         Assert.Contains(SamplePromptName, completions!);
