@@ -126,6 +126,13 @@ public class ChatConsole : IChatConsole
         return rows;
     }
 
+    private static Panel CreatePanel(IRenderable content, Style style, PanelHeader header)
+        => new Panel(content)
+            .RoundedBorder()
+            .BorderStyle(style)
+            .Header(header)
+            .Expand();
+
     public void WriteChatMessages(params ChatMessage[] messages)
     {
         var callNames = CollectFunctionCallNames(messages);
@@ -159,13 +166,7 @@ public class ChatConsole : IChatConsole
             var (headerText, justify, style) = GetUserStyle(message.Role);
             var header = new PanelHeader(headerText, justify);
             var rows = new Rows(renderables);
-
-            _console.Write(
-                new Panel(rows)
-                    .RoundedBorder()
-                    .BorderStyle(style)
-                    .Header(header)
-                    .Expand());
+            _console.Write(CreatePanel(rows, style, header));
         }
     }
 
@@ -287,11 +288,7 @@ public class ChatConsole : IChatConsole
         if (update.Role == ChatRole.Assistant)
         {
             var markupText = new Markup(textBuilder.ToString());
-            var assistantPanel = new Panel(markupText)
-                .RoundedBorder()
-                .BorderStyle(style)
-                .Header(header)
-                .Expand();
+            var assistantPanel = CreatePanel(markupText, style, header);
 
             // update first or default or insert new row to panels
             if (panels.Count > 0)
@@ -329,12 +326,7 @@ public class ChatConsole : IChatConsole
         if (renderables.Any())
         {
             var rows = new Rows(renderables);
-            var toolsPanel = new Panel(rows)
-                .RoundedBorder()
-                .BorderStyle(style)
-                .Header(header)
-                .Expand();
-
+            var toolsPanel = CreatePanel(rows, style, header);
             panels.Add(toolsPanel);
         }
     }
