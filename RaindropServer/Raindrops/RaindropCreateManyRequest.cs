@@ -2,7 +2,10 @@ using System.Text.Json.Serialization;
 
 namespace RaindropServer.Raindrops;
 
-public record RaindropCreateMany
+/// <summary>
+/// Request payload for creating multiple bookmarks.
+/// </summary>
+public record RaindropCreateManyRequest
 {
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public int? CollectionId { get; init; }

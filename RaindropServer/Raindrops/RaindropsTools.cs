@@ -57,7 +57,7 @@ public class RaindropsTools(IRaindropsApi api) :
     [McpServerTool, Description("Create multiple bookmarks")]
     public Task<ItemsResponse<Raindrop>> CreateManyAsync(int collectionId, IEnumerable<Raindrop> raindrops)
     {
-        var payload = new RaindropCreateMany { CollectionId = collectionId, Items = raindrops.ToList() };
+        var payload = new RaindropCreateManyRequest { CollectionId = collectionId, Items = raindrops.ToList() };
         return Api.CreateManyAsync(payload);
     }
 

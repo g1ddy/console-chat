@@ -21,7 +21,7 @@ public interface IRaindropsApi : ICommonApi<Raindrop, long>
     Task<ItemsResponse<Raindrop>> ListAsync(int collectionId, string? search = null);
 
     [Post("/raindrops")]
-    Task<ItemsResponse<Raindrop>> CreateManyAsync([Body] RaindropCreateMany payload);
+    Task<ItemsResponse<Raindrop>> CreateManyAsync([Body] RaindropCreateManyRequest payload);
 
     [Put("/raindrops/{collectionId}")]
     Task<SuccessResponse> UpdateManyAsync(int collectionId, [Body] RaindropBulkUpdate update,
