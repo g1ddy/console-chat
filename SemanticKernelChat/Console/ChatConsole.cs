@@ -1,12 +1,9 @@
 using System.Diagnostics.CodeAnalysis;
-using System.Globalization;
 using System.Text;
-using System.Text.Json;
 
 using Microsoft.Extensions.AI;
 
 using Spectre.Console;
-using Spectre.Console.Json;
 using Spectre.Console.Rendering;
 
 namespace SemanticKernelChat.Console;
@@ -23,150 +20,56 @@ public class ChatConsole : IChatConsole
         _console = console;
     }
 
-    public static (string headerText, Justify justify, Style style) GetUserStyle(ChatRole? messageRole)
-    {
-        var headerText = messageRole.ToString();
-        var justify = Justify.Left;
-        var style = Style.Plain;
-
-        if (messageRole == ChatRole.User)
-        {
-            headerText = ":bust_in_silhouette: User";
-            style = new(Color.RoyalBlue1);
-            justify = Justify.Left;
-        }
-        else if (messageRole == ChatRole.Assistant)
-        {
-            headerText = ":robot: Assistant";
-            style = new(Color.DarkSeaGreen2);
-            justify = Justify.Right;
-        }
-        else if (messageRole == ChatRole.Tool)
-        {
-            headerText = ":wrench: Tool";
-            style = new(Color.Grey37);
-            justify = Justify.Center;
-        }
-
-        headerText += $" | [grey]({DateTime.Now.ToShortTimeString()})[/]";
-
-        return (headerText, justify, style);
-    }
-
-    private static void CollectFunctionCallNames(IEnumerable<AIContent> contents, Dictionary<string, string> callNames)
-    {
-        foreach (var call in contents.OfType<FunctionCallContent>())
-        {
-            if (!string.IsNullOrEmpty(call.CallId) && !string.IsNullOrEmpty(call.Name))
-            {
-                callNames[call.CallId] = call.Name;
-            }
-        }
-    }
-
-    private static Dictionary<string, string> CollectFunctionCallNames(IEnumerable<ChatMessage> messages)
-    {
-        var callNames = new Dictionary<string, string>();
-        foreach (var message in messages)
-        {
-            CollectFunctionCallNames(message.Contents, callNames);
-        }
-
-        return callNames;
-    }
-
-    private static string GetToolName(
-        Dictionary<string, string> callNames,
-        string? callId,
+    private void AddDebugPanels(
         string? authorName,
-        ChatRole? role)
+        ChatRole? role,
+        IEnumerable<FunctionCallContent> callContents,
+        IEnumerable<FunctionResultContent> resultContents,
+        Dictionary<string, string> callNames,
+        List<IRenderable> renderables)
     {
-        var defaultName = authorName ??
-            CultureInfo.InvariantCulture.TextInfo.ToTitleCase(role?.ToString() ?? string.Empty);
-
-        return (!string.IsNullOrEmpty(callId) && callNames.TryGetValue(callId, out var nameFound))
-            ? nameFound
-            : defaultName;
-    }
-
-    private static bool IsValidJson(string text)
-    {
-        try
+        if (DebugEnabled)
         {
-            _ = JsonDocument.Parse(text);
-            return true;
-        }
-        catch (JsonException)
-        {
-            return false;
-        }
-    }
-
-    private static string? SerializeArguments(IDictionary<string, object?>? args)
-    {
-        return args?.Count > 0 ? JsonSerializer.Serialize(args) : null;
-    }
-
-    private IEnumerable<IRenderable> FormatPanelContent(string markup, string? rawJson)
-    {
-        var rows = new List<IRenderable> { new Markup(markup) };
-
-        if (DebugEnabled && !string.IsNullOrWhiteSpace(rawJson))
-        {
-            if (IsValidJson(rawJson))
+            foreach (var call in callContents)
             {
-                rows.Add(new JsonText(rawJson));
-            }
-            else
-            {
-                rows.Add(new Markup($"[orange1]:warning: {Markup.Escape(rawJson)}[/]"));
+                string toolName = ChatConsoleHelpers.GetToolName(callNames, call.CallId, authorName, role);
+                string toolMarkup = $"[grey]:wrench: {toolName.EscapeMarkup()} Parameters...[/]";
+                renderables.AddRange(ChatConsoleHelpers.FormatPanelContent(toolMarkup, ChatConsoleHelpers.SerializeArguments(call.Arguments), DebugEnabled));
             }
         }
 
-        return rows;
+        if (role == ChatRole.Tool)
+        {
+            foreach (var result in resultContents)
+            {
+                string toolName = ChatConsoleHelpers.GetToolName(callNames, result.CallId, authorName, role);
+                string toolMarkup = $"[grey]:wrench: {toolName.EscapeMarkup()} Result...[/]";
+                renderables.AddRange(ChatConsoleHelpers.FormatPanelContent(toolMarkup, result.Result?.ToString(), DebugEnabled));
+            }
+        }
     }
-
-    private static Panel CreatePanel(IRenderable content, Style style, PanelHeader header)
-        => new Panel(content)
-            .RoundedBorder()
-            .BorderStyle(style)
-            .Header(header)
-            .Expand();
 
     public void WriteChatMessages(params ChatMessage[] messages)
     {
-        var callNames = CollectFunctionCallNames(messages);
+        var callNames = ChatConsoleHelpers.CollectFunctionCallNames(messages);
 
         foreach (var message in messages)
         {
             string markupText = message.Text?.EscapeMarkup() ?? string.Empty;
             var renderables = new List<IRenderable> { new Markup(markupText) };
             var contents = message.Contents;
+            AddDebugPanels(
+                message.AuthorName,
+                message.Role,
+                contents.OfType<FunctionCallContent>(),
+                contents.OfType<FunctionResultContent>(),
+                callNames,
+                renderables);
 
-            if (DebugEnabled)
-            {
-                foreach (var call in contents.OfType<FunctionCallContent>())
-                {
-                    string toolName = GetToolName(callNames, call.CallId, message.AuthorName, message.Role);
-                    string toolMarkup = $"[grey]:wrench: {toolName.EscapeMarkup()} Parameters...[/]";
-                    renderables.AddRange(FormatPanelContent(toolMarkup, SerializeArguments(call.Arguments)));
-                }
-            }
-
-            if (message.Role == ChatRole.Tool)
-            {
-                foreach (var result in contents.OfType<FunctionResultContent>())
-                {
-                    string toolName = GetToolName(callNames, result.CallId, message.AuthorName, message.Role);
-                    string toolMarkup = $"[grey]:wrench: {toolName.EscapeMarkup()} Result...[/]";
-                    renderables.AddRange(FormatPanelContent(toolMarkup, result.Result?.ToString()));
-                }
-            }
-
-            var (headerText, justify, style) = GetUserStyle(message.Role);
+            var (headerText, justify, style) = ChatConsoleHelpers.GetHeaderStyle(message.Role);
             var header = new PanelHeader(headerText, justify);
             var rows = new Rows(renderables);
-            _console.Write(CreatePanel(rows, style, header));
+            _console.Write(ChatConsoleHelpers.CreatePanel(rows, style, header));
         }
     }
 
@@ -176,7 +79,7 @@ public class ChatConsole : IChatConsole
 
     public void WriteHeader(ChatRole role)
     {
-        var (headerText, justify, style) = GetUserStyle(role);
+        var (headerText, justify, style) = ChatConsoleHelpers.GetHeaderStyle(role);
         var rule = new Rule(headerText) { Justification = justify, Style = style };
         _console.Write(rule);
     }
@@ -190,7 +93,7 @@ public class ChatConsole : IChatConsole
     public void WritePanel(IRenderable content, string title)
     {
         var header = new PanelHeader(title);
-        var panel = CreatePanel(content, Style.Plain, header);
+        var panel = ChatConsoleHelpers.CreatePanel(content, Style.Plain, header);
         _console.Write(panel);
     }
 
@@ -285,17 +188,17 @@ public class ChatConsole : IChatConsole
         ChatResponseUpdate update)
     {
         var contents = update.Contents ?? Array.Empty<AIContent>();
-        CollectFunctionCallNames(contents, callNames);
+        ChatConsoleHelpers.CollectFunctionCallNames(contents, callNames);
 
         _ = textBuilder.Append(update.Text?.EscapeMarkup() ?? string.Empty);
 
-        var (headerText, justify, style) = GetUserStyle(update.Role);
+        var (headerText, justify, style) = ChatConsoleHelpers.GetHeaderStyle(update.Role);
         var header = new PanelHeader(headerText, justify);
 
         if (update.Role == ChatRole.Assistant)
         {
             var markupText = new Markup(textBuilder.ToString());
-            var assistantPanel = CreatePanel(markupText, style, header);
+            var assistantPanel = ChatConsoleHelpers.CreatePanel(markupText, style, header);
 
             // update first or default or insert new row to panels
             if (panels.Count > 0)
@@ -309,31 +212,18 @@ public class ChatConsole : IChatConsole
         }
 
         var renderables = new List<IRenderable>();
-
-        if (DebugEnabled)
-        {
-            foreach (var call in contents.OfType<FunctionCallContent>())
-            {
-                string toolName = GetToolName(callNames, call.CallId, update.AuthorName, update.Role);
-                string toolMarkup = $"[grey]:wrench: {toolName.EscapeMarkup()} Parameters...[/]";
-                renderables.AddRange(FormatPanelContent(toolMarkup, SerializeArguments(call.Arguments)));
-            }
-        }
-
-        if (update.Role == ChatRole.Tool)
-        {
-            foreach (var result in contents.OfType<FunctionResultContent>())
-            {
-                string toolName = GetToolName(callNames, result.CallId, update.AuthorName, update.Role);
-                string toolMarkup = $"[grey]:wrench: {toolName.EscapeMarkup()} Result...[/]";
-                renderables.AddRange(FormatPanelContent(toolMarkup, result.Result?.ToString()));
-            }
-        }
+        AddDebugPanels(
+            update.AuthorName,
+            update.Role,
+            contents.OfType<FunctionCallContent>(),
+            contents.OfType<FunctionResultContent>(),
+            callNames,
+            renderables);
 
         if (renderables.Any())
         {
             var rows = new Rows(renderables);
-            var toolsPanel = CreatePanel(rows, style, header);
+            var toolsPanel = ChatConsoleHelpers.CreatePanel(rows, style, header);
             panels.Add(toolsPanel);
         }
     }
