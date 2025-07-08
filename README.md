@@ -1,6 +1,8 @@
 # Console Chat with MCP
 
-This repository contains a console based chat client built with **Microsoft Semantic Kernel** and an example **Model Context Protocol (MCP)** server. The chat client can talk to language models or fall back to a simple echo bot. The MCP server exposes simple C# functions as tools that can be invoked from the chat.
+This repository contains a console based chat client built with **Microsoft.Extensions.AI** and an example **Model Context Protocol (MCP)** server. The chat client can talk to language models or fall back to a simple echo bot. The MCP server exposes simple C# functions as tools that can be invoked from the chat.
+
+![Screenshot of the Console Chat application in action, showing a conversation with syntax highlighting and a tool call response.](assets/README/console-chat-terminal.png)
 
 ## Projects
 
