@@ -9,48 +9,44 @@ namespace ConsoleChat.Tests;
 
 public class RenderableFunctionsTests
 {
-    private static ChatConsole CreateConsole(TestConsole testConsole)
+    private readonly TestConsole _testConsole;
+    private readonly RenderableFunctions _functions;
+
+    public RenderableFunctionsTests()
     {
+        _testConsole = new TestConsole();
         var completion = new CommandCompletion(System.Linq.Enumerable.Empty<IChatCommandStrategy>());
-        return new ChatConsole(new ChatLineEditor(completion), testConsole);
+        var console = new ChatConsole(new ChatLineEditor(completion), _testConsole);
+        _functions = new RenderableFunctions(console);
     }
 
     [Fact]
     public void RenderTable_Writes_Panel_With_Title()
     {
-        var testConsole = new TestConsole();
-        var console = CreateConsole(testConsole);
-        var functions = new RenderableFunctions(console);
-        _ = functions.RenderTable([new RenderableFunctions.ItemCount("Apple", 1)]);
-        Assert.Contains("Items", testConsole.Output);
-        Assert.Contains("Apple", testConsole.Output);
+        _ = _functions.RenderTable([new RenderableFunctions.ItemCount("Apple", 1)]);
+        Assert.Contains("Items", _testConsole.Output);
+        Assert.Contains("Apple", _testConsole.Output);
     }
 
     [Fact]
     public void RenderTree_Writes_Panel_With_Title()
     {
-        var testConsole = new TestConsole();
-        var console = CreateConsole(testConsole);
-        var functions = new RenderableFunctions(console);
         var root = new RenderableFunctions.TreeNode("Root");
         root.AddChild(new RenderableFunctions.TreeNode("Child"));
-        _ = functions.RenderTree(root);
-        Assert.Contains("Tree", testConsole.Output);
-        Assert.Contains("Root", testConsole.Output);
-        Assert.Contains("Child", testConsole.Output);
+        _ = _functions.RenderTree(root);
+        Assert.Contains("Tree", _testConsole.Output);
+        Assert.Contains("Root", _testConsole.Output);
+        Assert.Contains("Child", _testConsole.Output);
     }
 
     [Fact]
     public void RenderChart_Writes_Panel_With_Title()
     {
-        var testConsole = new TestConsole();
-        var console = CreateConsole(testConsole);
-        var functions = new RenderableFunctions(console);
         const string title = "MyChart";
-        _ = functions.RenderChart([
+        _ = _functions.RenderChart([
             new RenderableFunctions.ChartItem("A", 5, Color.Red)
         ], title);
-        Assert.Contains(title, testConsole.Output);
-        Assert.Contains("A", testConsole.Output);
+        Assert.Contains("Chart", _testConsole.Output);
+        Assert.Contains("A", _testConsole.Output);
     }
 }

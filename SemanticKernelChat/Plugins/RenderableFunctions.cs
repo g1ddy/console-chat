@@ -91,7 +91,7 @@ public sealed class RenderableFunctions
             _ = chart.AddItem(item.Name, item.Value, item.Color);
         }
 
-        _console.WritePanel(chart, title);
+        _console.WritePanel(chart, "Chart");
         return "Displayed chart";
     }
 }
