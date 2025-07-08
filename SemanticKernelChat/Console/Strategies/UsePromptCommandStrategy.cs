@@ -15,7 +15,7 @@ public sealed class UsePromptCommandStrategy : IChatCommandStrategy
 
     public IEnumerable<string>? GetCompletions(string prefix, string word, string suffix)
     {
-        var tokens = (prefix + word).TrimStart().Split(' ', StringSplitOptions.TrimEntries);
+        var tokens = CommandTokenizer.SplitArguments((prefix + word).TrimStart());
         if (tokens.Length == 1)
         {
             return new[] { CliConstants.Commands.Use };
@@ -31,7 +31,7 @@ public sealed class UsePromptCommandStrategy : IChatCommandStrategy
 
     public bool CanExecute(string input)
     {
-        var tokens = input.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+        var tokens = CommandTokenizer.SplitArguments(input);
         return tokens.Length == 2 &&
                tokens[0].Equals(CliConstants.Commands.Use, StringComparison.OrdinalIgnoreCase) &&
                _prompts.Prompts.Any(p => p.Name.Equals(tokens[1], StringComparison.OrdinalIgnoreCase));
@@ -39,7 +39,7 @@ public sealed class UsePromptCommandStrategy : IChatCommandStrategy
 
     public async Task<bool> ExecuteAsync(string input, IChatHistoryService history, IChatController controller, IChatConsole console)
     {
-        var tokens = input.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+        var tokens = CommandTokenizer.SplitArguments(input);
         if (tokens.Length < 2)
         {
             return true;

@@ -23,7 +23,7 @@ internal abstract class ListCommandStrategyBase<TInfo> : IChatCommandStrategy
 
     public IEnumerable<string>? GetCompletions(string prefix, string word, string suffix)
     {
-        var tokens = (prefix + word).TrimStart().Split(' ', StringSplitOptions.TrimEntries);
+        var tokens = CommandTokenizer.SplitArguments((prefix + word).TrimStart());
         if (tokens.Length == 1)
         {
             return new[] { CliConstants.Commands.List };
@@ -37,7 +37,7 @@ internal abstract class ListCommandStrategyBase<TInfo> : IChatCommandStrategy
 
     public bool CanExecute(string input)
     {
-        var tokens = input.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+        var tokens = CommandTokenizer.SplitArguments(input);
         return tokens.Length == 2 &&
                tokens[0].Equals(CliConstants.Commands.List, StringComparison.OrdinalIgnoreCase) &&
                tokens[1].Equals(_optionName, StringComparison.OrdinalIgnoreCase);
