@@ -66,10 +66,10 @@ public class ChatConsole : IChatConsole
                 callNames,
                 renderables);
 
-            var (headerText, justify, style) = ChatConsoleHelpers.GetUserStyle(message.Role);
+            var (headerText, justify, style) = ChatConsoleHelpers.GetHeaderStyle(message.Role);
             var header = new PanelHeader(headerText, justify);
             var rows = new Rows(renderables);
-            _console.Write(CreatePanel(rows, style, header));
+            _console.Write(ChatConsoleHelpers.CreatePanel(rows, style, header));
         }
     }
 
@@ -79,7 +79,7 @@ public class ChatConsole : IChatConsole
 
     public void WriteHeader(ChatRole role)
     {
-        var (headerText, justify, style) = ChatConsoleHelpers.GetUserStyle(role);
+        var (headerText, justify, style) = ChatConsoleHelpers.GetHeaderStyle(role);
         var rule = new Rule(headerText) { Justification = justify, Style = style };
         _console.Write(rule);
     }
@@ -93,7 +93,7 @@ public class ChatConsole : IChatConsole
     public void WritePanel(IRenderable content, string title)
     {
         var header = new PanelHeader(title);
-        var panel = CreatePanel(content, Style.Plain, header);
+        var panel = ChatConsoleHelpers.CreatePanel(content, Style.Plain, header);
         _console.Write(panel);
     }
 
@@ -192,13 +192,13 @@ public class ChatConsole : IChatConsole
 
         _ = textBuilder.Append(update.Text?.EscapeMarkup() ?? string.Empty);
 
-        var (headerText, justify, style) = ChatConsoleHelpers.GetUserStyle(update.Role);
+        var (headerText, justify, style) = ChatConsoleHelpers.GetHeaderStyle(update.Role);
         var header = new PanelHeader(headerText, justify);
 
         if (update.Role == ChatRole.Assistant)
         {
             var markupText = new Markup(textBuilder.ToString());
-            var assistantPanel = CreatePanel(markupText, style, header);
+            var assistantPanel = ChatConsoleHelpers.CreatePanel(markupText, style, header);
 
             // update first or default or insert new row to panels
             if (panels.Count > 0)
@@ -223,11 +223,8 @@ public class ChatConsole : IChatConsole
         if (renderables.Any())
         {
             var rows = new Rows(renderables);
-            var toolsPanel = CreatePanel(rows, style, header);
+            var toolsPanel = ChatConsoleHelpers.CreatePanel(rows, style, header);
             panels.Add(toolsPanel);
         }
     }
-
-    private static Panel CreatePanel(IRenderable content, Style style, PanelHeader header)
-        => ChatConsoleHelpers.CreatePanel(content, style, header);
 }

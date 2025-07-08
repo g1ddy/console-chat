@@ -10,33 +10,19 @@ namespace SemanticKernelChat.Console;
 
 internal static class ChatConsoleHelpers
 {
-    public static (string headerText, Justify justify, Style style) GetUserStyle(ChatRole? messageRole)
+    public static (string headerText, Justify justify, Style style) GetHeaderStyle(ChatRole? messageRole)
     {
-        var headerText = messageRole.ToString();
-        var justify = Justify.Left;
-        var style = Style.Plain;
+        string roleName = messageRole?.ToString() ?? string.Empty;
 
-        if (messageRole == ChatRole.User)
+        var (baseHeader, justify, style) = roleName switch
         {
-            headerText = ":bust_in_silhouette: User";
-            style = new(Color.RoyalBlue1);
-            justify = Justify.Left;
-        }
-        else if (messageRole == ChatRole.Assistant)
-        {
-            headerText = ":robot: Assistant";
-            style = new(Color.DarkSeaGreen2);
-            justify = Justify.Right;
-        }
-        else if (messageRole == ChatRole.Tool)
-        {
-            headerText = ":wrench: Tool";
-            style = new(Color.Grey37);
-            justify = Justify.Center;
-        }
+            "user" => (":bust_in_silhouette: User", Justify.Left, new Style(Color.RoyalBlue1)),
+            "assistant" => (":robot: Assistant", Justify.Right, new Style(Color.DarkSeaGreen2)),
+            "tool" => (":wrench: Tool", Justify.Center, new Style(Color.Grey37)),
+            _ => (roleName, Justify.Left, Style.Plain)
+        };
 
-        headerText += $" | [grey]({DateTime.Now.ToShortTimeString()})[/]";
-
+        var headerText = $"{baseHeader} | [grey]({DateTime.Now.ToShortTimeString()})[/]";
         return (headerText, justify, style);
     }
 
