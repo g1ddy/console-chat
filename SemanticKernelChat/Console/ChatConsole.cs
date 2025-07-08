@@ -187,6 +187,13 @@ public class ChatConsole : IChatConsole
 
     public void Write(IRenderable renderable) => _console.Write(renderable);
 
+    public void WritePanel(IRenderable content, string title)
+    {
+        var header = new PanelHeader(title);
+        var panel = CreatePanel(content, Style.Plain, header);
+        _console.Write(panel);
+    }
+
     public IReadOnlyList<string> PromptMultiSelection(string title, IEnumerable<(string Name, bool Selected)> items)
     {
         var prompt = new MultiSelectionPrompt<(string Name, bool Selected)>()

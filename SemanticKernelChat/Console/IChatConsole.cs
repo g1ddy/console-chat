@@ -12,6 +12,7 @@ public interface IChatConsole
     void WriteUserPrompt();
     void WriteLine(string text);
     void Write(IRenderable renderable);
+    void WritePanel(IRenderable content, string title);
     Task<string?> ReadMultilineInputAsync(CancellationToken cancellationToken = default);
     Task DisplayThinkingIndicator(Func<Task> action);
     void DisplayError(Exception ex);
