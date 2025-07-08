@@ -7,7 +7,7 @@ namespace RaindropServer.Raindrops;
 
 [McpServerToolType]
 public class RaindropsTools(IRaindropsApi api) :
-    RaindropToolBase<IRaindropsApi, Raindrop, long>(api)
+    RaindropToolBase<IRaindropsApi>(api)
 {
 
     [McpServerTool, Description("Create a new bookmark")]
@@ -26,6 +26,9 @@ public class RaindropsTools(IRaindropsApi api) :
         return Api.CreateAsync(payload);
     }
 
+    [McpServerTool, Description("Get a bookmark by id")]
+    public Task<ItemResponse<Raindrop>> GetAsync(long id) => Api.GetAsync(id);
+
     [McpServerTool, Description("Update an existing bookmark")]
     public Task<ItemResponse<Raindrop>> UpdateAsync(long id, string? title = null, string? excerpt = null,
         string? link = null, IEnumerable<string>? tags = null, bool? important = null,
@@ -43,6 +46,9 @@ public class RaindropsTools(IRaindropsApi api) :
         return Api.UpdateAsync(id, payload);
     }
 
+    [McpServerTool, Description("Delete a bookmark by id")]
+    public Task<SuccessResponse> DeleteAsync(long id) => Api.DeleteAsync(id);
+
 
     [McpServerTool, Description("List bookmarks in a collection. Can be filtered by an optional search query.")]
     public Task<ItemsResponse<Raindrop>> ListAsync(int collectionId, string? search = null)
@@ -51,12 +57,12 @@ public class RaindropsTools(IRaindropsApi api) :
     [McpServerTool, Description("Create multiple bookmarks")]
     public Task<ItemsResponse<Raindrop>> CreateManyAsync(int collectionId, IEnumerable<Raindrop> raindrops)
     {
-        var payload = new RaindropsCreateMany { CollectionId = collectionId, Items = raindrops.ToList() };
+        var payload = new RaindropCreateMany { CollectionId = collectionId, Items = raindrops.ToList() };
         return Api.CreateManyAsync(payload);
     }
 
 
     [McpServerTool, Description("Bulk update bookmarks in a collection")]
-    public Task<SuccessResponse> UpdateManyAsync(int collectionId, RaindropsBulkUpdate update, bool? nested = null, string? search = null)
+    public Task<SuccessResponse> UpdateManyAsync(int collectionId, RaindropBulkUpdate update, bool? nested = null, string? search = null)
         => Api.UpdateManyAsync(collectionId, update, nested, search);
 }

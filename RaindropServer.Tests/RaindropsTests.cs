@@ -16,7 +16,7 @@ public class RaindropsTests : TestBase
         try
         {
             await raindropsTool.UpdateAsync(raindropId, title: "Raindrops Crud - Updated");
-            await raindropsTool.UpdateManyAsync(0, new RaindropsBulkUpdate { Ids = [ raindropId ], Important = true });
+            await raindropsTool.UpdateManyAsync(0, new RaindropBulkUpdate { Ids = [ raindropId ], Important = true });
             // add a delay before searching
             await Task.Delay(5000);
             var search = await raindropsTool.ListAsync(0, "example");

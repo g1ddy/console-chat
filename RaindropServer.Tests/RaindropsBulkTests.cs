@@ -27,7 +27,7 @@ public class RaindropsBulkTests : TestBase
             var list = await tool.ListAsync(0, "Bulk Endpoints");
             Assert.True(ids.All(id => list.Items.Any(r => r.Id == id)));
 
-            var update = new RaindropsBulkUpdate
+            var update = new RaindropBulkUpdate
             {
                 Ids = ids,
                 Important = true,

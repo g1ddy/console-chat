@@ -7,21 +7,15 @@ using RaindropServer.Common;
 namespace RaindropServer.Tags;
 
 [McpServerToolType]
-public class TagsTools
+public class TagsTools(ITagsApi api) : RaindropToolBase<ITagsApi>(api)
 {
-    private readonly ITagsApi _api;
-
-    public TagsTools(ITagsApi api)
-    {
-        _api = api;
-    }
 
 
     [McpServerTool, Description("List all tags or tags for a collection")]
     public Task<ItemsResponse<TagInfo>> ListAsync(int? collectionId = null)
         => collectionId is null
-            ? _api.ListAsync()
-            : _api.ListForCollectionAsync(collectionId.Value);
+            ? Api.ListAsync()
+            : Api.ListForCollectionAsync(collectionId.Value);
 
     [McpServerTool, Description("Rename a tag")]
     public Task<SuccessResponse> RenameAsync(string oldTag, string newTag, int? collectionId = null)
@@ -32,8 +26,8 @@ public class TagsTools
     {
         var payload = new TagRenameRequest { Replace = newTag, Tags = tags.ToList() };
         return collectionId is null
-            ? _api.UpdateAsync(payload)
-            : _api.UpdateForCollectionAsync(collectionId.Value, payload);
+            ? Api.UpdateAsync(payload)
+            : Api.UpdateForCollectionAsync(collectionId.Value, payload);
     }
 
     [McpServerTool, Description("Delete a tag")]
@@ -45,7 +39,7 @@ public class TagsTools
     {
         var payload = new TagDeleteRequest { Tags = tags.ToList() };
         return collectionId is null
-            ? _api.DeleteAsync(payload)
-            : _api.DeleteForCollectionAsync(collectionId.Value, payload);
+            ? Api.DeleteAsync(payload)
+            : Api.DeleteForCollectionAsync(collectionId.Value, payload);
     }
 }

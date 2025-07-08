@@ -2,7 +2,7 @@ using System.Text.Json.Serialization;
 
 namespace RaindropServer.Highlights;
 
-public record HighlightsBulkUpdate
+public record HighlightBulkUpdate
 {
     [JsonPropertyName("_id")]
     public string? Id { get; init; }

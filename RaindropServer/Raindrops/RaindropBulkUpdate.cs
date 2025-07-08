@@ -3,7 +3,7 @@ using RaindropServer.Common;
 
 namespace RaindropServer.Raindrops;
 
-public record RaindropsBulkUpdate
+public record RaindropBulkUpdate
 {
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public List<long>? Ids { get; init; }
