@@ -31,7 +31,7 @@ public sealed class RenderableFunctions
             _ = table.AddRow(item.Name, item.Count.ToString());
         }
 
-        _console.Write(table);
+        _console.WritePanel(table, "Items");
         return "Displayed item table";
     }
 
@@ -58,7 +58,7 @@ public sealed class RenderableFunctions
         var tree = new Tree(root.Value);
         AddChildren(tree, root.Children);
 
-        _console.Write(tree);
+        _console.WritePanel(tree, "Tree");
         return "Displayed tree";
     }
 
@@ -91,7 +91,7 @@ public sealed class RenderableFunctions
             _ = chart.AddItem(item.Name, item.Value, item.Color);
         }
 
-        _console.Write(chart);
+        _console.WritePanel(chart, title);
         return "Displayed chart";
     }
 }
