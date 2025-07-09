@@ -6,5 +6,5 @@ namespace RaindropServer.User;
 public interface IUserApi
 {
     [Get("/user")]
-    Task<ItemResponse<UserInfo>> GetUserAsync();
+    Task<ItemResponse<UserInfo>> GetAsync();
 }

@@ -5,30 +5,33 @@ using RaindropServer.Common;
 namespace RaindropServer.Collections;
 
 [McpServerToolType]
-public class CollectionsTools
+public class CollectionsTools(ICollectionsApi api) :
+    RaindropToolBase<ICollectionsApi>(api)
 {
-    private readonly ICollectionsApi _api;
+    [McpServerTool(Destructive = false, Idempotent = true, ReadOnly = true,
+        Title = "List Collections"),
+     Description("List all collections for the current user")]
+    public Task<ItemsResponse<Collection>> ListCollectionsAsync() => Api.ListAsync();
 
-    public CollectionsTools(ICollectionsApi api)
-    {
-        _api = api;
-    }
+    [McpServerTool(Destructive = false, Idempotent = true, ReadOnly = true,
+        Title = "Get Collection"),
+     Description("Get details for a collection by id")]
+    public Task<ItemResponse<Collection>> GetCollectionAsync(int id) => Api.GetAsync(id);
 
-    [McpServerTool, Description("List all collections for the current user")]
-    public Task<ItemsResponse<Collection>> ListAsync() => _api.ListCollectionsAsync();
+    [McpServerTool(Title = "Create Collection"),
+     Description("Create a new collection")]
+    public Task<ItemResponse<Collection>> CreateCollectionAsync(Collection collection) => Api.CreateAsync(collection);
 
-    [McpServerTool, Description("Get details for a collection by id")]
-    public Task<ItemResponse<Collection>> GetAsync(int id) => _api.GetCollectionAsync(id);
+    [McpServerTool(Idempotent = true, Title = "Update Collection"),
+     Description("Update an existing collection")]
+    public Task<ItemResponse<Collection>> UpdateCollectionAsync(int id, Collection collection) => Api.UpdateAsync(id, collection);
 
-    [McpServerTool, Description("Create a new collection")]
-    public Task<ItemResponse<Collection>> CreateAsync(Collection collection) => _api.CreateCollectionAsync(collection);
+    [McpServerTool(Idempotent = true, Title = "Delete Collection"),
+     Description("Delete a collection")]
+    public Task<SuccessResponse> DeleteCollectionAsync(int id) => Api.DeleteAsync(id);
 
-    [McpServerTool, Description("Update an existing collection")]
-    public Task<ItemResponse<Collection>> UpdateAsync(int id, Collection collection) => _api.UpdateCollectionAsync(id, collection);
-
-    [McpServerTool, Description("Delete a collection")]
-    public Task<SuccessResponse> DeleteAsync(int id) => _api.DeleteCollectionAsync(id);
-
-    [McpServerTool, Description("List nested child collections")]
-    public Task<ItemsResponse<Collection>> ListChildrenAsync() => _api.ListChildCollectionsAsync();
+    [McpServerTool(Destructive = false, Idempotent = true, ReadOnly = true,
+        Title = "List Child Collections"),
+     Description("List nested child collections")]
+    public Task<ItemsResponse<Collection>> ListChildCollectionsAsync() => Api.ListChildrenAsync();
 }

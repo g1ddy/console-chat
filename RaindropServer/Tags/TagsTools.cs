@@ -7,44 +7,45 @@ using RaindropServer.Common;
 namespace RaindropServer.Tags;
 
 [McpServerToolType]
-public class TagsTools
+public class TagsTools(ITagsApi api) : RaindropToolBase<ITagsApi>(api)
 {
-    private readonly ITagsApi _api;
 
-    public TagsTools(ITagsApi api)
-    {
-        _api = api;
-    }
 
-    [McpServerTool, Description("List all tags or tags for a collection")]
-    public Task<ItemsResponse<TagInfo>> ListAsync(int? collectionId = null)
+    [McpServerTool(Destructive = false, Idempotent = true, ReadOnly = true,
+        Title = "List Tags"),
+     Description("List all tags or tags for a collection")]
+    public Task<ItemsResponse<TagInfo>> ListTagsAsync(int? collectionId = null)
         => collectionId is null
-            ? _api.ListTagsAsync()
-            : _api.ListTagsForCollectionAsync(collectionId.Value);
+            ? Api.ListAsync()
+            : Api.ListForCollectionAsync(collectionId.Value);
 
-    [McpServerTool, Description("Rename a tag")]
-    public Task<SuccessResponse> RenameAsync(string oldTag, string newTag, int? collectionId = null)
-        => RenameManyAsync([ oldTag ], newTag, collectionId);
+    [McpServerTool(Idempotent = true, Title = "Rename Tag"),
+     Description("Rename a tag")]
+    public Task<SuccessResponse> RenameTagAsync(string oldTag, string newTag, int? collectionId = null)
+        => RenameTagsAsync([ oldTag ], newTag, collectionId);
 
-    [McpServerTool, Description("Rename multiple tags")]
-    public Task<SuccessResponse> RenameManyAsync(IEnumerable<string> tags, string newTag, int? collectionId = null)
+    [McpServerTool(Idempotent = true, Title = "Rename Tags"),
+     Description("Rename multiple tags")]
+    public Task<SuccessResponse> RenameTagsAsync(IEnumerable<string> tags, string newTag, int? collectionId = null)
     {
         var payload = new TagRenameRequest { Replace = newTag, Tags = tags.ToList() };
         return collectionId is null
-            ? _api.RenameTagAsync(payload)
-            : _api.RenameTagForCollectionAsync(collectionId.Value, payload);
+            ? Api.UpdateAsync(payload)
+            : Api.UpdateForCollectionAsync(collectionId.Value, payload);
     }
 
-    [McpServerTool, Description("Delete a tag")]
-    public Task<SuccessResponse> DeleteAsync(string tag, int? collectionId = null)
-        => DeleteManyAsync([ tag ], collectionId);
+    [McpServerTool(Idempotent = true, Title = "Delete Tag"),
+     Description("Delete a tag")]
+    public Task<SuccessResponse> DeleteTagAsync(string tag, int? collectionId = null)
+        => DeleteTagsAsync([ tag ], collectionId);
 
-    [McpServerTool, Description("Delete multiple tags")]
-    public Task<SuccessResponse> DeleteManyAsync(IEnumerable<string> tags, int? collectionId = null)
+    [McpServerTool(Idempotent = true, Title = "Delete Tags"),
+     Description("Delete multiple tags")]
+    public Task<SuccessResponse> DeleteTagsAsync(IEnumerable<string> tags, int? collectionId = null)
     {
         var payload = new TagDeleteRequest { Tags = tags.ToList() };
         return collectionId is null
-            ? _api.DeleteTagsAsync(payload)
-            : _api.DeleteTagsForCollectionAsync(collectionId.Value, payload);
+            ? Api.DeleteAsync(payload)
+            : Api.DeleteForCollectionAsync(collectionId.Value, payload);
     }
 }

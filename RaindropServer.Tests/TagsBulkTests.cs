@@ -24,27 +24,27 @@ public class TagsBulkTests : TestBase
             new Raindrop { Link = "https://example.com/tags-bulk1", Title = "Tags Bulk One", Tags = ["TagBulkOne"] },
             new Raindrop { Link = "https://example.com/tags-bulk2", Title = "Tags Bulk Two", Tags = ["TagBulkTwo"] }
         };
-        var created = await raindrops.CreateManyAsync(0, items);
+        var created = await raindrops.CreateBookmarksAsync(0, items);
         var ids = created.Items.Select(r => r.Id).ToList();
         try
         {
             // allow indexing before listing
             await Task.Delay(5000);
-            await tags.RenameManyAsync(["TagBulkOne", "TagBulkTwo"], "TagBulkRenamed");
+            await tags.RenameTagsAsync(["TagBulkOne", "TagBulkTwo"], "TagBulkRenamed");
 
             await Task.Delay(5000);
-            var list = await tags.ListAsync();
+            var list = await tags.ListTagsAsync();
             Assert.Contains(list.Items, t => t.Id == "TagBulkRenamed");
 
-            await tags.DeleteManyAsync(["TagBulkRenamed"]);
+            await tags.DeleteTagsAsync(["TagBulkRenamed"]);
             await Task.Delay(5000);
-            var finalList = await tags.ListAsync();
+            var finalList = await tags.ListTagsAsync();
             Assert.DoesNotContain(finalList.Items, t => t.Id == "TagBulkRenamed");
         }
         finally
         {
             foreach (var id in ids)
-                await raindrops.DeleteAsync(id);
+                await raindrops.DeleteBookmarkAsync(id);
         }
     }
 }

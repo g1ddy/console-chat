@@ -5,53 +5,55 @@ using RaindropServer.Common;
 namespace RaindropServer.Highlights;
 
 [McpServerToolType]
-public class HighlightsTools
+public class HighlightsTools(IHighlightsApi api) : RaindropToolBase<IHighlightsApi>(api)
 {
-    private readonly IHighlightsApi _api;
+    [McpServerTool(Destructive = false, Idempotent = true, ReadOnly = true,
+        Title = "List Highlights"),
+     Description("List all highlights")]
+    public Task<ItemsResponse<Highlight>> ListHighlightsAsync(int? page = null, int? perPage = null) =>
+        Api.ListAsync(page, perPage);
 
-    public HighlightsTools(IHighlightsApi api)
+    [McpServerTool(Destructive = false, Idempotent = true, ReadOnly = true,
+        Title = "List Highlights By Collection"),
+     Description("List highlights in a collection")]
+    public Task<ItemsResponse<Highlight>> ListHighlightsByCollectionAsync(int collectionId, int? page = null, int? perPage = null) =>
+        Api.ListByCollectionAsync(collectionId, page, perPage);
+
+    [McpServerTool(Destructive = false, Idempotent = true, ReadOnly = true,
+        Title = "Get Bookmark Highlights"),
+     Description("Get highlights for a bookmark")]
+    public Task<ItemResponse<RaindropHighlights>> GetBookmarkHighlightsAsync(long raindropId) => Api.GetAsync(raindropId);
+
+    [McpServerTool(Title = "Create Highlight"),
+     Description("Create a highlight for a bookmark")]
+    public Task<ItemResponse<HighlightBulkUpdateRequest>> CreateHighlightAsync(long raindropId, string text, string? color = null, string? note = null)
     {
-        _api = api;
-    }
-
-    [McpServerTool, Description("List all highlights")]
-    public Task<ItemsResponse<Highlight>> ListAsync(int? page = null, int? perPage = null) =>
-        _api.ListHighlightsAsync(page, perPage);
-
-    [McpServerTool, Description("List highlights in a collection")]
-    public Task<ItemsResponse<Highlight>> ListByCollectionAsync(int collectionId, int? page = null, int? perPage = null) =>
-        _api.ListHighlightsByCollectionAsync(collectionId, page, perPage);
-
-    [McpServerTool, Description("Get highlights for a bookmark")]
-    public Task<ItemResponse<RaindropHighlights>> GetAsync(long raindropId) => _api.GetHighlightsAsync(raindropId);
-
-    [McpServerTool, Description("Create a highlight for a bookmark")]
-    public Task<ItemResponse<HighlightsBulkUpdateRequest>> CreateAsync(long raindropId, string text, string? color = null, string? note = null)
-    {
-        var payload = new HighlightsBulkUpdateRequest
+        var payload = new HighlightBulkUpdateRequest
         {
-            Highlights = [ new HighlightsBulkUpdate { Text = text, Color = color, Note = note } ]
+            Highlights = [ new HighlightBulkUpdate { Text = text, Color = color, Note = note } ]
         };
-        return _api.UpdateHighlightsAsync(raindropId, payload);
+        return Api.UpdateAsync(raindropId, payload);
     }
 
-    [McpServerTool, Description("Update an existing highlight")]
-    public Task<ItemResponse<HighlightsBulkUpdateRequest>> UpdateAsync(long raindropId, string highlightId, string? text = null, string? color = null, string? note = null)
+    [McpServerTool(Idempotent = true, Title = "Update Highlight"),
+     Description("Update an existing highlight")]
+    public Task<ItemResponse<HighlightBulkUpdateRequest>> UpdateHighlightAsync(long raindropId, string highlightId, string? text = null, string? color = null, string? note = null)
     {
-        var payload = new HighlightsBulkUpdateRequest
+        var payload = new HighlightBulkUpdateRequest
         {
-            Highlights = [ new HighlightsBulkUpdate { Id = highlightId, Text = text, Color = color, Note = note } ]
+            Highlights = [ new HighlightBulkUpdate { Id = highlightId, Text = text, Color = color, Note = note } ]
         };
-        return _api.UpdateHighlightsAsync(raindropId, payload);
+        return Api.UpdateAsync(raindropId, payload);
     }
 
-    [McpServerTool, Description("Remove a highlight by sending an empty text for that id")]
-    public Task<ItemResponse<HighlightsBulkUpdateRequest>> DeleteAsync(long raindropId, string highlightId)
+    [McpServerTool(Idempotent = true, Title = "Delete Highlight"),
+     Description("Remove a highlight by sending an empty text for that id")]
+    public Task<ItemResponse<HighlightBulkUpdateRequest>> DeleteHighlightAsync(long raindropId, string highlightId)
     {
-        var payload = new HighlightsBulkUpdateRequest
+        var payload = new HighlightBulkUpdateRequest
         {
-            Highlights = [ new HighlightsBulkUpdate { Id = highlightId, Text = string.Empty } ]
+            Highlights = [ new HighlightBulkUpdate { Id = highlightId, Text = string.Empty } ]
         };
-        return _api.UpdateHighlightsAsync(raindropId, payload);
-    }
+        return Api.UpdateAsync(raindropId, payload);
+}
 }

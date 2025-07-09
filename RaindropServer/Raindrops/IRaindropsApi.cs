@@ -3,27 +3,27 @@ using RaindropServer.Common;
 
 namespace RaindropServer.Raindrops;
 
-public interface IRaindropsApi
+public interface IRaindropsApi : ICommonApi<Raindrop, long>
 {
     [Post("/raindrop")]
-    Task<ItemResponse<Raindrop>> CreateRaindropAsync([Body] Raindrop raindrop);
+    new Task<ItemResponse<Raindrop>> CreateAsync([Body] Raindrop raindrop);
 
     [Get("/raindrop/{id}")]
-    Task<ItemResponse<Raindrop>> GetRaindropAsync(long id);
+    new Task<ItemResponse<Raindrop>> GetAsync(long id);
 
     [Put("/raindrop/{id}")]
-    Task<ItemResponse<Raindrop>> UpdateRaindropAsync(long id, [Body] Raindrop raindrop);
+    new Task<ItemResponse<Raindrop>> UpdateAsync(long id, [Body] Raindrop raindrop);
 
     [Delete("/raindrop/{id}")]
-    Task<SuccessResponse> DeleteRaindropAsync(long id);
+    new Task<SuccessResponse> DeleteAsync(long id);
 
     [Get("/raindrops/{collectionId}")]
-    Task<ItemsResponse<Raindrop>> GetRaindropsAsync(int collectionId, string? search = null);
+    Task<ItemsResponse<Raindrop>> ListAsync(int collectionId, string? search = null);
 
     [Post("/raindrops")]
-    Task<ItemsResponse<Raindrop>> CreateRaindropsAsync([Body] RaindropsCreateMany payload);
+    Task<ItemsResponse<Raindrop>> CreateManyAsync([Body] RaindropCreateManyRequest payload);
 
     [Put("/raindrops/{collectionId}")]
-    Task<SuccessResponse> UpdateRaindropsAsync(int collectionId, [Body] RaindropsBulkUpdate update,
+    Task<SuccessResponse> UpdateManyAsync(int collectionId, [Body] RaindropBulkUpdate update,
         bool? nested = null, string? search = null);
 }

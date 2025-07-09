@@ -5,15 +5,11 @@ using RaindropServer.Common;
 namespace RaindropServer.User;
 
 [McpServerToolType]
-public class UserTools
+public class UserTools(IUserApi api) : RaindropToolBase<IUserApi>(api)
 {
-    private readonly IUserApi _api;
 
-    public UserTools(IUserApi api)
-    {
-        _api = api;
-    }
-
-    [McpServerTool, Description("Get current user information")]
-    public Task<ItemResponse<UserInfo>> GetAsync() => _api.GetUserAsync();
+    [McpServerTool(Destructive = false, Idempotent = true, ReadOnly = true,
+        Title = "Get User Info"),
+     Description("Get current user information")]
+    public Task<ItemResponse<UserInfo>> GetUserInfoAsync() => Api.GetAsync();
 }

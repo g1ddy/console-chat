@@ -3,23 +3,23 @@ using RaindropServer.Common;
 
 namespace RaindropServer.Collections;
 
-public interface ICollectionsApi
+public interface ICollectionsApi : ICommonApi<Collection, int>
 {
     [Get("/collections")]
-    Task<ItemsResponse<Collection>> ListCollectionsAsync();
+    Task<ItemsResponse<Collection>> ListAsync();
 
     [Get("/collection/{id}")]
-    Task<ItemResponse<Collection>> GetCollectionAsync(int id);
+    new Task<ItemResponse<Collection>> GetAsync(int id);
 
     [Post("/collection")]
-    Task<ItemResponse<Collection>> CreateCollectionAsync([Body] Collection collection);
+    new Task<ItemResponse<Collection>> CreateAsync([Body] Collection collection);
 
     [Put("/collection/{id}")]
-    Task<ItemResponse<Collection>> UpdateCollectionAsync(int id, [Body] Collection collection);
+    new Task<ItemResponse<Collection>> UpdateAsync(int id, [Body] Collection collection);
 
     [Delete("/collection/{id}")]
-    Task<SuccessResponse> DeleteCollectionAsync(int id);
+    new Task<SuccessResponse> DeleteAsync(int id);
 
     [Get("/collections/childrens")]
-    Task<ItemsResponse<Collection>> ListChildCollectionsAsync();
+    Task<ItemsResponse<Collection>> ListChildrenAsync();
 }

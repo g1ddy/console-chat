@@ -18,26 +18,26 @@ public class RaindropsBulkTests : TestBase
             new Raindrop { Link = "https://example.com/bulk1", Title = "Bulk Endpoints One" },
             new Raindrop { Link = "https://example.com/bulk2", Title = "Bulk Endpoints Two" }
         };
-        var created = await tool.CreateManyAsync(0, items);
+        var created = await tool.CreateBookmarksAsync(0, items);
         var ids = created.Items.Select(r => r.Id).ToList();
         try
         {
             // add a delay before searching
             await Task.Delay(5000);
-            var list = await tool.ListAsync(0, "Bulk Endpoints");
+            var list = await tool.ListBookmarksAsync(0, "Bulk Endpoints");
             Assert.True(ids.All(id => list.Items.Any(r => r.Id == id)));
 
-            var update = new RaindropsBulkUpdate
+            var update = new RaindropBulkUpdate
             {
                 Ids = ids,
                 Important = true,
                 Tags = ["bulk-test"]
             };
-            await tool.UpdateManyAsync(0, update);
+            await tool.UpdateBookmarksAsync(0, update);
 
             // add a delay before searching
             await Task.Delay(5000);
-            var updated = await tool.ListAsync(0, "Bulk Endpoints");
+            var updated = await tool.ListBookmarksAsync(0, "Bulk Endpoints");
             foreach (var id in ids)
             {
                 var item = updated.Items.First(r => r.Id == id);
@@ -47,7 +47,7 @@ public class RaindropsBulkTests : TestBase
         finally
         {
             foreach (var id in ids)
-                await tool.DeleteAsync(id);
+                await tool.DeleteBookmarkAsync(id);
         }
     }
 }
