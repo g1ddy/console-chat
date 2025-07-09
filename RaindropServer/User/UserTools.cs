@@ -9,5 +9,5 @@ public class UserTools(IUserApi api) : RaindropToolBase<IUserApi>(api)
 {
 
     [McpServerTool, Description("Get current user information")]
-    public Task<ItemResponse<UserInfo>> GetAsync() => Api.GetAsync();
+    public Task<ItemResponse<UserInfo>> GetUserInfoAsync() => Api.GetAsync();
 }

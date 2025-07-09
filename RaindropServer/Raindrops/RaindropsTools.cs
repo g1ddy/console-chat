@@ -11,7 +11,7 @@ public class RaindropsTools(IRaindropsApi api) :
 {
 
     [McpServerTool, Description("Create a new bookmark")]
-    public Task<ItemResponse<Raindrop>> CreateAsync(int? collectionId, string url, string? title = null,
+    public Task<ItemResponse<Raindrop>> CreateBookmarkAsync(int? collectionId, string url, string? title = null,
         string? excerpt = null, IEnumerable<string>? tags = null, bool? important = null)
     {
         var payload = new Raindrop
@@ -27,10 +27,10 @@ public class RaindropsTools(IRaindropsApi api) :
     }
 
     [McpServerTool, Description("Get a bookmark by id")]
-    public Task<ItemResponse<Raindrop>> GetAsync(long id) => Api.GetAsync(id);
+    public Task<ItemResponse<Raindrop>> GetBookmarkAsync(long id) => Api.GetAsync(id);
 
     [McpServerTool, Description("Update an existing bookmark")]
-    public Task<ItemResponse<Raindrop>> UpdateAsync(long id, string? title = null, string? excerpt = null,
+    public Task<ItemResponse<Raindrop>> UpdateBookmarkAsync(long id, string? title = null, string? excerpt = null,
         string? link = null, IEnumerable<string>? tags = null, bool? important = null,
         int? collectionId = null)
     {
@@ -47,15 +47,15 @@ public class RaindropsTools(IRaindropsApi api) :
     }
 
     [McpServerTool, Description("Delete a bookmark by id")]
-    public Task<SuccessResponse> DeleteAsync(long id) => Api.DeleteAsync(id);
+    public Task<SuccessResponse> DeleteBookmarkAsync(long id) => Api.DeleteAsync(id);
 
 
     [McpServerTool, Description("List bookmarks in a collection. Can be filtered by an optional search query.")]
-    public Task<ItemsResponse<Raindrop>> ListAsync(int collectionId, string? search = null)
+    public Task<ItemsResponse<Raindrop>> ListBookmarksAsync(int collectionId, string? search = null)
         => Api.ListAsync(collectionId, search);
 
     [McpServerTool, Description("Create multiple bookmarks")]
-    public Task<ItemsResponse<Raindrop>> CreateManyAsync(int collectionId, IEnumerable<Raindrop> raindrops)
+    public Task<ItemsResponse<Raindrop>> CreateBookmarksAsync(int collectionId, IEnumerable<Raindrop> raindrops)
     {
         var payload = new RaindropCreateManyRequest { CollectionId = collectionId, Items = raindrops.ToList() };
         return Api.CreateManyAsync(payload);
@@ -63,6 +63,6 @@ public class RaindropsTools(IRaindropsApi api) :
 
 
     [McpServerTool, Description("Bulk update bookmarks in a collection")]
-    public Task<SuccessResponse> UpdateManyAsync(int collectionId, RaindropBulkUpdate update, bool? nested = null, string? search = null)
+    public Task<SuccessResponse> UpdateBookmarksAsync(int collectionId, RaindropBulkUpdate update, bool? nested = null, string? search = null)
         => Api.UpdateManyAsync(collectionId, update, nested, search);
 }
