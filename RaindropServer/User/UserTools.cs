@@ -8,6 +8,8 @@ namespace RaindropServer.User;
 public class UserTools(IUserApi api) : RaindropToolBase<IUserApi>(api)
 {
 
-    [McpServerTool, Description("Get current user information")]
+    [McpServerTool(Destructive = false, Idempotent = true, ReadOnly = true,
+        Title = "Get User Info"),
+     Description("Get current user information")]
     public Task<ItemResponse<UserInfo>> GetUserInfoAsync() => Api.GetAsync();
 }
