@@ -12,17 +12,17 @@ public class RaindropsTools(IRaindropsApi api) :
 
     [McpServerTool(Title = "Create Bookmark"),
      Description("Create a new bookmark")]
-    public Task<ItemResponse<Raindrop>> CreateBookmarkAsync(int? collectionId, string url, string? title = null,
-        string? excerpt = null, IEnumerable<string>? tags = null, bool? important = null)
+    public Task<ItemResponse<Raindrop>> CreateBookmarkAsync(RaindropCreateRequest request)
     {
         var payload = new Raindrop
         {
-            Link = url,
-            Title = title,
-            Excerpt = excerpt,
-            Tags = tags?.ToList(),
-            Important = important,
-            CollectionId = collectionId
+            Link = request.Link,
+            Title = request.Title,
+            Excerpt = request.Excerpt,
+            Note = request.Note,
+            Tags = request.Tags?.ToList(),
+            Important = request.Important,
+            CollectionId = request.CollectionId
         };
         return Api.CreateAsync(payload);
     }
@@ -34,18 +34,17 @@ public class RaindropsTools(IRaindropsApi api) :
 
     [McpServerTool(Idempotent = true, Title = "Update Bookmark"),
      Description("Update an existing bookmark")]
-    public Task<ItemResponse<Raindrop>> UpdateBookmarkAsync(long id, string? title = null, string? excerpt = null,
-        string? link = null, IEnumerable<string>? tags = null, bool? important = null,
-        int? collectionId = null)
+    public Task<ItemResponse<Raindrop>> UpdateBookmarkAsync(long id, RaindropUpdateRequest request)
     {
         var payload = new Raindrop
         {
-            Link = link,
-            Title = title,
-            Excerpt = excerpt,
-            Tags = tags?.ToList(),
-            Important = important,
-            CollectionId = collectionId
+            Link = request.Link,
+            Title = request.Title,
+            Excerpt = request.Excerpt,
+            Note = request.Note,
+            Tags = request.Tags?.ToList(),
+            Important = request.Important,
+            CollectionId = request.CollectionId
         };
         return Api.UpdateAsync(id, payload);
     }

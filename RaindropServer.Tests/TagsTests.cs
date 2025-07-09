@@ -16,7 +16,13 @@ public class TagsTests : TestBase
     public async Task Crud()
     {
         var raindropsTool = Provider.GetRequiredService<RaindropsTools>();
-        var createResponse = await raindropsTool.CreateBookmarkAsync(null, "https://example.com/tag", "Tags Crud - Raindrop", tags: [ "TagRenameTestOne" ]);
+        var createResponse = await raindropsTool.CreateBookmarkAsync(new RaindropCreateRequest
+        {
+            Link = "https://example.com/tag",
+            Title = "Tags Crud - Raindrop",
+            Tags = [ "TagRenameTestOne" ],
+            Note = "tag"
+        });
         long raindropId = createResponse.Item.Id;
         var tagsTool = Provider.GetRequiredService<TagsTools>();
         try
@@ -36,7 +42,13 @@ public class TagsTests : TestBase
     public async Task CrudForCollection()
     {
         var raindropsTool = Provider.GetRequiredService<RaindropsTools>();
-        var createResponse = await raindropsTool.CreateBookmarkAsync(null, "https://example.com/tag/collection", "Tags CrudForCollection - Raindrop", tags: [ "TagCollectionTestOne" ]);
+        var createResponse = await raindropsTool.CreateBookmarkAsync(new RaindropCreateRequest
+        {
+            Link = "https://example.com/tag/collection",
+            Title = "Tags CrudForCollection - Raindrop",
+            Tags = [ "TagCollectionTestOne" ],
+            Note = "tag-col"
+        });
         long raindropId = createResponse.Item.Id;
         var tagsTool = Provider.GetRequiredService<TagsTools>();
         try

@@ -25,16 +25,30 @@ public class IntegrationTests : TestBase
         int childCollectionId = (await collections.CreateCollectionAsync(new Collection { Title = "Integration Child Collection", Parent = new IdRef { Id = rootCollectionId } })).Item.Id;
 
         var raindropsTool = Provider.GetRequiredService<RaindropsTools>();
-        long firstRaindropId = (await raindropsTool.CreateBookmarkAsync(rootCollectionId, "https://example.com/1", "Integration Raindrop One", tags: ["TagOne"])).Item.Id;
-        long secondRaindropId = (await raindropsTool.CreateBookmarkAsync(rootCollectionId, "https://example.com/2", "Integration Raindrop Two", tags: ["TagTwo"])).Item.Id;
+        long firstRaindropId = (await raindropsTool.CreateBookmarkAsync(new RaindropCreateRequest
+        {
+            CollectionId = rootCollectionId,
+            Link = "https://example.com/1",
+            Title = "Integration Raindrop One",
+            Tags = ["TagOne"],
+            Note = "first"
+        })).Item.Id;
+        long secondRaindropId = (await raindropsTool.CreateBookmarkAsync(new RaindropCreateRequest
+        {
+            CollectionId = rootCollectionId,
+            Link = "https://example.com/2",
+            Title = "Integration Raindrop Two",
+            Tags = ["TagTwo"],
+            Note = "second"
+        })).Item.Id;
 
         var highlights = Provider.GetRequiredService<HighlightsTools>();
         var tags = Provider.GetRequiredService<TagsTools>();
         try
         {
-            var highlight = await highlights.CreateHighlightAsync(firstRaindropId, "Integration Highlight");
+            var highlight = await highlights.CreateHighlightAsync(firstRaindropId, new HighlightCreateRequest { Text = "Integration Highlight", Note = "int" });
             string highlightId = highlight.Item.Highlights.Last().Id!;
-            await raindropsTool.UpdateBookmarkAsync(secondRaindropId, link: "https://example.com/updated", collectionId: childCollectionId);
+            await raindropsTool.UpdateBookmarkAsync(secondRaindropId, new RaindropUpdateRequest { Link = "https://example.com/updated", CollectionId = childCollectionId });
             await tags.RenameTagAsync("TagTwo", "TagTwoRenamed");
             var tagList = await tags.ListTagsAsync();
             Assert.Contains(tagList.Items, t => t.Id == "TagTwoRenamed");
