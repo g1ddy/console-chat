@@ -65,14 +65,7 @@ Start either server with `dotnet run --project <ServerName>`:
 
 The example above launches `McpServer`. Replace the project name with `RaindropServer` to access bookmark tools. `McpServer` registers simple utilities like `CurrentTime`, `ToUpper`, and `Add`.
 
-Recent additions provide more Raindrop management helpers:
-
-- **Bulk bookmark deletion** – remove multiple items at once by moving them to the Trash.
-- **Tag merging** – consolidate duplicate tags into a single name.
-- **Trash cleanup** – permanently empty the Trash collection.
-- **Filter retrieval** – fetch available tags and other filter metrics for a collection.
-
-`RaindropServer` groups these operations into tool classes that mirror the Raindrop.io REST API. Tools exist for collections, bookmarks, tags, highlights, filters and user info, making it possible to fully manage your account from chat.
+`RaindropServer` groups its tools by Raindrop.io resource – collections, bookmarks, tags, filters, highlights and user info.  Core features include bulk deletion, tag merging, trash cleanup and retrieving filter metadata.  Each API call maps to a typed request record so that payloads such as `RaindropCreateRequest` and `TagRenameRequest` are strongly typed.
 
 The chat client itself exposes a few rich rendering helpers implemented as Semantic Kernel functions:
 

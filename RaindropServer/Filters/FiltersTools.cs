@@ -15,6 +15,4 @@ public class FiltersTools(IFiltersApi api) : RaindropToolBase<IFiltersApi>(api)
         [Description("Sort tags by 'count' (default) or '_id' (name)." )] string? tagsSort = null,
         [Description("A search query to filter the bookmarks." )] string? search = null)
         => Api.GetAsync(collectionId, tagsSort, search);
-
-    // Example: await GetAvailableFiltersAsync(0);
 }

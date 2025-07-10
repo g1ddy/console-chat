@@ -34,7 +34,6 @@ public Task<SuccessResponse> RenameTagsAsync(
     [Description("The name of the tag that the source tags will be merged into.")] string newTag,
     [Description("Collection ID if scoped")] int? collectionId = null)
 {
-    // Example: await RenameTagsAsync(["old", "older"], "new-tag");
         var payload = new TagRenameRequest { Replace = newTag, Tags = tags.ToList() };
         return collectionId is null
             ? Api.UpdateAsync(payload)

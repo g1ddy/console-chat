@@ -35,7 +35,6 @@ public class CollectionsTools(ICollectionsApi api) :
      Description("Removes a collection. Bookmarks within it are moved to the Trash.")]
     public Task<SuccessResponse> DeleteCollectionAsync([Description("ID of the collection to delete")] int id)
         => Api.DeleteAsync(id);
-    // Example: await DeleteCollectionAsync(123);
 
     [McpServerTool(Destructive = false, Idempotent = true, ReadOnly = true,
         Title = "List Child Collections"),
