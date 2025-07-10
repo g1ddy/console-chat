@@ -6,6 +6,7 @@ using System.Net.Http.Headers;
 using RaindropServer.Collections;
 using RaindropServer.Raindrops;
 using RaindropServer.Highlights;
+using RaindropServer.Filters;
 using RaindropServer.Tags;
 using RaindropServer.User;
 
@@ -54,6 +55,7 @@ public static class RaindropServiceCollectionExtensions
         services.AddRefitClient<ICollectionsApi>(settings).ConfigureHttpClient((sp, client) => Configure(client, sp));
         services.AddRefitClient<IRaindropsApi>(settings).ConfigureHttpClient((sp, client) => Configure(client, sp));
         services.AddRefitClient<IHighlightsApi>(settings).ConfigureHttpClient((sp, client) => Configure(client, sp));
+        services.AddRefitClient<IFiltersApi>(settings).ConfigureHttpClient((sp, client) => Configure(client, sp));
         services.AddRefitClient<ITagsApi>(settings).ConfigureHttpClient((sp, client) => Configure(client, sp));
         services.AddRefitClient<IUserApi>(settings).ConfigureHttpClient((sp, client) => Configure(client, sp));
 
