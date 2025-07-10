@@ -5,6 +5,7 @@ namespace RaindropServer.Raindrops;
 /// <summary>
 /// Request payload for updating an existing bookmark.
 /// </summary>
+[Description("Request payload for updating an existing bookmark")]
 public record RaindropUpdateRequest
 {
     [Description("The new URL for the bookmark.")]

@@ -5,6 +5,7 @@ namespace RaindropServer.Highlights;
 /// <summary>
 /// Request payload for creating a new highlight.
 /// </summary>
+[Description("Request payload for creating a new highlight")]
 public record HighlightCreateRequest
 {
     [Description("The text content of the highlight. This field is required.")]

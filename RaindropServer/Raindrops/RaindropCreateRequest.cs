@@ -5,6 +5,7 @@ namespace RaindropServer.Raindrops;
 /// <summary>
 /// Request payload for creating a new bookmark.
 /// </summary>
+[Description("Request payload for creating a new bookmark")]
 public record RaindropCreateRequest
 {
     [Description("The URL of the bookmark. This field is required.")]

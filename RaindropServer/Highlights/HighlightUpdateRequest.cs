@@ -5,6 +5,7 @@ namespace RaindropServer.Highlights;
 /// <summary>
 /// Request payload for updating an existing highlight.
 /// </summary>
+[Description("Request payload for updating an existing highlight")]
 public record HighlightUpdateRequest
 {
     [Description("The unique identifier of the highlight to update. This field is required.")]

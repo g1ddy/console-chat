@@ -1,3 +1,4 @@
+using System.ComponentModel;
 using System.Text.Json.Serialization;
 
 namespace RaindropServer.Raindrops;
@@ -5,10 +6,13 @@ namespace RaindropServer.Raindrops;
 /// <summary>
 /// Request payload for creating multiple bookmarks.
 /// </summary>
+[Description("Create many bookmarks request")]
 public record RaindropCreateManyRequest
 {
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    [Description("Target collection ID for the new bookmarks")]
     public int? CollectionId { get; init; }
 
+    [Description("Bookmarks to create")]
     public List<Raindrop> Items { get; init; } = new();
 }
