@@ -10,34 +10,34 @@ public class CollectionsTools(ICollectionsApi api) :
 {
     [McpServerTool(Destructive = false, Idempotent = true, ReadOnly = true,
         Title = "List Collections"),
-     Description("List all collections for the current user")]
+     Description("Retrieves all top-level (root) collections.")]
     public Task<ItemsResponse<Collection>> ListCollectionsAsync() => Api.ListAsync();
 
     [McpServerTool(Destructive = false, Idempotent = true, ReadOnly = true,
         Title = "Get Collection"),
-     Description("Get details for a collection by id")]
+     Description("Retrieves a single collection by its unique ID.")]
     public Task<ItemResponse<Collection>> GetCollectionAsync([Description("The ID of the collection to retrieve")] int id)
         => Api.GetAsync(id);
 
     [McpServerTool(Title = "Create Collection"),
-     Description("Create a new collection")]
+     Description("Creates a new collection.")]
     public Task<ItemResponse<Collection>> CreateCollectionAsync([Description("The collection details to create")] Collection collection)
         => Api.CreateAsync(collection);
 
     [McpServerTool(Idempotent = true, Title = "Update Collection"),
-     Description("Update an existing collection")]
+     Description("Updates an existing collection.")]
     public Task<ItemResponse<Collection>> UpdateCollectionAsync(
         [Description("ID of the collection to update")] int id,
         [Description("Updated collection data")] Collection collection)
         => Api.UpdateAsync(id, collection);
 
     [McpServerTool(Idempotent = true, Title = "Delete Collection"),
-     Description("Delete a collection")]
+     Description("Removes a collection. Bookmarks within it are moved to the Trash.")]
     public Task<SuccessResponse> DeleteCollectionAsync([Description("ID of the collection to delete")] int id)
         => Api.DeleteAsync(id);
 
     [McpServerTool(Destructive = false, Idempotent = true, ReadOnly = true,
         Title = "List Child Collections"),
-     Description("List nested child collections")]
+     Description("Retrieves all nested (child) collections.")]
     public Task<ItemsResponse<Collection>> ListChildCollectionsAsync() => Api.ListChildrenAsync();
 }

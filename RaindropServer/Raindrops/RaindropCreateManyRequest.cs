@@ -6,9 +6,6 @@ namespace RaindropServer.Raindrops;
 /// <summary>
 /// Request payload for creating multiple bookmarks.
 /// </summary>
-/// <summary>
-/// Request payload for creating multiple bookmarks.
-/// </summary>
 [Description("Create many bookmarks request")]
 public record RaindropCreateManyRequest
 {

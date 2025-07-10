@@ -13,25 +13,25 @@ public class TagsTools(ITagsApi api) : RaindropToolBase<ITagsApi>(api)
 
     [McpServerTool(Destructive = false, Idempotent = true, ReadOnly = true,
         Title = "List Tags"),
-     Description("List all tags or tags for a collection")]
-    public Task<ItemsResponse<TagInfo>> ListTagsAsync([Description("Collection ID or null for all")] int? collectionId = null)
+     Description("Retrieves all tags, optionally filtered by a collection.")]
+    public Task<ItemsResponse<TagInfo>> ListTagsAsync([Description("Optional collection ID to filter tags by.")] int? collectionId = null)
         => collectionId is null
             ? Api.ListAsync()
             : Api.ListForCollectionAsync(collectionId.Value);
 
     [McpServerTool(Idempotent = true, Title = "Rename Tag"),
-     Description("Rename a tag")]
+     Description("Renames a tag across all bookmarks.")]
     public Task<SuccessResponse> RenameTagAsync(
-        [Description("Existing tag name")] string oldTag,
-        [Description("New tag name")] string newTag,
+        [Description("The current name of the tag to rename.")] string oldTag,
+        [Description("The new name for the tag.")] string newTag,
         [Description("Collection ID if scoped")] int? collectionId = null)
         => RenameTagsAsync([ oldTag ], newTag, collectionId);
 
     [McpServerTool(Idempotent = true, Title = "Rename Tags"),
-     Description("Rename multiple tags")]
+     Description("Merges multiple tags into a single destination tag.")]
     public Task<SuccessResponse> RenameTagsAsync(
-        [Description("Tags to rename")] IEnumerable<string> tags,
-        [Description("Replacement tag name")] string newTag,
+        [Description("A collection of tag names to be merged.")] IEnumerable<string> tags,
+        [Description("The name of the tag that the source tags will be merged into.")] string newTag,
         [Description("Collection ID if scoped")] int? collectionId = null)
     {
         var payload = new TagRenameRequest { Replace = newTag, Tags = tags.ToList() };
@@ -41,16 +41,16 @@ public class TagsTools(ITagsApi api) : RaindropToolBase<ITagsApi>(api)
     }
 
     [McpServerTool(Idempotent = true, Title = "Delete Tag"),
-     Description("Delete a tag")]
+     Description("Removes a tag from all bookmarks.")]
     public Task<SuccessResponse> DeleteTagAsync(
-        [Description("Tag to delete")] string tag,
+        [Description("The name of the tag to remove.")] string tag,
         [Description("Collection ID if scoped")] int? collectionId = null)
         => DeleteTagsAsync([ tag ], collectionId);
 
     [McpServerTool(Idempotent = true, Title = "Delete Tags"),
-     Description("Delete multiple tags")]
+     Description("Removes one or more tags from all bookmarks.")]
     public Task<SuccessResponse> DeleteTagsAsync(
-        [Description("Tags to delete")] IEnumerable<string> tags,
+        [Description("A collection of tag names to be removed.")] IEnumerable<string> tags,
         [Description("Collection ID if scoped")] int? collectionId = null)
     {
         var payload = new TagDeleteRequest { Tags = tags.ToList() };
