@@ -18,6 +18,9 @@ public record Raindrop
     public string? Excerpt { get; init; }
 
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string? Note { get; init; }
+
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public List<string>? Tags { get; init; }
 
     public bool? Important { get; init; }

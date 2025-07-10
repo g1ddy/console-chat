@@ -21,13 +21,19 @@ public class HighlightsTests : TestBase
         var collections = Provider.GetRequiredService<CollectionsTools>();
         int collectionId = (await collections.CreateCollectionAsync(new Collection { Title = "Highlights Crud - Collection" })).Item.Id;
         var raindropService = Provider.GetRequiredService<RaindropsTools>();
-        long raindropId = (await raindropService.CreateBookmarkAsync(collectionId, "https://example.com/hl", "Highlights Crud - Raindrop")).Item.Id;
+        long raindropId = (await raindropService.CreateBookmarkAsync(new RaindropCreateRequest
+        {
+            CollectionId = collectionId,
+            Link = "https://example.com/hl",
+            Title = "Highlights Crud - Raindrop",
+            Note = "hl"
+        })).Item.Id;
         var highlights = Provider.GetRequiredService<HighlightsTools>();
         try
         {
-            var newHighlight = await highlights.CreateHighlightAsync(raindropId, "Highlights Crud - New");
+            var newHighlight = await highlights.CreateHighlightAsync(raindropId, new HighlightCreateRequest { Text = "Highlights Crud - New", Note = "note" });
             string highlightId = newHighlight.Item.Highlights.Last().Id!;
-            await highlights.UpdateHighlightAsync(raindropId, highlightId, text: "Highlights Crud - Updated");
+            await highlights.UpdateHighlightAsync(raindropId, new HighlightUpdateRequest { Id = highlightId, Text = "Highlights Crud - Updated", Note = "edited" });
             var listAll = await highlights.ListHighlightsAsync();
             Assert.True(listAll.Items.Count > 0);
             var listByCollection = await highlights.ListHighlightsByCollectionAsync(collectionId);

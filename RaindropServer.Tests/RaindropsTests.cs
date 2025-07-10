@@ -11,11 +11,17 @@ public class RaindropsTests : TestBase
     public async Task Crud()
     {
         var raindropsTool = Provider.GetRequiredService<RaindropsTools>();
-        var createResponse = await raindropsTool.CreateBookmarkAsync(null, "https://example.com", "Raindrops Crud - Create");
+        var createResponse = await raindropsTool.CreateBookmarkAsync(new RaindropCreateRequest
+        {
+            CollectionId = null,
+            Link = "https://example.com",
+            Title = "Raindrops Crud - Create",
+            Note = "note"
+        });
         long raindropId = createResponse.Item.Id;
         try
         {
-            await raindropsTool.UpdateBookmarkAsync(raindropId, title: "Raindrops Crud - Updated");
+            await raindropsTool.UpdateBookmarkAsync(raindropId, new RaindropUpdateRequest { Title = "Raindrops Crud - Updated" });
             await raindropsTool.UpdateBookmarksAsync(0, new RaindropBulkUpdate { Ids = [ raindropId ], Important = true });
             // add a delay before searching
             await Task.Delay(5000);

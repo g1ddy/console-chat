@@ -26,22 +26,22 @@ public class HighlightsTools(IHighlightsApi api) : RaindropToolBase<IHighlightsA
 
     [McpServerTool(Title = "Create Highlight"),
      Description("Create a highlight for a bookmark")]
-    public Task<ItemResponse<HighlightBulkUpdateRequest>> CreateHighlightAsync(long raindropId, string text, string? color = null, string? note = null)
+    public Task<ItemResponse<HighlightBulkUpdateRequest>> CreateHighlightAsync(long raindropId, HighlightCreateRequest request)
     {
         var payload = new HighlightBulkUpdateRequest
         {
-            Highlights = [ new HighlightBulkUpdate { Text = text, Color = color, Note = note } ]
+            Highlights = [ new HighlightBulkUpdate { Text = request.Text, Color = request.Color, Note = request.Note } ]
         };
         return Api.UpdateAsync(raindropId, payload);
     }
 
     [McpServerTool(Idempotent = true, Title = "Update Highlight"),
      Description("Update an existing highlight")]
-    public Task<ItemResponse<HighlightBulkUpdateRequest>> UpdateHighlightAsync(long raindropId, string highlightId, string? text = null, string? color = null, string? note = null)
+    public Task<ItemResponse<HighlightBulkUpdateRequest>> UpdateHighlightAsync(long raindropId, HighlightUpdateRequest request)
     {
         var payload = new HighlightBulkUpdateRequest
         {
-            Highlights = [ new HighlightBulkUpdate { Id = highlightId, Text = text, Color = color, Note = note } ]
+            Highlights = [ new HighlightBulkUpdate { Id = request.Id, Text = request.Text, Color = request.Color, Note = request.Note } ]
         };
         return Api.UpdateAsync(raindropId, payload);
     }
