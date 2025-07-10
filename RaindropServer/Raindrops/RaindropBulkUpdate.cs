@@ -6,6 +6,8 @@ namespace RaindropServer.Raindrops;
 
 /// <summary>
 /// Bulk update payload for modifying multiple bookmarks at once.
+/// Set <c>Collection.Id</c> to <c>-99</c> to move items to the Trash for
+/// bulk deletion.
 /// </summary>
 [Description("Bulk update payload for multiple bookmarks")]
 public record RaindropBulkUpdate

@@ -27,13 +27,13 @@ public class TagsTools(ITagsApi api) : RaindropToolBase<ITagsApi>(api)
         [Description("Collection ID if scoped")] int? collectionId = null)
         => RenameTagsAsync([ oldTag ], newTag, collectionId);
 
-    [McpServerTool(Idempotent = true, Title = "Rename Tags"),
-     Description("Merges multiple tags into a single destination tag.")]
-    public Task<SuccessResponse> RenameTagsAsync(
-        [Description("A collection of tag names to be merged.")] IEnumerable<string> tags,
-        [Description("The name of the tag that the source tags will be merged into.")] string newTag,
-        [Description("Collection ID if scoped")] int? collectionId = null)
-    {
+[McpServerTool(Idempotent = true, Title = "Rename Tags"),
+ Description("Merges multiple tags into a single destination tag.")]
+public Task<SuccessResponse> RenameTagsAsync(
+    [Description("A collection of tag names to be merged.")] IEnumerable<string> tags,
+    [Description("The name of the tag that the source tags will be merged into.")] string newTag,
+    [Description("Collection ID if scoped")] int? collectionId = null)
+{
         var payload = new TagRenameRequest { Replace = newTag, Tags = tags.ToList() };
         return collectionId is null
             ? Api.UpdateAsync(payload)
