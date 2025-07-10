@@ -41,6 +41,7 @@ public class RaindropsTools(IRaindropsApi api) :
     public Task<SuccessResponse> DeleteBookmarkAsync([
         Description("ID of the bookmark to delete")] long id)
         => Api.DeleteAsync(id);
+    // Example: await DeleteBookmarkAsync(42);
 
 
 [McpServerTool(Destructive = false, Idempotent = true, ReadOnly = true,
@@ -50,6 +51,7 @@ public class RaindropsTools(IRaindropsApi api) :
         [Description("The ID of the collection to retrieve bookmarks from. Use 0 for all, -1 for unsorted, -99 for trash.")] int collectionId,
         [Description("A search query to filter the bookmarks.")] string? search = null)
         => Api.ListAsync(collectionId, search);
+    // Example: await ListBookmarksAsync(-99) to inspect the Trash.
 
 [McpServerTool(Title = "Create Bookmarks"),
      Description("Creates multiple bookmarks in a single request.")]
@@ -70,4 +72,6 @@ public class RaindropsTools(IRaindropsApi api) :
         [Description("Apply to nested collections")] bool? nested = null,
         [Description("Optional search filter")] string? search = null)
         => Api.UpdateManyAsync(collectionId, update, nested, search);
+
+    // Move bookmarks to the Trash in bulk by setting update.Collection.Id to -99.
 }

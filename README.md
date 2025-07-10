@@ -8,7 +8,9 @@ This repository contains a console based chat client built with **Microsoft.Exte
 
 - **SemanticKernelChat** – Console application that hosts the chat client and automatically starts any configured MCP server.
 - **McpServer** – Example MCP server exposing a few utility tools.
+- **RaindropServer** – Optional MCP server for managing Raindrop.io bookmarks.
 - **ConsoleChat.Tests** – Unit tests covering the tool implementations and MCP integration.
+- **RaindropServer.Tests** – Tests focused on the Raindrop API wrappers.
 
 Both applications target **.NET 8** and are included in the `ConsoleChat.sln` solution file.
 
@@ -23,7 +25,9 @@ ConsoleChat.sln
 │   ├── Infrastructure/     # MCP helpers and DI extensions
 │   └── Helpers/            # provider utilities
 ├── McpServer/              # example MCP server with tools
-└── ConsoleChat.Tests/      # xUnit test project
+├── RaindropServer/         # server wrapping the Raindrop.io API
+├── ConsoleChat.Tests/      # xUnit test project
+└── RaindropServer.Tests/   # tests for the Raindrop server
 ```
 
 This layout keeps the chat client, tool server, and tests separated while still
@@ -48,13 +52,27 @@ Run the unit tests with:
 
 ## Running the MCP server
 
-The server can be started on its own and listens via standard input/output so that clients can connect using the MCP protocol:
+An MCP server can be started on its own and listens via standard input/output so that clients can connect using the protocol. Two servers are included:
+
+- `McpServer` – basic demo tools like echo and math helpers.
+- `RaindropServer` – wraps the Raindrop.io API for bookmark management.
+
+Start either server with `dotnet run --project <ServerName>`:
 
 ```bash
  dotnet run --project McpServer
 ```
 
-It registers all tools in the `McpServer` assembly. Example tools include `CurrentTime`, `ToUpper`, and `Add`.
+The example above launches `McpServer`. Replace the project name with `RaindropServer` to access bookmark tools. `McpServer` registers simple utilities like `CurrentTime`, `ToUpper`, and `Add`.
+
+Recent additions provide more Raindrop management helpers:
+
+- **Bulk bookmark deletion** – remove multiple items at once by moving them to the Trash.
+- **Tag merging** – consolidate duplicate tags into a single name.
+- **Trash cleanup** – permanently empty the Trash collection.
+- **Filter retrieval** – fetch available tags and other filter metrics for a collection.
+
+`RaindropServer` groups these operations into tool classes that mirror the Raindrop.io REST API. Tools exist for collections, bookmarks, tags, highlights, filters and user info, making it possible to fully manage your account from chat.
 
 The chat client itself exposes a few rich rendering helpers implemented as Semantic Kernel functions:
 
@@ -161,6 +179,8 @@ Key entry points include:
 - `Program.cs` in **SemanticKernelChat** – wires up the command-line host and dependency injection.
 - `ChatController` – orchestrates messages between the console UI and the configured chat client.
 - `McpServer` project – exposes example tools that can be invoked from chat.
+- `RaindropServer` project – exposes bookmark management tools powered by the Raindrop API.
+- Numerous request record types model API payloads, such as `RaindropCreateRequest`, `TagRenameRequest`, and `HighlightBulkUpdateRequest`.
 
 Exploring these components is a good way to understand how the client and server communicate. The test project contains additional usage examples and is a helpful reference when extending the toolset.
 
