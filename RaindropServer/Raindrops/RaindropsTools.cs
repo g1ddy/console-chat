@@ -14,16 +14,7 @@ public class RaindropsTools(IRaindropsApi api) :
      Description("Create a new bookmark")]
     public Task<ItemResponse<Raindrop>> CreateBookmarkAsync(RaindropCreateRequest request)
     {
-        var payload = new Raindrop
-        {
-            Link = request.Link,
-            Title = request.Title,
-            Excerpt = request.Excerpt,
-            Note = request.Note,
-            Tags = request.Tags?.ToList(),
-            Important = request.Important,
-            CollectionId = request.CollectionId
-        };
+        var payload = request.ToRaindrop();
         return Api.CreateAsync(payload);
     }
 
@@ -36,16 +27,7 @@ public class RaindropsTools(IRaindropsApi api) :
      Description("Update an existing bookmark")]
     public Task<ItemResponse<Raindrop>> UpdateBookmarkAsync(long id, RaindropUpdateRequest request)
     {
-        var payload = new Raindrop
-        {
-            Link = request.Link,
-            Title = request.Title,
-            Excerpt = request.Excerpt,
-            Note = request.Note,
-            Tags = request.Tags?.ToList(),
-            Important = request.Important,
-            CollectionId = request.CollectionId
-        };
+        var payload = request.ToRaindrop();
         return Api.UpdateAsync(id, payload);
     }
 
