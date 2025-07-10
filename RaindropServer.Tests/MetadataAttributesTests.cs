@@ -2,6 +2,7 @@ using System;
 using System.ComponentModel;
 using System.Linq;
 using System.Reflection;
+using System.Collections.Generic;
 using RaindropServer.Raindrops;
 
 namespace RaindropServer.Tests;
@@ -33,10 +34,7 @@ public class MetadataAttributesTests
     [Fact]
     public void Record_properties_have_descriptions()
     {
-        var recordTypes = typeof(Raindrop).Assembly.GetTypes()
-            .Where(t => t.IsClass && !t.IsAbstract && !t.IsGenericType
-                        && t.Namespace is not null && !t.Namespace.Contains("Common")
-                        && t.GetCustomAttribute<DescriptionAttribute>() != null);
+        var recordTypes = GetDescribedRecordTypes(typeof(Raindrop).Assembly);
 
         foreach (var type in recordTypes)
         {
@@ -48,4 +46,10 @@ public class MetadataAttributesTests
             }
         }
     }
+
+    private static IEnumerable<Type> GetDescribedRecordTypes(Assembly assembly)
+        => assembly.GetTypes()
+            .Where(t => t.IsClass && !t.IsAbstract && !t.IsGenericType
+                        && t.Namespace?.Contains("Common") == false
+                        && t.GetCustomAttribute<DescriptionAttribute>() != null);
 }
