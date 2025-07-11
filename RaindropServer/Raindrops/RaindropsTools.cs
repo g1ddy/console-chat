@@ -49,7 +49,7 @@ public class RaindropsTools(IRaindropsApi api) :
      Description("Retrieves a list of bookmarks from a specific collection.")]
     public Task<ItemsResponse<Raindrop>> ListBookmarksAsync(
         [Description("The ID of the collection to retrieve bookmarks from. Use 0 for all, -1 for unsorted, -99 for trash.")] int collectionId,
-        [Description("Search query with the same operators as in Raindrop. Copy the string from the app's search field.")] string? search = null,
+        [Description(SearchSyntax.Description)] string? search = null,
         [Description("Sorting order: '-created' (newest, default), 'created', 'score' (when searching), '-sort', 'title', '-title', 'domain', '-domain'.")] string? sort = null,
         [Description("Page index starting from 0.")] int? page = null,
         [Description("How many raindrops per page, up to 50.")] int? perPage = null,
@@ -60,6 +60,11 @@ public class RaindropsTools(IRaindropsApi api) :
 
         if (perPage is > 50 or < 1)
             throw new ArgumentOutOfRangeException(nameof(perPage), "Number of items per page must be between 1 and 50.");
+
+        if (sort is not null && sort != "-created" && sort != "created" && sort != "score" &&
+            sort != "-sort" && sort != "title" && sort != "-title" && sort != "domain" && sort != "-domain")
+            throw new ArgumentOutOfRangeException(nameof(sort),
+                "Valid values are '-created', 'created', 'score', '-sort', 'title', '-title', 'domain', or '-domain'.");
 
         return Api.ListAsync(collectionId, search, sort, page, perPage, nested);
     }
@@ -81,6 +86,6 @@ public class RaindropsTools(IRaindropsApi api) :
         [Description("Collection to update")] int collectionId,
         [Description("Update operations to apply")] RaindropBulkUpdate update,
         [Description("Apply to nested collections")] bool? nested = null,
-        [Description("Optional search filter")] string? search = null)
+        [Description(SearchSyntax.Description)] string? search = null)
         => Api.UpdateManyAsync(collectionId, update, nested, search);
 }
