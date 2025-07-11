@@ -49,11 +49,11 @@ public class RaindropsTools(IRaindropsApi api) :
      Description("Retrieves a list of bookmarks from a specific collection.")]
     public Task<ItemsResponse<Raindrop>> ListBookmarksAsync(
         [Description("The ID of the collection to retrieve bookmarks from. Use 0 for all, -1 for unsorted, -99 for trash.")] int collectionId,
-        [Description("A search query to filter the bookmarks.")] string? search = null,
-        [Description("Sort order, see API docs for options.")] string? sort = null,
-        [Description("Page number starting from 0.")] int? page = null,
-        [Description("Number of items per page, maximum 50.")] int? perPage = null,
-        [Description("Include bookmarks from nested collections.")] bool? nested = null)
+        [Description("Search query with the same operators as in Raindrop. Copy the string from the app's search field.")] string? search = null,
+        [Description("Sorting order: '-created' (newest, default), 'created', 'score' (when searching), '-sort', 'title', '-title', 'domain', '-domain'.")] string? sort = null,
+        [Description("Page index starting from 0.")] int? page = null,
+        [Description("How many raindrops per page, up to 50.")] int? perPage = null,
+        [Description("Include bookmarks from nested collections (true/false).")] bool? nested = null)
     {
         if (page is < 0)
             throw new ArgumentOutOfRangeException(nameof(page), "Page number cannot be negative.");

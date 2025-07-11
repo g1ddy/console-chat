@@ -6,6 +6,6 @@ public interface IFiltersApi
 {
     [Get("/filters/{collectionId}")]
     Task<AvailableFilters> GetAsync(long collectionId,
-        [AliasAs("tagsSort")] string? tagsSort = null,
+        string? tagsSort = null,
         string? search = null);
 }
