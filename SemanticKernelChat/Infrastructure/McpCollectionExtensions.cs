@@ -1,7 +1,6 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Configuration;
-using System.Threading;
-using System.Threading.Tasks;
+
 
 namespace SemanticKernelChat.Infrastructure;
 
@@ -12,12 +11,11 @@ public static class McpCollectionExtensions
     /// and <see cref="McpPromptCollection"/> services using a shared state
     /// instance.
     /// </summary>
-    public static async Task<IServiceCollection> AddMcpCollections(
+    public static IServiceCollection AddMcpCollections(
         this IServiceCollection services,
-        IConfiguration configuration,
-        CancellationToken ct = default)
+        IConfiguration configuration)
     {
-        await services.AddMcpServerState(configuration, ct);
+        services.AddMcpServerState(configuration);
         services.AddSingleton<McpToolCollection>();
         services.AddSingleton<McpPromptCollection>();
         return services;

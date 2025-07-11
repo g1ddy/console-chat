@@ -22,7 +22,7 @@ builder.Logging.AddConsole();
 await builder.Services.AddSemanticKernelChatClient(builder.Configuration);
 builder.Services.AddSingleton<IChatHistoryService, ChatHistoryService>();
 
-await builder.Services.AddMcpCollections(builder.Configuration);
+builder.Services.AddMcpCollections(builder.Configuration);
 
 var console = AnsiConsole.Console;
 builder.Services.AddSingleton(console);

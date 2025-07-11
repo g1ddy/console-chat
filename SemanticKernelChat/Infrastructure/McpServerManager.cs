@@ -30,6 +30,20 @@ public sealed class McpServerManager : IAsyncDisposable
     {
     }
 
+    public McpServerManager(IConfiguration configuration, ILogger<McpServerState> logger)
+    {
+        _logger = logger;
+        _configs = new Dictionary<string, McpServerConfig>(
+            McpClientHelper.GetServerConfigs(configuration),
+            StringComparer.OrdinalIgnoreCase);
+        var serversDict = new Dictionary<string, McpServerState.ServerEntry>(StringComparer.OrdinalIgnoreCase);
+        foreach (var (name, config) in _configs)
+        {
+            serversDict[name] = new McpServerState.ServerEntry { Enabled = !config.Disabled };
+        }
+        _state = new McpServerState(serversDict);
+    }
+
     public McpServerState State => _state;
 
     public static async Task<McpServerManager> CreateAsync(
@@ -37,24 +51,22 @@ public sealed class McpServerManager : IAsyncDisposable
         ILogger<McpServerState> logger,
         CancellationToken cancellationToken = default)
     {
-        var configs = new Dictionary<string, McpServerConfig>(
-            McpClientHelper.GetServerConfigs(configuration),
-            StringComparer.OrdinalIgnoreCase);
-        var serversDict = new Dictionary<string, McpServerState.ServerEntry>(StringComparer.OrdinalIgnoreCase);
-        var state = new McpServerState(serversDict);
-        var manager = new McpServerManager(state, configs, logger);
+        var manager = new McpServerManager(configuration, logger);
+        await manager.InitializeAsync(cancellationToken);
+        return manager;
+    }
 
-        foreach (var (name, config) in configs)
+    public async Task InitializeAsync(CancellationToken cancellationToken = default)
+    {
+        foreach (var (name, config) in _configs)
         {
-            serversDict[name] = new McpServerState.ServerEntry { Enabled = !config.Disabled };
             if (!config.Disabled)
             {
-                manager._loadTasks[name] = manager.LoadServerAsync(name, cancellationToken);
+                _loadTasks[name] = LoadServerAsync(name, cancellationToken);
             }
         }
 
-        await Task.WhenAll(manager._loadTasks.Values);
-        return manager;
+        await Task.WhenAll(_loadTasks.Values);
     }
 
     public void SetServerEnabled(string name, bool enabled)

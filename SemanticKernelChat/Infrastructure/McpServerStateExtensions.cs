@@ -1,23 +1,23 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
-using System.Threading;
-using System.Threading.Tasks;
+using Microsoft.Extensions.Hosting;
 
 namespace SemanticKernelChat.Infrastructure;
 
 public static class McpServerStateExtensions
 {
-    public static async Task<IServiceCollection> AddMcpServerState(
+    public static IServiceCollection AddMcpServerState(
         this IServiceCollection services,
-        IConfiguration configuration,
-        CancellationToken cancellationToken = default)
+        IConfiguration configuration)
     {
-        using var provider = services.BuildServiceProvider();
-        var logger = provider.GetRequiredService<Microsoft.Extensions.Logging.ILogger<McpServerState>>();
-        var manager = await McpServerManager.CreateAsync(configuration, logger, cancellationToken);
-        services.AddSingleton(manager.State);
-        services.AddSingleton(manager);
+        services.AddSingleton<McpServerManager>(sp =>
+        {
+            var logger = sp.GetRequiredService<ILogger<McpServerState>>();
+            return new McpServerManager(configuration, logger);
+        });
+        services.AddSingleton(sp => sp.GetRequiredService<McpServerManager>().State);
+        services.AddHostedService<McpManagerInitializationService>();
         return services;
     }
 }
