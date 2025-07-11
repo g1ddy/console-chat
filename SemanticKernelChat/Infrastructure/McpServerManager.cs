@@ -97,17 +97,13 @@ public sealed class McpServerManager : IAsyncDisposable
 
             var capabilities = client.ServerCapabilities;
 
-            IList<McpClientTool> tools = Array.Empty<McpClientTool>();
-            if (capabilities.Tools is not null)
-            {
-                tools = await client.ListToolsAsync();
-            }
+            IList<McpClientTool> tools = capabilities.Tools is not null
+                ? await client.ListToolsAsync()
+                : Array.Empty<McpClientTool>();
 
-            IList<McpClientPrompt> prompts = Array.Empty<McpClientPrompt>();
-            if (capabilities.Prompts is not null)
-            {
-                prompts = await client.ListPromptsAsync();
-            }
+            IList<McpClientPrompt> prompts = capabilities.Prompts is not null
+                ? await client.ListPromptsAsync()
+                : Array.Empty<McpClientPrompt>();
             entry.Tools.Clear();
             foreach (var tool in tools)
             {
