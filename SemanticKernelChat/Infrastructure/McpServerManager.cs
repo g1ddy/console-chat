@@ -1,5 +1,7 @@
 using System.Collections.Concurrent;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using ModelContextProtocol.Client;
 using SemanticKernelChat.Helpers;
 
@@ -14,48 +16,64 @@ public sealed class McpServerManager : IAsyncDisposable
     private readonly Dictionary<string, McpServerConfig> _configs;
     private readonly ConcurrentDictionary<string, Task> _loadTasks = new();
     private readonly List<IAsyncDisposable> _disposables = new();
+    private readonly ILogger<McpServerState> _logger;
 
-    private McpServerManager(McpServerState state, Dictionary<string, McpServerConfig> configs)
+    private McpServerManager(McpServerState state, Dictionary<string, McpServerConfig> configs, ILogger<McpServerState> logger)
     {
         _state = state;
         _configs = configs;
+        _logger = logger;
     }
 
     internal McpServerManager(McpServerState state)
-        : this(state, new Dictionary<string, McpServerConfig>(StringComparer.OrdinalIgnoreCase))
+        : this(state, new Dictionary<string, McpServerConfig>(StringComparer.OrdinalIgnoreCase), NullLogger<McpServerState>.Instance)
     {
+    }
+
+    public McpServerManager(IConfiguration configuration, ILogger<McpServerState> logger)
+    {
+        _logger = logger;
+        _configs = new Dictionary<string, McpServerConfig>(
+            McpClientHelper.GetServerConfigs(configuration),
+            StringComparer.OrdinalIgnoreCase);
+        var serversDict = new Dictionary<string, McpServerState.ServerEntry>(StringComparer.OrdinalIgnoreCase);
+        foreach (var (name, config) in _configs)
+        {
+            serversDict[name] = new McpServerState.ServerEntry { Enabled = !config.Disabled };
+        }
+        _state = new McpServerState(serversDict);
     }
 
     public McpServerState State => _state;
 
     public static async Task<McpServerManager> CreateAsync(
         IConfiguration configuration,
+        ILogger<McpServerState> logger,
         CancellationToken cancellationToken = default)
     {
-        var configs = new Dictionary<string, McpServerConfig>(
-            McpClientHelper.GetServerConfigs(configuration),
-            StringComparer.OrdinalIgnoreCase);
-        var serversDict = new Dictionary<string, McpServerState.ServerEntry>(StringComparer.OrdinalIgnoreCase);
-        var state = new McpServerState(serversDict);
-        var manager = new McpServerManager(state, configs);
+        var manager = new McpServerManager(configuration, logger);
+        await manager.InitializeAsync(cancellationToken);
+        return manager;
+    }
 
-        foreach (var (name, config) in configs)
+    public async Task InitializeAsync(CancellationToken cancellationToken = default)
+    {
+        foreach (var (name, config) in _configs)
         {
-            serversDict[name] = new McpServerState.ServerEntry { Enabled = !config.Disabled };
             if (!config.Disabled)
             {
-                manager._loadTasks[name] = manager.LoadServerAsync(name, cancellationToken);
+                _loadTasks[name] = LoadServerAsync(name, cancellationToken);
             }
         }
 
-        await Task.WhenAll(manager._loadTasks.Values);
-        return manager;
+        await Task.WhenAll(_loadTasks.Values);
     }
 
     public void SetServerEnabled(string name, bool enabled)
     {
         if (_state.GetEntry(name) is null)
         {
+            _logger.LogWarning("MCP server {ServerName} not found", name);
             return;
         }
 
@@ -90,9 +108,11 @@ public sealed class McpServerManager : IAsyncDisposable
             }
             entry.Status = ServerStatus.Ready;
         }
-        catch
+        catch (Exception ex)
         {
             entry.Status = ServerStatus.Failed;
+            entry.FailureReason = ex.Message;
+            _logger.LogError(ex, "Error loading MCP server {ServerName}", name);
         }
     }
 
