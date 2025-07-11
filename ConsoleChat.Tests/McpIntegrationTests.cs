@@ -2,6 +2,7 @@ using Microsoft.SemanticKernel;
 using System.Text.Json;
 using System.Threading;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging.Abstractions;
 using SemanticKernelChat;
 using SemanticKernelChat.Infrastructure;
 
@@ -23,7 +24,7 @@ public class McpIntegrationTests
     [Fact]
     public async Task Tools_Are_Exposed_From_McpServer()
     {
-        var toolCollection = await McpToolCollection.CreateAsync(_config);
+        var toolCollection = await McpToolCollection.CreateAsync(_config, NullLogger<McpServerState>.Instance);
         await WaitForToolsAsync(toolCollection, 5);
         var tools = toolCollection.Tools;
 
@@ -57,7 +58,7 @@ public class McpIntegrationTests
 
         try
         {
-            var toolCollection = await McpToolCollection.CreateAsync(_config);
+            var toolCollection = await McpToolCollection.CreateAsync(_config, NullLogger<McpServerState>.Instance);
             await WaitForToolsAsync(toolCollection, 5);
             Assert.True(toolCollection.Tools.Count >= 5);
         }

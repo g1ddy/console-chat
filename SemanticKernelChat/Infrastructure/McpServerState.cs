@@ -21,6 +21,7 @@ public sealed class McpServerState
         public IList<McpClientPrompt> Prompts { get; } = new List<McpClientPrompt>();
         public bool Enabled { get; set; }
         public ServerStatus Status { get; set; } = ServerStatus.None;
+        public string? FailureReason { get; set; }
     }
 
     internal sealed record McpServerInfo(string Name, bool Enabled, ServerStatus Status, IReadOnlyList<McpClientTool> Tools);

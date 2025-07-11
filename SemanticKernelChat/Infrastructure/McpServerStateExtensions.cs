@@ -1,5 +1,6 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -12,7 +13,9 @@ public static class McpServerStateExtensions
         IConfiguration configuration,
         CancellationToken cancellationToken = default)
     {
-        var manager = await McpServerManager.CreateAsync(configuration, cancellationToken);
+        using var provider = services.BuildServiceProvider();
+        var logger = provider.GetRequiredService<Microsoft.Extensions.Logging.ILogger<McpServerState>>();
+        var manager = await McpServerManager.CreateAsync(configuration, logger, cancellationToken);
         services.AddSingleton(manager.State);
         services.AddSingleton(manager);
         return services;

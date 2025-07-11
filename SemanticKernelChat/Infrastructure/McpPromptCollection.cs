@@ -1,5 +1,7 @@
 using ModelContextProtocol.Client;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -29,9 +31,10 @@ public sealed class McpPromptCollection
 
     public static async Task<McpPromptCollection> CreateAsync(
         IConfiguration configuration,
+        ILogger<McpServerState>? logger = null,
         CancellationToken cancellationToken = default)
     {
-        var manager = await McpServerManager.CreateAsync(configuration, cancellationToken);
+        var manager = await McpServerManager.CreateAsync(configuration, logger ?? NullLogger<McpServerState>.Instance, cancellationToken);
         return new McpPromptCollection(manager);
     }
 }

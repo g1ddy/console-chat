@@ -1,5 +1,7 @@
 using System.Collections.Concurrent;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using ModelContextProtocol.Client;
 using SemanticKernelChat.Helpers;
 
@@ -14,15 +16,17 @@ public sealed class McpServerManager : IAsyncDisposable
     private readonly Dictionary<string, McpServerConfig> _configs;
     private readonly ConcurrentDictionary<string, Task> _loadTasks = new();
     private readonly List<IAsyncDisposable> _disposables = new();
+    private readonly ILogger<McpServerState> _logger;
 
-    private McpServerManager(McpServerState state, Dictionary<string, McpServerConfig> configs)
+    private McpServerManager(McpServerState state, Dictionary<string, McpServerConfig> configs, ILogger<McpServerState> logger)
     {
         _state = state;
         _configs = configs;
+        _logger = logger;
     }
 
     internal McpServerManager(McpServerState state)
-        : this(state, new Dictionary<string, McpServerConfig>(StringComparer.OrdinalIgnoreCase))
+        : this(state, new Dictionary<string, McpServerConfig>(StringComparer.OrdinalIgnoreCase), NullLogger<McpServerState>.Instance)
     {
     }
 
@@ -30,6 +34,7 @@ public sealed class McpServerManager : IAsyncDisposable
 
     public static async Task<McpServerManager> CreateAsync(
         IConfiguration configuration,
+        ILogger<McpServerState> logger,
         CancellationToken cancellationToken = default)
     {
         var configs = new Dictionary<string, McpServerConfig>(
@@ -37,7 +42,7 @@ public sealed class McpServerManager : IAsyncDisposable
             StringComparer.OrdinalIgnoreCase);
         var serversDict = new Dictionary<string, McpServerState.ServerEntry>(StringComparer.OrdinalIgnoreCase);
         var state = new McpServerState(serversDict);
-        var manager = new McpServerManager(state, configs);
+        var manager = new McpServerManager(state, configs, logger);
 
         foreach (var (name, config) in configs)
         {
@@ -56,6 +61,7 @@ public sealed class McpServerManager : IAsyncDisposable
     {
         if (_state.GetEntry(name) is null)
         {
+            _logger.LogWarning("MCP server {ServerName} not found", name);
             return;
         }
 
@@ -90,9 +96,11 @@ public sealed class McpServerManager : IAsyncDisposable
             }
             entry.Status = ServerStatus.Ready;
         }
-        catch
+        catch (Exception ex)
         {
             entry.Status = ServerStatus.Failed;
+            entry.FailureReason = ex.Message;
+            _logger.LogError(ex, "Error loading MCP server {ServerName}", name);
         }
     }
 
