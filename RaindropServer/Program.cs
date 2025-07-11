@@ -17,4 +17,4 @@ var app = builder.Build();
 
 app.MapMcp();
 
-await app.RunAsync("http://localhost:3001");
+await app.RunAsync();
