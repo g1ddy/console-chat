@@ -1,6 +1,7 @@
 using Microsoft.SemanticKernel;
 using System.Text.Json;
 using System.Threading;
+using Microsoft.Extensions.Configuration;
 using SemanticKernelChat;
 using SemanticKernelChat.Infrastructure;
 
@@ -11,7 +12,13 @@ public class McpIntegrationTests
     [Fact]
     public async Task Tools_Are_Exposed_From_McpServer()
     {
-        var toolCollection = await McpToolCollection.CreateAsync();
+        var config = new ConfigurationBuilder()
+            .SetBasePath(AppContext.BaseDirectory)
+            .AddJsonFile("appsettings.json", optional: true)
+            .AddEnvironmentVariables()
+            .Build();
+
+        var toolCollection = await McpToolCollection.CreateAsync(config);
         await WaitForToolsAsync(toolCollection, 5);
         var tools = toolCollection.Tools;
 
@@ -45,7 +52,13 @@ public class McpIntegrationTests
 
         try
         {
-            var toolCollection = await McpToolCollection.CreateAsync();
+            var config = new ConfigurationBuilder()
+                .SetBasePath(AppContext.BaseDirectory)
+                .AddJsonFile("appsettings.json", optional: true)
+                .AddEnvironmentVariables()
+                .Build();
+
+            var toolCollection = await McpToolCollection.CreateAsync(config);
             await WaitForToolsAsync(toolCollection, 5);
             Assert.True(toolCollection.Tools.Count >= 5);
         }

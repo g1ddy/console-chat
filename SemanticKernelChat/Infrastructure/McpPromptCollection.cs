@@ -1,4 +1,5 @@
 using ModelContextProtocol.Client;
+using Microsoft.Extensions.Configuration;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -26,9 +27,11 @@ public sealed class McpPromptCollection
 
     public void SetServerEnabled(string name, bool enabled) => _manager.SetServerEnabled(name, enabled);
 
-    public static async Task<McpPromptCollection> CreateAsync(CancellationToken cancellationToken = default)
+    public static async Task<McpPromptCollection> CreateAsync(
+        IConfiguration configuration,
+        CancellationToken cancellationToken = default)
     {
-        var manager = await McpServerManager.CreateAsync(cancellationToken);
+        var manager = await McpServerManager.CreateAsync(configuration, cancellationToken);
         return new McpPromptCollection(manager);
     }
 }

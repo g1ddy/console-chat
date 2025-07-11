@@ -1,4 +1,5 @@
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Configuration;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -13,9 +14,10 @@ public static class McpCollectionExtensions
     /// </summary>
     public static async Task<IServiceCollection> AddMcpCollections(
         this IServiceCollection services,
+        IConfiguration configuration,
         CancellationToken ct = default)
     {
-        await services.AddMcpServerState(ct);
+        await services.AddMcpServerState(configuration, ct);
         services.AddSingleton<McpToolCollection>();
         services.AddSingleton<McpPromptCollection>();
         return services;
