@@ -41,7 +41,7 @@ public sealed class McpServerManager : IAsyncDisposable
             serversDict[name] = new McpServerState.ServerEntry { Enabled = !config.Disabled };
             if (!config.Disabled)
             {
-                manager._loadTasks[name] = manager.LoadServerAsync(name);
+                manager._loadTasks[name] = manager.LoadServerAsync(name, cancellationToken);
             }
         }
 
@@ -51,6 +51,11 @@ public sealed class McpServerManager : IAsyncDisposable
 
     public void SetServerEnabled(string name, bool enabled)
     {
+        if (_state.GetEntry(name) is null)
+        {
+            return;
+        }
+
         _state.SetServerEnabled(name, enabled);
         if (enabled)
         {
@@ -58,14 +63,14 @@ public sealed class McpServerManager : IAsyncDisposable
         }
     }
 
-    private async Task LoadServerAsync(string name)
+    private async Task LoadServerAsync(string name, CancellationToken cancellationToken = default)
     {
         var entry = _state.GetEntry(name)!;
         var config = _configs[name];
         entry.Status = ServerStatus.Loading;
         try
         {
-            var transport = await McpClientHelper.CreateTransportAsync(name, config);
+            var transport = await McpClientHelper.CreateTransportAsync(name, config, cancellationToken: cancellationToken);
             var client = await McpClientFactory.CreateAsync(transport);
             _disposables.Add(client);
             var tools = await client.ListToolsAsync();
