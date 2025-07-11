@@ -9,16 +9,21 @@ namespace ConsoleChat.Tests;
 
 public class McpIntegrationTests
 {
-    [Fact]
-    public async Task Tools_Are_Exposed_From_McpServer()
+    private readonly IConfiguration _config;
+
+    public McpIntegrationTests()
     {
-        var config = new ConfigurationBuilder()
+        _config = new ConfigurationBuilder()
             .SetBasePath(AppContext.BaseDirectory)
             .AddJsonFile("appsettings.json", optional: true)
             .AddEnvironmentVariables()
             .Build();
+    }
 
-        var toolCollection = await McpToolCollection.CreateAsync(config);
+    [Fact]
+    public async Task Tools_Are_Exposed_From_McpServer()
+    {
+        var toolCollection = await McpToolCollection.CreateAsync(_config);
         await WaitForToolsAsync(toolCollection, 5);
         var tools = toolCollection.Tools;
 
@@ -52,13 +57,7 @@ public class McpIntegrationTests
 
         try
         {
-            var config = new ConfigurationBuilder()
-                .SetBasePath(AppContext.BaseDirectory)
-                .AddJsonFile("appsettings.json", optional: true)
-                .AddEnvironmentVariables()
-                .Build();
-
-            var toolCollection = await McpToolCollection.CreateAsync(config);
+            var toolCollection = await McpToolCollection.CreateAsync(_config);
             await WaitForToolsAsync(toolCollection, 5);
             Assert.True(toolCollection.Tools.Count >= 5);
         }
