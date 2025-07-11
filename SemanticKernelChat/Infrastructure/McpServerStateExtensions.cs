@@ -10,8 +10,9 @@ public static class McpServerStateExtensions
         this IServiceCollection services,
         CancellationToken cancellationToken = default)
     {
-        var state = await McpServerState.CreateAsync(cancellationToken);
-        services.AddSingleton(state);
+        var manager = await McpServerManager.CreateAsync(cancellationToken);
+        services.AddSingleton(manager.State);
+        services.AddSingleton(manager);
         return services;
     }
 }

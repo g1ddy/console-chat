@@ -1,4 +1,6 @@
 using ModelContextProtocol.Client;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace SemanticKernelChat.Infrastructure;
 
@@ -7,26 +9,26 @@ namespace SemanticKernelChat.Infrastructure;
 /// </summary>
 public sealed class McpPromptCollection
 {
-    private readonly McpServerState _state;
+    private readonly McpServerManager _manager;
 
-    public McpPromptCollection(McpServerState state)
+    public McpPromptCollection(McpServerManager manager)
     {
-        _state = state;
+        _manager = manager;
     }
 
-    public IReadOnlyCollection<string> Servers => _state.Servers;
+    public IReadOnlyCollection<string> Servers => _manager.State.Servers;
 
-    public IReadOnlyList<McpClientPrompt> Prompts => _state.GetPrompts();
+    public IReadOnlyList<McpClientPrompt> Prompts => _manager.State.GetPrompts();
 
-    internal IReadOnlyList<McpServerState.McpPromptInfo> GetServerInfos() => _state.GetPromptInfos();
+    internal IReadOnlyList<McpServerState.McpPromptInfo> GetServerInfos() => _manager.State.GetPromptInfos();
 
-    public bool IsServerEnabled(string name) => _state.IsServerEnabled(name);
+    public bool IsServerEnabled(string name) => _manager.State.IsServerEnabled(name);
 
-    public void SetServerEnabled(string name, bool enabled) => _state.SetServerEnabled(name, enabled);
+    public void SetServerEnabled(string name, bool enabled) => _manager.SetServerEnabled(name, enabled);
 
     public static async Task<McpPromptCollection> CreateAsync(CancellationToken cancellationToken = default)
     {
-        var state = await McpServerState.CreateAsync(cancellationToken);
-        return new McpPromptCollection(state);
+        var manager = await McpServerManager.CreateAsync(cancellationToken);
+        return new McpPromptCollection(manager);
     }
 }

@@ -7,10 +7,10 @@ namespace ConsoleChat.Tests.TestUtilities;
 internal static class McpCollectionFactory
 {
     public static McpToolCollection CreateToolCollection()
-        => new McpToolCollection(new McpServerState());
+        => new McpToolCollection(new McpServerManager(new McpServerState()));
 
     public static McpPromptCollection CreatePromptCollection()
-        => new McpPromptCollection(new McpServerState());
+        => new McpPromptCollection(new McpServerManager(new McpServerState()));
 
     public static McpToolCollection CreateToolCollection(params string[] servers)
     {
@@ -24,6 +24,7 @@ internal static class McpCollectionFactory
             StringComparer.OrdinalIgnoreCase);
 
         var state = new McpServerState(dict);
-        return new McpToolCollection(state);
+        var manager = new McpServerManager(state);
+        return new McpToolCollection(manager);
     }
 }
