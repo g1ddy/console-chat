@@ -22,7 +22,7 @@ public interface IRaindropsApi : ICommonApi<Raindrop, long>
         string? search = null,
         string? sort = null,
         int? page = null,
-        int? perPage = null,
+        [AliasAs("perpage")] int? perPage = null,
         bool? nested = null);
 
     [Post("/raindrops")]

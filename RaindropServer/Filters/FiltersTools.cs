@@ -1,3 +1,4 @@
+using System;
 using System.ComponentModel;
 using ModelContextProtocol.Server;
 using RaindropServer.Common;
@@ -12,7 +13,12 @@ public class FiltersTools(IFiltersApi api) : RaindropToolBase<IFiltersApi>(api)
      Description("Retrieves available filters for a specific collection or all bookmarks.")]
     public Task<AvailableFilters> GetAvailableFiltersAsync(
         [Description("The ID of the collection to retrieve filters for. Use 0 for all collections.")] long collectionId,
-        [Description("Sort tags by 'count' (default) or '_id' (name)." )] string? tagsSort = null,
+        [Description("Sort tags by '-count' (count) or '_id' (name)." )] string? tagsSort = null,
         [Description("A search query to filter the bookmarks." )] string? search = null)
-        => Api.GetAsync(collectionId, tagsSort, search);
+    {
+        if (tagsSort is not null && tagsSort != "-count" && tagsSort != "_id")
+            throw new ArgumentOutOfRangeException(nameof(tagsSort), "Valid values are '-count' or '_id'.");
+
+        return Api.GetAsync(collectionId, tagsSort, search);
+    }
 }
