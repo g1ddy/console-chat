@@ -1,3 +1,4 @@
+using System;
 using System.ComponentModel;
 using System.Linq;
 using ModelContextProtocol.Server;
@@ -53,7 +54,15 @@ public class RaindropsTools(IRaindropsApi api) :
         [Description("Page number starting from 0.")] int? page = null,
         [Description("Number of items per page, maximum 50.")] int? perPage = null,
         [Description("Include bookmarks from nested collections.")] bool? nested = null)
-        => Api.ListAsync(collectionId, search, sort, page, perPage, nested);
+    {
+        if (page is < 0)
+            throw new ArgumentOutOfRangeException(nameof(page), "Page number cannot be negative.");
+
+        if (perPage is > 50 or < 1)
+            throw new ArgumentOutOfRangeException(nameof(perPage), "Number of items per page must be between 1 and 50.");
+
+        return Api.ListAsync(collectionId, search, sort, page, perPage, nested);
+    }
 
 [McpServerTool(Title = "Create Bookmarks"),
      Description("Creates multiple bookmarks in a single request.")]
