@@ -94,8 +94,16 @@ public sealed class McpServerManager : IAsyncDisposable
             var transport = await McpClientHelper.CreateTransportAsync(name, config, cancellationToken: cancellationToken);
             var client = await McpClientFactory.CreateAsync(transport);
             _disposables.Add(client);
-            var tools = await client.ListToolsAsync();
-            var prompts = await client.ListPromptsAsync();
+
+            var capabilities = client.ServerCapabilities;
+
+            IList<McpClientTool> tools = capabilities.Tools is not null
+                ? await client.ListToolsAsync()
+                : Array.Empty<McpClientTool>();
+
+            IList<McpClientPrompt> prompts = capabilities.Prompts is not null
+                ? await client.ListPromptsAsync()
+                : Array.Empty<McpClientPrompt>();
             entry.Tools.Clear();
             foreach (var tool in tools)
             {
