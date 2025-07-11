@@ -24,6 +24,7 @@ internal static class PromptFactory
             ["server"] = entry
         };
         var state = new McpServerState(dict);
-        return new McpPromptCollection(state);
+        var manager = new McpServerManager(state);
+        return new McpPromptCollection(manager);
     }
 }

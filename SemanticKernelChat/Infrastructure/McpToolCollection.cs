@@ -1,4 +1,6 @@
 using ModelContextProtocol.Client;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace SemanticKernelChat.Infrastructure;
 
@@ -7,26 +9,26 @@ namespace SemanticKernelChat.Infrastructure;
 /// </summary>
 public sealed class McpToolCollection
 {
-    private readonly McpServerState _state;
+    private readonly McpServerManager _manager;
 
-    public McpToolCollection(McpServerState state)
+    public McpToolCollection(McpServerManager manager)
     {
-        _state = state;
+        _manager = manager;
     }
 
-    public IReadOnlyCollection<string> Servers => _state.Servers;
+    public IReadOnlyCollection<string> Servers => _manager.State.Servers;
 
-    public IReadOnlyList<McpClientTool> Tools => _state.GetTools();
+    public IReadOnlyList<McpClientTool> Tools => _manager.State.GetTools();
 
-    internal IReadOnlyList<McpServerState.McpServerInfo> GetServerInfos() => _state.GetServerInfos();
+    internal IReadOnlyList<McpServerState.McpServerInfo> GetServerInfos() => _manager.State.GetServerInfos();
 
-    public bool IsServerEnabled(string name) => _state.IsServerEnabled(name);
+    public bool IsServerEnabled(string name) => _manager.State.IsServerEnabled(name);
 
-    public void SetServerEnabled(string name, bool enabled) => _state.SetServerEnabled(name, enabled);
+    public void SetServerEnabled(string name, bool enabled) => _manager.SetServerEnabled(name, enabled);
 
     public static async Task<McpToolCollection> CreateAsync(CancellationToken cancellationToken = default)
     {
-        var state = await McpServerState.CreateAsync(cancellationToken);
-        return new McpToolCollection(state);
+        var manager = await McpServerManager.CreateAsync(cancellationToken);
+        return new McpToolCollection(manager);
     }
 }
