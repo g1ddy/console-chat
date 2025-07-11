@@ -28,10 +28,13 @@ public sealed class McpServerManager : IAsyncDisposable
 
     public McpServerState State => _state;
 
-    public static async Task<McpServerManager> CreateAsync(CancellationToken cancellationToken = default)
+    public static async Task<McpServerManager> CreateAsync(
+        IConfiguration configuration,
+        CancellationToken cancellationToken = default)
     {
-        var loader = new McpServerConfigLoader();
-        var configs = new Dictionary<string, McpServerConfig>(loader.Load(), StringComparer.OrdinalIgnoreCase);
+        var configs = new Dictionary<string, McpServerConfig>(
+            McpClientHelper.GetServerConfigs(configuration),
+            StringComparer.OrdinalIgnoreCase);
         var serversDict = new Dictionary<string, McpServerState.ServerEntry>(StringComparer.OrdinalIgnoreCase);
         var state = new McpServerState(serversDict);
         var manager = new McpServerManager(state, configs);

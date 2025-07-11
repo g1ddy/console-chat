@@ -1,6 +1,7 @@
 using Microsoft.SemanticKernel;
 using System.Text.Json;
 using System.Threading;
+using Microsoft.Extensions.Configuration;
 using SemanticKernelChat;
 using SemanticKernelChat.Infrastructure;
 
@@ -8,10 +9,21 @@ namespace ConsoleChat.Tests;
 
 public class McpIntegrationTests
 {
+    private readonly IConfiguration _config;
+
+    public McpIntegrationTests()
+    {
+        _config = new ConfigurationBuilder()
+            .SetBasePath(AppContext.BaseDirectory)
+            .AddJsonFile("appsettings.json", optional: true)
+            .AddEnvironmentVariables()
+            .Build();
+    }
+
     [Fact]
     public async Task Tools_Are_Exposed_From_McpServer()
     {
-        var toolCollection = await McpToolCollection.CreateAsync();
+        var toolCollection = await McpToolCollection.CreateAsync(_config);
         await WaitForToolsAsync(toolCollection, 5);
         var tools = toolCollection.Tools;
 
@@ -45,7 +57,7 @@ public class McpIntegrationTests
 
         try
         {
-            var toolCollection = await McpToolCollection.CreateAsync();
+            var toolCollection = await McpToolCollection.CreateAsync(_config);
             await WaitForToolsAsync(toolCollection, 5);
             Assert.True(toolCollection.Tools.Count >= 5);
         }

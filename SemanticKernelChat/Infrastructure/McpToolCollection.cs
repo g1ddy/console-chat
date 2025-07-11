@@ -1,4 +1,5 @@
 using ModelContextProtocol.Client;
+using Microsoft.Extensions.Configuration;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -26,9 +27,11 @@ public sealed class McpToolCollection
 
     public void SetServerEnabled(string name, bool enabled) => _manager.SetServerEnabled(name, enabled);
 
-    public static async Task<McpToolCollection> CreateAsync(CancellationToken cancellationToken = default)
+    public static async Task<McpToolCollection> CreateAsync(
+        IConfiguration configuration,
+        CancellationToken cancellationToken = default)
     {
-        var manager = await McpServerManager.CreateAsync(cancellationToken);
+        var manager = await McpServerManager.CreateAsync(configuration, cancellationToken);
         return new McpToolCollection(manager);
     }
 }

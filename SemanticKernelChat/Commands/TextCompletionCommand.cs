@@ -19,10 +19,12 @@ Never guess tool results or add extra text.
 """;
 
     private readonly IChatClient _chatClient;
+    private readonly McpToolCollection _tools;
 
-    public TextCompletionCommand(IChatClient chatClient)
+    public TextCompletionCommand(IChatClient chatClient, McpToolCollection tools)
     {
         _chatClient = chatClient;
+        _tools = tools;
     }
 
     public override async Task<int> ExecuteAsync(CommandContext context, Settings settings)
@@ -33,8 +35,7 @@ Never guess tool results or add extra text.
             return -1;
         }
 
-        var toolCollection = await McpToolCollection.CreateAsync();
-        var tools = toolCollection.Tools;
+        var tools = _tools.Tools;
 
         List<ChatMessage> messages =
         [ new(ChatRole.System, SystemPrompt), new(ChatRole.User, settings.Query) ];
