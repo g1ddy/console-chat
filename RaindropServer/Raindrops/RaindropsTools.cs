@@ -48,8 +48,12 @@ public class RaindropsTools(IRaindropsApi api) :
      Description("Retrieves a list of bookmarks from a specific collection.")]
     public Task<ItemsResponse<Raindrop>> ListBookmarksAsync(
         [Description("The ID of the collection to retrieve bookmarks from. Use 0 for all, -1 for unsorted, -99 for trash.")] int collectionId,
-        [Description("A search query to filter the bookmarks.")] string? search = null)
-        => Api.ListAsync(collectionId, search);
+        [Description("A search query to filter the bookmarks.")] string? search = null,
+        [Description("Sort order, see API docs for options.")] string? sort = null,
+        [Description("Page number starting from 0.")] int? page = null,
+        [Description("Number of items per page, maximum 50.")] int? perPage = null,
+        [Description("Include bookmarks from nested collections.")] bool? nested = null)
+        => Api.ListAsync(collectionId, search, sort, page, perPage, nested);
 
 [McpServerTool(Title = "Create Bookmarks"),
      Description("Creates multiple bookmarks in a single request.")]

@@ -18,7 +18,12 @@ public interface IRaindropsApi : ICommonApi<Raindrop, long>
     new Task<SuccessResponse> DeleteAsync(long id);
 
     [Get("/raindrops/{collectionId}")]
-    Task<ItemsResponse<Raindrop>> ListAsync(int collectionId, string? search = null);
+    Task<ItemsResponse<Raindrop>> ListAsync(int collectionId,
+        string? search = null,
+        string? sort = null,
+        int? page = null,
+        int? perPage = null,
+        bool? nested = null);
 
     [Post("/raindrops")]
     Task<ItemsResponse<Raindrop>> CreateManyAsync([Body] RaindropCreateManyRequest payload);
