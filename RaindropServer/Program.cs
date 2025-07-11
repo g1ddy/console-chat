@@ -1,6 +1,6 @@
 using RaindropServer;
 
-var builder = Host.CreateApplicationBuilder(args);
+var builder = WebApplication.CreateBuilder(args);
 
 builder.Logging.AddConsole(options =>
 {
@@ -10,7 +10,11 @@ builder.Logging.AddConsole(options =>
 builder.Services
     .AddRaindropApiClient(builder.Configuration)
     .AddMcpServer()
-    .WithStdioServerTransport()
+    .WithHttpTransport()
     .WithToolsFromAssembly();
 
-await builder.Build().RunAsync();
+var app = builder.Build();
+
+app.MapMcp();
+
+await app.RunAsync();
