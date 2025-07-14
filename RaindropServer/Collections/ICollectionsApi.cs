@@ -22,4 +22,7 @@ public interface ICollectionsApi : ICommonApi<Collection, int>
 
     [Get("/collections/childrens")]
     Task<ItemsResponse<Collection>> ListChildrenAsync();
+
+    [Put("/collections/merge")]
+    Task<SuccessResponse> MergeAsync([Body] CollectionsMergeRequest payload);
 }

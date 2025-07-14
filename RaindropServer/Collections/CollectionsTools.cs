@@ -1,4 +1,6 @@
 using System.ComponentModel;
+using System.Collections.Generic;
+using System.Linq;
 using ModelContextProtocol.Server;
 using RaindropServer.Common;
 
@@ -40,4 +42,14 @@ public class CollectionsTools(ICollectionsApi api) :
         Title = "List Child Collections"),
      Description("Retrieves all nested (child) collections.")]
     public Task<ItemsResponse<Collection>> ListChildCollectionsAsync() => Api.ListChildrenAsync();
+
+    [McpServerTool(Idempotent = true, Title = "Merge Collections"),
+     Description("Merge multiple collections into a destination collection.")]
+    public Task<SuccessResponse> MergeCollectionsAsync(
+        [Description("Collection ID where listed collection ids will be merged")] int to,
+        [Description("Collection IDs to merge")] IEnumerable<int> ids)
+    {
+        var payload = new CollectionsMergeRequest { To = to, Ids = ids.ToList() };
+        return Api.MergeAsync(payload);
+    }
 }
