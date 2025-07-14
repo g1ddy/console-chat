@@ -1,6 +1,7 @@
 using System;
 using System.ComponentModel;
 using System.Linq;
+using System.Collections.Generic;
 using ModelContextProtocol.Server;
 using RaindropServer.Common;
 
@@ -10,6 +11,8 @@ namespace RaindropServer.Raindrops;
 public class RaindropsTools(IRaindropsApi api) :
     RaindropToolBase<IRaindropsApi>(api)
 {
+    private static readonly HashSet<string> ValidSortOptions = new(
+        new[] { "created", "-created", "title", "-title", "domain", "-domain", "sort", "score" });
 
 [McpServerTool(Title = "Create Bookmark"),
      Description("Creates a new bookmark.")]
@@ -49,8 +52,8 @@ public class RaindropsTools(IRaindropsApi api) :
      Description("Retrieves a list of bookmarks from a specific collection.")]
     public Task<ItemsResponse<Raindrop>> ListBookmarksAsync(
         [Description("The ID of the collection to retrieve bookmarks from. Use 0 for all, -1 for unsorted, -99 for trash.")] int collectionId,
-        [Description("Search query with the same operators as in Raindrop. Copy the string from the app's search field.")] string? search = null,
-        [Description("Sorting order: '-created' (newest, default), 'created', 'score' (when searching), '-sort', 'title', '-title', 'domain', '-domain'.")] string? sort = null,
+        [Description(SearchSyntax.Description)] string? search = null,
+        [Description("Sorting order: '-created' (newest, default), 'created', 'score' (relevance when searching), 'sort', 'title', '-title', 'domain', '-domain'.")] string? sort = null,
         [Description("Page index starting from 0.")] int? page = null,
         [Description("How many raindrops per page, up to 50.")] int? perPage = null,
         [Description("Include bookmarks from nested collections (true/false).")] bool? nested = null)
@@ -60,6 +63,16 @@ public class RaindropsTools(IRaindropsApi api) :
 
         if (perPage is > 50 or < 1)
             throw new ArgumentOutOfRangeException(nameof(perPage), "Number of items per page must be between 1 and 50.");
+
+        if (sort is not null)
+        {
+            if (!ValidSortOptions.Contains(sort))
+                throw new ArgumentOutOfRangeException(nameof(sort),
+                    "Valid values are '-created', 'created', 'score', 'sort', '-title', 'title', '-domain', or 'domain'.");
+
+            if (sort == "score" && string.IsNullOrWhiteSpace(search))
+                throw new ArgumentException("Sort 'score' is only allowed when using a search query.", nameof(sort));
+        }
 
         return Api.ListAsync(collectionId, search, sort, page, perPage, nested);
     }
@@ -81,6 +94,6 @@ public class RaindropsTools(IRaindropsApi api) :
         [Description("Collection to update")] int collectionId,
         [Description("Update operations to apply")] RaindropBulkUpdate update,
         [Description("Apply to nested collections")] bool? nested = null,
-        [Description("Optional search filter")] string? search = null)
+        [Description(SearchSyntax.Description)] string? search = null)
         => Api.UpdateManyAsync(collectionId, update, nested, search);
 }
