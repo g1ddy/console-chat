@@ -1,4 +1,7 @@
+using System;
 using System.ComponentModel;
+using System.Collections.Generic;
+using System.Linq;
 using ModelContextProtocol.Server;
 using RaindropServer.Common;
 
@@ -40,4 +43,24 @@ public class CollectionsTools(ICollectionsApi api) :
         Title = "List Child Collections"),
      Description("Retrieves all nested (child) collections.")]
     public Task<ItemsResponse<Collection>> ListChildCollectionsAsync() => Api.ListChildrenAsync();
+
+    [McpServerTool(Idempotent = true, Title = "Merge Collections"),
+     Description("Merge multiple collections into a destination collection.")]
+    public Task<SuccessResponse> MergeCollectionsAsync(
+        [Description("Collection ID where listed collection ids will be merged")] int to,
+        [Description("Collection IDs to merge")] IEnumerable<int> ids)
+    {
+        if (ids is null)
+            throw new ArgumentNullException(nameof(ids));
+
+        var list = ids.ToList();
+        if (list.Count == 0)
+            throw new ArgumentException("At least one source collection ID must be specified.", nameof(ids));
+
+        if (list.Contains(to))
+            throw new ArgumentException("Destination collection cannot be merged into itself.", nameof(ids));
+
+        var payload = new CollectionsMergeRequest { To = to, Ids = list };
+        return Api.MergeAsync(payload);
+    }
 }

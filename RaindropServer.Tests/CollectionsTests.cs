@@ -47,4 +47,27 @@ public class CollectionsTests : TestBase
             Assert.DoesNotContain(finalList.Items, c => c.Id == parentCollectionId);
         }
     }
+
+    [Fact(Skip="Requires live Raindrop API")]
+    public async Task MergeCollections()
+    {
+        var collections = Provider.GetRequiredService<CollectionsTools>();
+        int destinationId = (await collections.CreateCollectionAsync(new Collection { Title = "Collections Merge - Destination" })).Item.Id;
+        int sourceId1 = (await collections.CreateCollectionAsync(new Collection { Title = "Collections Merge - Source1" })).Item.Id;
+        int sourceId2 = (await collections.CreateCollectionAsync(new Collection { Title = "Collections Merge - Source2" })).Item.Id;
+
+        try
+        {
+            var result = await collections.MergeCollectionsAsync(destinationId, new[] { sourceId1, sourceId2 });
+            Assert.True(result.Result);
+
+            var list = await collections.ListCollectionsAsync();
+            Assert.DoesNotContain(list.Items, c => c.Id == sourceId1);
+            Assert.DoesNotContain(list.Items, c => c.Id == sourceId2);
+        }
+        finally
+        {
+            await collections.DeleteCollectionAsync(destinationId);
+        }
+    }
 }
