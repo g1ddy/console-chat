@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using RaindropServer.Collections;
 using RaindropServer.Common;
 using Microsoft.Extensions.DependencyInjection;
@@ -58,7 +59,7 @@ public class CollectionsTests : TestBase
 
         try
         {
-            var result = await collections.MergeCollectionsAsync(destinationId, new[] { sourceId1, sourceId2 });
+            var result = await collections.MergeCollectionsAsync(destinationId, new List<int> { sourceId1, sourceId2 });
             Assert.True(result.Result);
 
             var list = await collections.ListCollectionsAsync();
