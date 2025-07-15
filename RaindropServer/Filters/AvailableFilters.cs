@@ -31,7 +31,7 @@ public record AvailableFilters
     public List<FilterEntry>? Types { get; init; }
 }
 
-[Description("Count of items for a filter")] 
+[Description("Count of items for a filter")]
 public record FilterMetric([property: Description("Number of matching items")] int Count);
 
 [Description("Filter entry with identifier and count")]

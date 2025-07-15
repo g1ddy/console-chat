@@ -6,7 +6,7 @@ namespace RaindropServer.Common;
 /// <summary>
 /// Represents a reference to another Raindrop entity by its identifier.
 /// </summary>
-[Description("Reference to another entity by its identifier")] 
+[Description("Reference to another entity by its identifier")]
 public record IdRef
 {
     [JsonPropertyName("$id")]

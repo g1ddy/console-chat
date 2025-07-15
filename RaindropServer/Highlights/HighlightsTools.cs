@@ -1,5 +1,7 @@
 using System.ComponentModel;
+
 using ModelContextProtocol.Server;
+
 using RaindropServer.Common;
 
 namespace RaindropServer.Highlights;
@@ -12,8 +14,8 @@ public class HighlightsTools(IHighlightsApi api) : RaindropToolBase<IHighlightsA
      Description("Retrieves all highlights across all bookmarks.")]
     public Task<ItemsResponse<Highlight>> ListHighlightsAsync(
         [Description("Page number starting from 0")] int? page = null,
-        [Description("Items per page")] int? perPage = null) =>
-        Api.ListAsync(page, perPage);
+        [Description("Items per page")] int? perPage = null)
+        => Api.ListAsync(page, perPage);
 
     [McpServerTool(Destructive = false, Idempotent = true, ReadOnly = true,
         Title = "List Highlights By Collection"),
@@ -21,8 +23,8 @@ public class HighlightsTools(IHighlightsApi api) : RaindropToolBase<IHighlightsA
     public Task<ItemsResponse<Highlight>> ListHighlightsByCollectionAsync(
         [Description("Collection ID containing the bookmarks")] int collectionId,
         [Description("Page number starting from 0")] int? page = null,
-        [Description("Items per page")] int? perPage = null) =>
-        Api.ListByCollectionAsync(collectionId, page, perPage);
+        [Description("Items per page")] int? perPage = null)
+        => Api.ListByCollectionAsync(collectionId, page, perPage);
 
     [McpServerTool(Destructive = false, Idempotent = true, ReadOnly = true,
         Title = "Get Bookmark Highlights"),
@@ -38,7 +40,7 @@ public class HighlightsTools(IHighlightsApi api) : RaindropToolBase<IHighlightsA
     {
         var payload = new HighlightBulkUpdateRequest
         {
-            Highlights = [ new HighlightBulkUpdate { Text = request.Text, Color = request.Color, Note = request.Note } ]
+            Highlights = [new HighlightBulkUpdate { Text = request.Text, Color = request.Color, Note = request.Note }]
         };
         return Api.UpdateAsync(raindropId, payload);
     }
@@ -51,7 +53,7 @@ public class HighlightsTools(IHighlightsApi api) : RaindropToolBase<IHighlightsA
     {
         var payload = new HighlightBulkUpdateRequest
         {
-            Highlights = [ new HighlightBulkUpdate { Id = request.Id, Text = request.Text, Color = request.Color, Note = request.Note } ]
+            Highlights = [new HighlightBulkUpdate { Id = request.Id, Text = request.Text, Color = request.Color, Note = request.Note }]
         };
         return Api.UpdateAsync(raindropId, payload);
     }
@@ -64,8 +66,8 @@ public class HighlightsTools(IHighlightsApi api) : RaindropToolBase<IHighlightsA
     {
         var payload = new HighlightBulkUpdateRequest
         {
-            Highlights = [ new HighlightBulkUpdate { Id = highlightId, Text = string.Empty } ]
+            Highlights = [new HighlightBulkUpdate { Id = highlightId, Text = string.Empty }]
         };
         return Api.UpdateAsync(raindropId, payload);
-}
+    }
 }
