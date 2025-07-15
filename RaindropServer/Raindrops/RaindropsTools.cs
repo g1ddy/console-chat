@@ -1,7 +1,7 @@
-using System;
 using System.ComponentModel;
-using System.Linq;
+
 using ModelContextProtocol.Server;
+
 using RaindropServer.Common;
 
 namespace RaindropServer.Raindrops;
@@ -11,49 +11,48 @@ public class RaindropsTools(IRaindropsApi api) :
     RaindropToolBase<IRaindropsApi>(api)
 {
 
-[McpServerTool(Title = "Create Bookmark"),
-     Description("Creates a new bookmark.")]
+    [McpServerTool(Title = "Create Bookmark"),
+         Description("Creates a new bookmark.")]
     public Task<ItemResponse<Raindrop>> CreateBookmarkAsync(
-        [Description("Bookmark creation details")] RaindropCreateRequest request)
+            [Description("Bookmark creation details")] RaindropCreateRequest request)
     {
         var payload = request.ToRaindrop();
         return Api.CreateAsync(payload);
     }
 
-[McpServerTool(Destructive = false, Idempotent = true, ReadOnly = true,
-        Title = "Get Bookmark"),
-     Description("Retrieves a single bookmark by its unique ID.")]
+    [McpServerTool(Destructive = false, Idempotent = true, ReadOnly = true,
+            Title = "Get Bookmark"),
+         Description("Retrieves a single bookmark by its unique ID.")]
     public Task<ItemResponse<Raindrop>> GetBookmarkAsync([
-        Description("ID of the bookmark to retrieve")] long id)
-        => Api.GetAsync(id);
+            Description("ID of the bookmark to retrieve")] long id)
+            => Api.GetAsync(id);
 
-[McpServerTool(Idempotent = true, Title = "Update Bookmark"),
-     Description("Updates an existing bookmark.")]
+    [McpServerTool(Idempotent = true, Title = "Update Bookmark"),
+         Description("Updates an existing bookmark.")]
     public Task<ItemResponse<Raindrop>> UpdateBookmarkAsync(
-        [Description("ID of the bookmark to update")] long id,
-        [Description("Updated bookmark data")] RaindropUpdateRequest request)
+            [Description("ID of the bookmark to update")] long id,
+            [Description("Updated bookmark data")] RaindropUpdateRequest request)
     {
         var payload = request.ToRaindrop();
         return Api.UpdateAsync(id, payload);
     }
 
-[McpServerTool(Idempotent = true, Title = "Delete Bookmark"),
-     Description("Moves a bookmark to the Trash.")]
+    [McpServerTool(Idempotent = true, Title = "Delete Bookmark"),
+         Description("Moves a bookmark to the Trash.")]
     public Task<SuccessResponse> DeleteBookmarkAsync([
-        Description("ID of the bookmark to delete")] long id)
-        => Api.DeleteAsync(id);
+            Description("ID of the bookmark to delete")] long id)
+            => Api.DeleteAsync(id);
 
-
-[McpServerTool(Destructive = false, Idempotent = true, ReadOnly = true,
-        Title = "List Bookmarks"),
-     Description("Retrieves a list of bookmarks from a specific collection. For large collections, use pagination with perPage=50 to retrieve all bookmarks.")]
+    [McpServerTool(Destructive = false, Idempotent = true, ReadOnly = true,
+            Title = "List Bookmarks"),
+         Description("Retrieves a list of bookmarks from a specific collection. For large collections, use pagination with perPage=50 to retrieve all bookmarks.")]
     public Task<ItemsResponse<Raindrop>> ListBookmarksAsync(
-        [Description("The ID of the collection to retrieve bookmarks from. Use 0 for all, -1 for unsorted, -99 for trash.")] int collectionId,
-        [Description("Search query with the same operators as in Raindrop. Copy the string from the app's search field.")] string? search = null,
-        [Description("Sorting order: '-created' (newest, default), 'created', 'score' (when searching), '-sort', 'title', '-title', 'domain', '-domain'.")] string? sort = null,
-        [Description("Page index starting from 0.")] int? page = null,
-        [Description("How many raindrops per page, up to 50.")] int? perPage = null,
-        [Description("Include bookmarks from nested collections (true/false).")] bool? nested = null)
+            [Description("The ID of the collection to retrieve bookmarks from. Use 0 for all, -1 for unsorted, -99 for trash.")] int collectionId,
+            [Description("Search query with the same operators as in Raindrop. Copy the string from the app's search field.")] string? search = null,
+            [Description("Sorting order: '-created' (newest, default), 'created', 'score' (when searching), '-sort', 'title', '-title', 'domain', '-domain'.")] string? sort = null,
+            [Description("Page index starting from 0.")] int? page = null,
+            [Description("How many raindrops per page, up to 50.")] int? perPage = null,
+            [Description("Include bookmarks from nested collections (true/false).")] bool? nested = null)
     {
         if (page is < 0)
             throw new ArgumentOutOfRangeException(nameof(page), "Page number cannot be negative.");
@@ -64,16 +63,15 @@ public class RaindropsTools(IRaindropsApi api) :
         return Api.ListAsync(collectionId, search, sort, page, perPage, nested);
     }
 
-[McpServerTool(Title = "Create Bookmarks"),
-     Description("Creates multiple bookmarks in a single request.")]
+    [McpServerTool(Title = "Create Bookmarks"),
+         Description("Creates multiple bookmarks in a single request.")]
     public Task<ItemsResponse<Raindrop>> CreateBookmarksAsync(
-        [Description("Collection ID for the new bookmarks")] int collectionId,
-        [Description("A collection of bookmark details to create.")] IEnumerable<Raindrop> raindrops)
+            [Description("Collection ID for the new bookmarks")] int collectionId,
+            [Description("A collection of bookmark details to create.")] IEnumerable<Raindrop> raindrops)
     {
         var payload = new RaindropCreateManyRequest { CollectionId = collectionId, Items = raindrops.ToList() };
         return Api.CreateManyAsync(payload);
     }
-
 
     [McpServerTool(Idempotent = true, Title = "Update Bookmarks"),
      Description("Bulk update bookmarks in a collection. For precise targeting, use the ids parameter in the update object.")]
