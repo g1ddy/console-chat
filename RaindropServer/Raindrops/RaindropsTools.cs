@@ -46,7 +46,7 @@ public class RaindropsTools(IRaindropsApi api) :
 
 [McpServerTool(Destructive = false, Idempotent = true, ReadOnly = true,
         Title = "List Bookmarks"),
-     Description("Retrieves a list of bookmarks from a specific collection.")]
+     Description("Retrieves a list of bookmarks from a specific collection. For large collections, use pagination with perPage=50 to retrieve all bookmarks.")]
     public Task<ItemsResponse<Raindrop>> ListBookmarksAsync(
         [Description("The ID of the collection to retrieve bookmarks from. Use 0 for all, -1 for unsorted, -99 for trash.")] int collectionId,
         [Description("Search query with the same operators as in Raindrop. Copy the string from the app's search field.")] string? search = null,
@@ -76,11 +76,11 @@ public class RaindropsTools(IRaindropsApi api) :
 
 
     [McpServerTool(Idempotent = true, Title = "Update Bookmarks"),
-     Description("Bulk update bookmarks in a collection")]
+     Description("Bulk update bookmarks in a collection. For precise targeting, use the ids parameter in the update object.")]
     public Task<SuccessResponse> UpdateBookmarksAsync(
         [Description("Collection to update")] int collectionId,
         [Description("Update operations to apply")] RaindropBulkUpdate update,
         [Description("Apply to nested collections")] bool? nested = null,
-        [Description("Optional search filter")] string? search = null)
+        [Description("Optional search filter. Use cautiously as it may affect more bookmarks than intended.")] string? search = null)
         => Api.UpdateManyAsync(collectionId, update, nested, search);
 }

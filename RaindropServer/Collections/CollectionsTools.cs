@@ -1,8 +1,7 @@
-using System;
 using System.ComponentModel;
-using System.Collections.Generic;
-using System.Linq;
+
 using ModelContextProtocol.Server;
+
 using RaindropServer.Common;
 
 namespace RaindropServer.Collections;
@@ -13,7 +12,7 @@ public class CollectionsTools(ICollectionsApi api) :
 {
     [McpServerTool(Destructive = false, Idempotent = true, ReadOnly = true,
         Title = "List Collections"),
-     Description("Retrieves all top-level (root) collections.")]
+     Description("Retrieves all top-level (root) collections. Use this to understand your collection hierarchy before making structural changes.")]
     public Task<ItemsResponse<Collection>> ListCollectionsAsync() => Api.ListAsync();
 
     [McpServerTool(Destructive = false, Idempotent = true, ReadOnly = true,
@@ -23,7 +22,7 @@ public class CollectionsTools(ICollectionsApi api) :
         => Api.GetAsync(id);
 
     [McpServerTool(Title = "Create Collection"),
-     Description("Creates a new collection.")]
+     Description("Creates a new collection. To create a subcollection, include a parent object in the collection parameter.")]
     public Task<ItemResponse<Collection>> CreateCollectionAsync([Description("The collection details to create")] Collection collection)
         => Api.CreateAsync(collection);
 
@@ -45,22 +44,21 @@ public class CollectionsTools(ICollectionsApi api) :
     public Task<ItemsResponse<Collection>> ListChildCollectionsAsync() => Api.ListChildrenAsync();
 
     [McpServerTool(Idempotent = true, Title = "Merge Collections"),
-     Description("Merge multiple collections into a destination collection.")]
+     Description("Merge multiple collections into a destination collection. Requires both the target collection ID and an array of source collection IDs to merge.")]
     public Task<SuccessResponse> MergeCollectionsAsync(
-        [Description("Collection ID where listed collection ids will be merged")] int to,
-        [Description("Collection IDs to merge")] IEnumerable<int> ids)
+        [Description("Target collection ID where source collections will be merged")] int to,
+        [Description("Collection IDs to merge")] List<int> ids)
     {
         if (ids is null)
             throw new ArgumentNullException(nameof(ids));
 
-        var list = ids.ToList();
-        if (list.Count == 0)
+        if (ids.Count == 0)
             throw new ArgumentException("At least one source collection ID must be specified.", nameof(ids));
 
-        if (list.Contains(to))
+        if (ids.Contains(to))
             throw new ArgumentException("Destination collection cannot be merged into itself.", nameof(ids));
 
-        var payload = new CollectionsMergeRequest { To = to, Ids = list };
+        var payload = new CollectionsMergeRequest { To = to, Ids = ids };
         return Api.MergeAsync(payload);
     }
 }
