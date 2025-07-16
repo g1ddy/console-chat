@@ -42,7 +42,7 @@ Audit existing tags for inconsistent capitalization, pluralization or synonyms. 
     [McpServerPrompt, Description("Streamline collections by combining related topics.")]
     public static string StreamlineCollections() =>
         """
-Identify collections with overlapping themes and propose merges or restructuring. Illustrate the proposed hierarchy with RenderTree and summarize changes in a table.
+Identify collections with overlapping themes and propose merges or restructuring. Illustrate the proposed hierarchy with RenderTree and summarize changes using RenderTable.
 """;
 
     [McpServerPrompt, Description("Archive outdated bookmarks in a structured way.")]
