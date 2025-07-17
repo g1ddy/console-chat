@@ -27,4 +27,29 @@ internal static class PromptFactory
         var manager = new McpServerManager(state);
         return new McpPromptCollection(manager);
     }
+
+    public static McpPromptCollection CreateCollectionWithPrompts(params string[] names)
+    {
+        var entry = new McpServerState.ServerEntry
+        {
+            Enabled = true,
+            Status = ServerStatus.Ready
+        };
+        var ctor = typeof(McpClientPrompt).GetConstructor(BindingFlags.NonPublic | BindingFlags.Instance, null, new[] { typeof(IMcpClient), typeof(Prompt) }, null)!;
+
+        foreach (var name in names)
+        {
+            var prompt = new Prompt { Name = name, Description = string.Empty, Arguments = new() };
+            var clientPrompt = (McpClientPrompt)ctor.Invoke(new object?[] { null, prompt });
+            entry.Prompts.Add(clientPrompt);
+        }
+
+        var dict = new Dictionary<string, McpServerState.ServerEntry>(StringComparer.OrdinalIgnoreCase)
+        {
+            ["server"] = entry
+        };
+        var state = new McpServerState(dict);
+        var manager = new McpServerManager(state);
+        return new McpPromptCollection(manager);
+    }
 }
