@@ -1,3 +1,4 @@
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Reflection;
 using ModelContextProtocol.Client;
@@ -19,7 +20,7 @@ internal static class PromptFactory
             Status = ServerStatus.Ready
         };
         entry.Prompts.Add(clientPrompt);
-        var dict = new Dictionary<string, McpServerState.ServerEntry>(StringComparer.OrdinalIgnoreCase)
+        var dict = new ConcurrentDictionary<string, McpServerState.ServerEntry>(StringComparer.OrdinalIgnoreCase)
         {
             ["server"] = entry
         };

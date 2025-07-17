@@ -36,7 +36,7 @@ public sealed class McpServerManager : IAsyncDisposable
         _configs = new Dictionary<string, McpServerConfig>(
             McpClientHelper.GetServerConfigs(configuration),
             StringComparer.OrdinalIgnoreCase);
-        var serversDict = new Dictionary<string, McpServerState.ServerEntry>(StringComparer.OrdinalIgnoreCase);
+        var serversDict = new ConcurrentDictionary<string, McpServerState.ServerEntry>(StringComparer.OrdinalIgnoreCase);
         foreach (var (name, config) in _configs)
         {
             serversDict[name] = new McpServerState.ServerEntry { Enabled = !config.Disabled };
