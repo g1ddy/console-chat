@@ -1,0 +1,20 @@
+{
+  "description": "Example MCP server providing basic utility tools",
+  "name": "io.github.consolechat/McpServer",
+  "packages": [
+    {
+      "registry_name": "nuget",
+      "name": "ConsoleChat.McpServer",
+      "version": "0.1.0",
+      "package_arguments": [],
+      "environment_variables": []
+    }
+  ],
+  "repository": {
+    "url": "https://github.com/yourusername/console-chat",
+    "source": "github"
+  },
+  "version_detail": {
+    "version": "0.1.0"
+  }
+}
