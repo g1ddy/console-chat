@@ -20,6 +20,7 @@ internal static class CliConstants
             Toggle,
             Use,
             Summarize,
+            Suggest,
         ];
 
         public const string Debug = "/debug";
@@ -31,6 +32,7 @@ internal static class CliConstants
         public const string Toggle = "/toggle";
         public const string Use = "/use";
         public const string Summarize = "/summarize";
+        public const string Suggest = "/suggest";
     }
 
     public static class Options
