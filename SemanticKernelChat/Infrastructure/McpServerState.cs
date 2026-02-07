@@ -37,6 +37,13 @@ public sealed class McpServerState
     // This class is intended to be accessed by background load tasks and UI threads simultaneously.
     private readonly ConcurrentDictionary<string, ServerEntry> _servers;
 
+    private long _version;
+    private long _cachedToolsVersion = -1;
+    private IReadOnlyList<McpClientTool>? _cachedTools;
+    private long _cachedPromptsVersion = -1;
+    private IReadOnlyList<McpClientPrompt>? _cachedPrompts;
+    private readonly object _lock = new();
+
     internal McpServerState()
         : this(new ConcurrentDictionary<string, ServerEntry>(StringComparer.OrdinalIgnoreCase))
     {
@@ -58,21 +65,78 @@ public sealed class McpServerState
         if (_servers.TryGetValue(name, out var entry))
         {
             entry.Enabled = enabled;
+            Interlocked.Increment(ref _version);
+        }
+    }
+
+    internal void UpdateServerStatus(string name, ServerStatus status, string? failureReason = null)
+    {
+        if (_servers.TryGetValue(name, out var entry))
+        {
+            entry.Status = status;
+            entry.FailureReason = failureReason;
+            Interlocked.Increment(ref _version);
+        }
+    }
+
+    internal void UpdateServerToolsAndPrompts(string name, IReadOnlyList<McpClientTool> tools, IReadOnlyList<McpClientPrompt> prompts)
+    {
+        if (_servers.TryGetValue(name, out var entry))
+        {
+            entry.Tools = tools;
+            entry.Prompts = prompts;
+            Interlocked.Increment(ref _version);
         }
     }
 
     public IReadOnlyList<McpClientTool> GetTools()
     {
-        return _servers.Where(p => p.Value.Enabled && p.Value.Status == ServerStatus.Ready)
-            .SelectMany(p => p.Value.Tools)
-            .ToList();
+        long version = Interlocked.Read(ref _version);
+        if (_cachedToolsVersion == version && _cachedTools != null)
+        {
+            return _cachedTools;
+        }
+
+        lock (_lock)
+        {
+            version = Interlocked.Read(ref _version);
+            if (_cachedToolsVersion == version && _cachedTools != null)
+            {
+                return _cachedTools;
+            }
+
+            _cachedTools = _servers.Values
+                .Where(e => e.Enabled && e.Status == ServerStatus.Ready)
+                .SelectMany(e => e.Tools)
+                .ToList();
+            _cachedToolsVersion = version;
+            return _cachedTools;
+        }
     }
 
     public IReadOnlyList<McpClientPrompt> GetPrompts()
     {
-        return _servers.Where(p => p.Value.Enabled && p.Value.Status == ServerStatus.Ready)
-            .SelectMany(p => p.Value.Prompts)
-            .ToList();
+        long version = Interlocked.Read(ref _version);
+        if (_cachedPromptsVersion == version && _cachedPrompts != null)
+        {
+            return _cachedPrompts;
+        }
+
+        lock (_lock)
+        {
+            version = Interlocked.Read(ref _version);
+            if (_cachedPromptsVersion == version && _cachedPrompts != null)
+            {
+                return _cachedPrompts;
+            }
+
+            _cachedPrompts = _servers.Values
+                .Where(e => e.Enabled && e.Status == ServerStatus.Ready)
+                .SelectMany(e => e.Prompts)
+                .ToList();
+            _cachedPromptsVersion = version;
+            return _cachedPrompts;
+        }
     }
 
     internal IReadOnlyList<McpServerInfo> GetServerInfos()
