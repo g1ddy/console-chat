@@ -1,6 +1,6 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Reflection;
+using System.Linq;
 using ModelContextProtocol.Client;
 using ModelContextProtocol.Protocol;
 using NSubstitute;
@@ -12,7 +12,7 @@ internal static class PromptFactory
 {
     public static McpPromptCollection CreateCollectionWithPrompt(string name)
     {
-        var prompt = new Prompt { Name = name, Description = string.Empty, Arguments = new List<PromptArgument>() };
+        var prompt = new Prompt { Name = name, Description = string.Empty, Arguments = [] };
         var clientPrompt = new McpClientPrompt(Substitute.For<McpClient>(), prompt);
         var entry = new McpServerState.ServerEntry
         {
@@ -37,14 +37,11 @@ internal static class PromptFactory
             Status = ServerStatus.Ready
         };
 
-        var prompts = new List<McpClientPrompt>();
-        foreach (var name in names)
-        {
-            var prompt = new Prompt { Name = name, Description = string.Empty, Arguments = new List<PromptArgument>() };
-            var clientPrompt = new McpClientPrompt(Substitute.For<McpClient>(), prompt);
-            prompts.Add(clientPrompt);
-        }
-        entry.Prompts = prompts;
+        entry.Prompts = names
+            .Select(name => new McpClientPrompt(
+                Substitute.For<McpClient>(),
+                new Prompt { Name = name, Description = string.Empty, Arguments = [] }))
+            .ToList();
 
         var dict = new ConcurrentDictionary<string, McpServerState.ServerEntry>(StringComparer.OrdinalIgnoreCase)
         {
