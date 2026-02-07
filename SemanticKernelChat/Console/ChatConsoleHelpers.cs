@@ -62,8 +62,13 @@ internal static class ChatConsoleHelpers
             : defaultName;
     }
 
-    public static bool IsValidJson(string text)
+    public static bool IsValidJson(string? text)
     {
+        if (string.IsNullOrWhiteSpace(text))
+        {
+            return false;
+        }
+
         try
         {
             _ = JsonDocument.Parse(text);
