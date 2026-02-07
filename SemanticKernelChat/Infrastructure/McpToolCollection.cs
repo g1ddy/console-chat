@@ -10,7 +10,7 @@ namespace SemanticKernelChat.Infrastructure;
 /// <summary>
 /// Holds MCP tools and disposes underlying transports when no longer needed.
 /// </summary>
-public sealed class McpToolCollection
+public sealed class McpToolCollection : IAsyncDisposable
 {
     private readonly McpServerManager _manager;
 
@@ -28,6 +28,11 @@ public sealed class McpToolCollection
     public bool IsServerEnabled(string name) => _manager.State.IsServerEnabled(name);
 
     public void SetServerEnabled(string name, bool enabled) => _manager.SetServerEnabled(name, enabled);
+
+    public async ValueTask DisposeAsync()
+    {
+        await _manager.DisposeAsync();
+    }
 
     public static async Task<McpToolCollection> CreateAsync(
         IConfiguration configuration,

@@ -24,7 +24,7 @@ public class McpIntegrationTests
     [Fact]
     public async Task Tools_Are_Exposed_From_McpServer()
     {
-        var toolCollection = await McpToolCollection.CreateAsync(_config, NullLogger<McpServerState>.Instance);
+        await using var toolCollection = await McpToolCollection.CreateAsync(_config, NullLogger<McpServerState>.Instance);
         await WaitForToolsAsync(toolCollection, 5);
         var tools = toolCollection.Tools;
 
@@ -58,7 +58,7 @@ public class McpIntegrationTests
 
         try
         {
-            var toolCollection = await McpToolCollection.CreateAsync(_config, NullLogger<McpServerState>.Instance);
+            await using var toolCollection = await McpToolCollection.CreateAsync(_config, NullLogger<McpServerState>.Instance);
             await WaitForToolsAsync(toolCollection, 5);
             Assert.True(toolCollection.Tools.Count >= 5);
         }
