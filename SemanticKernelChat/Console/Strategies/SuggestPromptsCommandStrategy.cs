@@ -1,3 +1,4 @@
+using System.Text.RegularExpressions;
 using Microsoft.Extensions.AI;
 using ModelContextProtocol.Protocol;
 using SemanticKernelChat.Infrastructure;
@@ -60,9 +61,10 @@ public sealed class SuggestPromptsCommandStrategy : IChatCommandStrategy
                     console.WriteLine(message.Content.Text ?? string.Empty);
                 }
             }
-            catch
+            catch (Exception ex)
             {
-                // Ignore prompts that cannot be retrieved in tests
+                // Prompts might fail to be retrieved. Inform the user and log for diagnostics.
+                console.DisplayError(ex);
             }
         }
 
@@ -82,6 +84,6 @@ public sealed class SuggestPromptsCommandStrategy : IChatCommandStrategy
             return Array.Empty<string>();
         }
         var lines = text.Split(new[] { '\n', '\r' }, StringSplitOptions.RemoveEmptyEntries);
-        return lines.Select(l => l.Trim().TrimStart('-', '*').Trim()).Where(l => l.Length > 0).Take(3);
+        return lines.Select(l => Regex.Replace(l.Trim(), @"^\s*(\d+\.|[-*])\s*", "")).Where(l => l.Length > 0).Take(3);
     }
 }
