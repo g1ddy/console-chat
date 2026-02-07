@@ -5,8 +5,11 @@ using SemanticKernelChat.Infrastructure;
 
 namespace SemanticKernelChat.Console;
 
-public sealed class SuggestPromptsCommandStrategy : IChatCommandStrategy
+public sealed partial class SuggestPromptsCommandStrategy : IChatCommandStrategy
 {
+    [GeneratedRegex(@"^\s*(?:\d+\.|[-*])\s*")]
+    private static partial Regex SuggestionListPattern();
+
     private readonly IChatClient _chatClient;
     private readonly McpPromptCollection _prompts;
 
@@ -85,6 +88,6 @@ public sealed class SuggestPromptsCommandStrategy : IChatCommandStrategy
             return Array.Empty<string>();
         }
         var lines = text.Split(new[] { '\n', '\r' }, StringSplitOptions.RemoveEmptyEntries);
-        return lines.Select(l => Regex.Replace(l.Trim(), @"^\s*(\d+\.|[-*])\s*", "")).Where(l => l.Length > 0).Take(3);
+        return lines.Select(l => SuggestionListPattern().Replace(l, "").Trim()).Where(l => l.Length > 0).Take(3);
     }
 }
