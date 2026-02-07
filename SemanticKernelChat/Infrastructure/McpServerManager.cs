@@ -17,6 +17,7 @@ public sealed class McpServerManager : IAsyncDisposable
     private readonly ConcurrentDictionary<string, Task> _loadTasks = new();
     private readonly List<IAsyncDisposable> _disposables = new();
     private readonly ILogger<McpServerState> _logger;
+    private bool _disposed;
 
     private McpServerManager(McpServerState state, Dictionary<string, McpServerConfig> configs, ILogger<McpServerState> logger)
     {
@@ -119,9 +120,16 @@ public sealed class McpServerManager : IAsyncDisposable
 
     public async ValueTask DisposeAsync()
     {
+        if (_disposed)
+        {
+            return;
+        }
+
         foreach (var disposable in Enumerable.Reverse(_disposables))
         {
             await disposable.DisposeAsync();
         }
+
+        _disposed = true;
     }
 }
