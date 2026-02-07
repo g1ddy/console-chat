@@ -22,8 +22,8 @@ public sealed class McpServerState
 {
     internal sealed class ServerEntry
     {
-        public IList<McpClientTool> Tools { get; } = new List<McpClientTool>();
-        public IList<McpClientPrompt> Prompts { get; } = new List<McpClientPrompt>();
+        public IReadOnlyList<McpClientTool> Tools { get; set; } = Array.Empty<McpClientTool>();
+        public IReadOnlyList<McpClientPrompt> Prompts { get; set; } = Array.Empty<McpClientPrompt>();
         public bool Enabled { get; set; }
         public ServerStatus Status { get; set; } = ServerStatus.None;
         public string? FailureReason { get; set; }
