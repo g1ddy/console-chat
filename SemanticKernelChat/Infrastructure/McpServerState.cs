@@ -22,15 +22,15 @@ public sealed class McpServerState
 {
     internal sealed class ServerEntry
     {
-        public IReadOnlyList<McpClientTool> Tools { get; set; } = Array.Empty<McpClientTool>();
-        public IReadOnlyList<McpClientPrompt> Prompts { get; set; } = Array.Empty<McpClientPrompt>();
+        public IList<McpClientTool> Tools { get; set; } = Array.Empty<McpClientTool>();
+        public IList<McpClientPrompt> Prompts { get; set; } = Array.Empty<McpClientPrompt>();
         public bool Enabled { get; set; }
         public ServerStatus Status { get; set; } = ServerStatus.None;
         public string? FailureReason { get; set; }
     }
 
-    internal sealed record McpServerInfo(string Name, bool Enabled, ServerStatus Status, IReadOnlyList<McpClientTool> Tools);
-    internal sealed record McpPromptInfo(string Name, bool Enabled, ServerStatus Status, IReadOnlyList<McpClientPrompt> Prompts);
+    internal sealed record McpServerInfo(string Name, bool Enabled, ServerStatus Status, IList<McpClientTool> Tools);
+    internal sealed record McpPromptInfo(string Name, bool Enabled, ServerStatus Status, IList<McpClientPrompt> Prompts);
 
     // Concurrent dictionary allows safe updates from multiple threads.
     // Entries themselves are not locked, so individual properties may be mutated concurrently.
@@ -38,10 +38,8 @@ public sealed class McpServerState
     private readonly ConcurrentDictionary<string, ServerEntry> _servers;
 
     private long _version;
-    private long _cachedToolsVersion = -1;
-    private IReadOnlyList<McpClientTool>? _cachedTools;
-    private long _cachedPromptsVersion = -1;
-    private IReadOnlyList<McpClientPrompt>? _cachedPrompts;
+    private volatile Tuple<long, IReadOnlyList<McpClientTool>>? _toolsCache;
+    private volatile Tuple<long, IReadOnlyList<McpClientPrompt>>? _promptsCache;
     private readonly object _lock = new();
 
     internal McpServerState()
@@ -49,9 +47,10 @@ public sealed class McpServerState
     {
     }
 
-    internal McpServerState(ConcurrentDictionary<string, ServerEntry> servers)
+    internal McpServerState(IDictionary<string, ServerEntry> servers)
     {
-        _servers = servers;
+        _servers = servers as ConcurrentDictionary<string, ServerEntry>
+            ?? new ConcurrentDictionary<string, ServerEntry>(servers, StringComparer.OrdinalIgnoreCase);
     }
 
     internal ServerEntry? GetEntry(string name) => _servers.TryGetValue(name, out var entry) ? entry : null;
@@ -79,7 +78,7 @@ public sealed class McpServerState
         }
     }
 
-    internal void UpdateServerToolsAndPrompts(string name, IReadOnlyList<McpClientTool> tools, IReadOnlyList<McpClientPrompt> prompts)
+    internal void UpdateServerToolsAndPrompts(string name, IList<McpClientTool> tools, IList<McpClientPrompt> prompts)
     {
         if (_servers.TryGetValue(name, out var entry))
         {
@@ -91,51 +90,48 @@ public sealed class McpServerState
 
     public IReadOnlyList<McpClientTool> GetTools()
     {
-        long version = Interlocked.Read(ref _version);
-        if (_cachedToolsVersion == version && _cachedTools != null)
-        {
-            return _cachedTools;
-        }
-
-        lock (_lock)
-        {
-            version = Interlocked.Read(ref _version);
-            if (_cachedToolsVersion == version && _cachedTools != null)
-            {
-                return _cachedTools;
-            }
-
-            _cachedTools = _servers.Values
-                .Where(e => e.Enabled && e.Status == ServerStatus.Ready)
-                .SelectMany(e => e.Tools)
-                .ToList();
-            _cachedToolsVersion = version;
-            return _cachedTools;
-        }
+        return GetCachedItems(
+            () => _toolsCache,
+            value => _toolsCache = value,
+            e => e.Tools);
     }
 
     public IReadOnlyList<McpClientPrompt> GetPrompts()
     {
-        long version = Interlocked.Read(ref _version);
-        if (_cachedPromptsVersion == version && _cachedPrompts != null)
+        return GetCachedItems(
+            () => _promptsCache,
+            value => _promptsCache = value,
+            e => e.Prompts);
+    }
+
+    private IReadOnlyList<T> GetCachedItems<T>(
+        Func<Tuple<long, IReadOnlyList<T>>?> getCache,
+        Action<Tuple<long, IReadOnlyList<T>>> setCache,
+        Func<ServerEntry, IEnumerable<T>> selector)
+    {
+        long currentVersion = Interlocked.Read(ref _version);
+        var localCache = getCache();
+        if (localCache?.Item1 == currentVersion)
         {
-            return _cachedPrompts;
+            return localCache.Item2;
         }
 
         lock (_lock)
         {
-            version = Interlocked.Read(ref _version);
-            if (_cachedPromptsVersion == version && _cachedPrompts != null)
+            currentVersion = Interlocked.Read(ref _version);
+            localCache = getCache();
+            if (localCache?.Item1 == currentVersion)
             {
-                return _cachedPrompts;
+                return localCache.Item2;
             }
 
-            _cachedPrompts = _servers.Values
+            var newItems = _servers.Values
                 .Where(e => e.Enabled && e.Status == ServerStatus.Ready)
-                .SelectMany(e => e.Prompts)
+                .SelectMany(selector)
                 .ToList();
-            _cachedPromptsVersion = version;
-            return _cachedPrompts;
+
+            setCache(Tuple.Create(currentVersion, (IReadOnlyList<T>)newItems));
+            return newItems;
         }
     }
 
