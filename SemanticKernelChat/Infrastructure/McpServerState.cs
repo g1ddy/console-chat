@@ -1,3 +1,4 @@
+using System.Collections.Concurrent;
 using ModelContextProtocol.Client;
 
 namespace SemanticKernelChat.Infrastructure;
@@ -12,13 +13,17 @@ internal enum ServerStatus
 
 /// <summary>
 /// Holds in-memory information about MCP servers.
+///
+/// The state is accessed by background loading tasks as well as the UI thread.
+/// A <see cref="ConcurrentDictionary{TKey,TValue}"/> is used so reads and writes
+/// to the server collection are thread-safe.
 /// </summary>
 public sealed class McpServerState
 {
     internal sealed class ServerEntry
     {
-        public IList<McpClientTool> Tools { get; } = new List<McpClientTool>();
-        public IList<McpClientPrompt> Prompts { get; } = new List<McpClientPrompt>();
+        public IReadOnlyList<McpClientTool> Tools { get; set; } = Array.Empty<McpClientTool>();
+        public IReadOnlyList<McpClientPrompt> Prompts { get; set; } = Array.Empty<McpClientPrompt>();
         public bool Enabled { get; set; }
         public ServerStatus Status { get; set; } = ServerStatus.None;
         public string? FailureReason { get; set; }
@@ -27,21 +32,24 @@ public sealed class McpServerState
     internal sealed record McpServerInfo(string Name, bool Enabled, ServerStatus Status, IReadOnlyList<McpClientTool> Tools);
     internal sealed record McpPromptInfo(string Name, bool Enabled, ServerStatus Status, IReadOnlyList<McpClientPrompt> Prompts);
 
-    private readonly Dictionary<string, ServerEntry> _servers;
+    // Concurrent dictionary allows safe updates from multiple threads.
+    // Entries themselves are not locked, so individual properties may be mutated concurrently.
+    // This class is intended to be accessed by background load tasks and UI threads simultaneously.
+    private readonly ConcurrentDictionary<string, ServerEntry> _servers;
 
     internal McpServerState()
-        : this(new Dictionary<string, ServerEntry>(StringComparer.OrdinalIgnoreCase))
+        : this(new ConcurrentDictionary<string, ServerEntry>(StringComparer.OrdinalIgnoreCase))
     {
     }
 
-    internal McpServerState(Dictionary<string, ServerEntry> servers)
+    internal McpServerState(ConcurrentDictionary<string, ServerEntry> servers)
     {
         _servers = servers;
     }
 
     internal ServerEntry? GetEntry(string name) => _servers.TryGetValue(name, out var entry) ? entry : null;
 
-    public IReadOnlyCollection<string> Servers => _servers.Keys;
+    public IReadOnlyCollection<string> Servers => _servers.Keys.ToArray();
 
     public bool IsServerEnabled(string name) => _servers.TryGetValue(name, out var entry) && entry.Enabled;
 

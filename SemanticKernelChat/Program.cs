@@ -45,7 +45,7 @@ builder.Services.AddSingleton<IChatLineEditor, ChatLineEditor>();
 builder.Services.AddSingleton<IChatConsole, ChatConsole>();
 builder.Services.AddSingleton<IChatController, ChatController>();
 
-var registrar = new TypeRegistrar(builder.Services);
+var registrar = new TypeRegistrar(builder);
 var app = new CommandApp(registrar);
 
 app.Configure(config =>
