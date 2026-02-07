@@ -7,7 +7,7 @@ namespace SemanticKernelChat.Console;
 
 public sealed partial class SuggestPromptsCommandStrategy : IChatCommandStrategy
 {
-    [GeneratedRegex(@"^\s*(\d+\.|[-*])\s*")]
+    [GeneratedRegex(@"^\s*(?:\d+\.|[-*])\s*")]
     private static partial Regex SuggestionListPattern();
 
     private readonly IChatClient _chatClient;
@@ -87,6 +87,6 @@ public sealed partial class SuggestPromptsCommandStrategy : IChatCommandStrategy
             return Array.Empty<string>();
         }
         var lines = text.Split(new[] { '\n', '\r' }, StringSplitOptions.RemoveEmptyEntries);
-        return lines.Select(l => SuggestionListPattern().Replace(l.Trim(), "")).Where(l => l.Length > 0).Take(3);
+        return lines.Select(l => SuggestionListPattern().Replace(l, "").Trim()).Where(l => l.Length > 0).Take(3);
     }
 }
