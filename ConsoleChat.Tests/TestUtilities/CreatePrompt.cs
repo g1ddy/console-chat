@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.Reflection;
 using ModelContextProtocol.Client;
 using ModelContextProtocol.Protocol;
+using NSubstitute;
 using SemanticKernelChat.Infrastructure;
 
 namespace ConsoleChat.Tests.TestUtilities;
@@ -12,7 +13,7 @@ internal static class PromptFactory
     {
         var prompt = new Prompt { Name = name, Description = string.Empty, Arguments = new() };
         var ctor = typeof(McpClientPrompt).GetConstructor(BindingFlags.NonPublic | BindingFlags.Instance, null, new[] { typeof(IMcpClient), typeof(Prompt) }, null)!;
-        var clientPrompt = (McpClientPrompt)ctor.Invoke(new object?[] { null, prompt });
+        var clientPrompt = (McpClientPrompt)ctor.Invoke(new object?[] { Substitute.For<IMcpClient>(), prompt });
         var entry = new McpServerState.ServerEntry
         {
             Enabled = true,
@@ -40,7 +41,7 @@ internal static class PromptFactory
         foreach (var name in names)
         {
             var prompt = new Prompt { Name = name, Description = string.Empty, Arguments = new() };
-            var clientPrompt = (McpClientPrompt)ctor.Invoke(new object?[] { null, prompt });
+            var clientPrompt = (McpClientPrompt)ctor.Invoke(new object?[] { Substitute.For<IMcpClient>(), prompt });
             entry.Prompts.Add(clientPrompt);
         }
 
