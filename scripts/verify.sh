@@ -13,6 +13,7 @@ echo "Setup complete. Starting verification..."
 
 # 1. Check critical versions
 dotnet --version || { echo "Dotnet is missing"; exit 1; }
+dotnet --version | grep -q "^10\." || { echo "Expected Dotnet 10.x"; exit 1; }
 
 # 2. Dry run a test
 # Runs a list of tests without executing them to ensure the test runner and project configuration are valid.
