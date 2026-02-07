@@ -104,16 +104,9 @@ public sealed class McpServerManager : IAsyncDisposable
             IList<McpClientPrompt> prompts = capabilities.Prompts is not null
                 ? await client.ListPromptsAsync()
                 : Array.Empty<McpClientPrompt>();
-            entry.Tools.Clear();
-            foreach (var tool in tools)
-            {
-                entry.Tools.Add(tool);
-            }
-            entry.Prompts.Clear();
-            foreach (var prompt in prompts)
-            {
-                entry.Prompts.Add(prompt);
-            }
+
+            entry.Tools = tools.ToList();
+            entry.Prompts = prompts.ToList();
             entry.Status = ServerStatus.Ready;
         }
         catch (Exception ex)

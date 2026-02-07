@@ -17,9 +17,9 @@ internal static class PromptFactory
         var entry = new McpServerState.ServerEntry
         {
             Enabled = true,
-            Status = ServerStatus.Ready
+            Status = ServerStatus.Ready,
+            Prompts = new[] { clientPrompt }
         };
-        entry.Prompts.Add(clientPrompt);
         var dict = new ConcurrentDictionary<string, McpServerState.ServerEntry>(StringComparer.OrdinalIgnoreCase)
         {
             ["server"] = entry

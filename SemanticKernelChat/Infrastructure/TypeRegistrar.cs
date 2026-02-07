@@ -44,6 +44,9 @@ public sealed class TypeRegistrar : ITypeRegistrar
         if (_builder is not null)
         {
             _host = _builder.Build();
+            // We must block here because Spectre.Console.Cli's ITypeRegistrar.Build() is synchronous,
+            // and we need to ensure the IHost and its background services are started before any
+            // command can be resolved and executed.
             _host.StartAsync().GetAwaiter().GetResult();
             _provider = _host.Services;
             return new TypeResolver(_provider, true, _host);
