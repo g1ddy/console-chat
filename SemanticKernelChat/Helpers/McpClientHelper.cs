@@ -68,37 +68,15 @@ public static class McpClientHelper
                 string command = ResolveCommandPath(serverConfig.Command);
                 return new StdioClientTransport(new()
                 {
-                    Name = name,
                     Command = command,
                     Arguments = serverConfig.Arguments,
                     EnvironmentVariables = serverConfig.EnvironmentVariables,
                     WorkingDirectory = AppContext.BaseDirectory,
                 });
             case McpServerTypes.Sse:
-                var http = httpClientFactory?.CreateClient() ?? new HttpClient();
-                try
+                return new HttpClientTransport(new()
                 {
-                    var response = await http.SendAsync(
-                        new HttpRequestMessage(HttpMethod.Head, serverConfig.Command),
-                        cancellationToken);
-                    if (response.StatusCode is HttpStatusCode.Unauthorized or HttpStatusCode.Forbidden)
-                    {
-                        throw new InvalidOperationException($"SSE endpoint '{serverConfig.Command}' requires authentication.");
-                    }
-                }
-                finally
-                {
-                    if (httpClientFactory is null)
-                    {
-                        http.Dispose();
-                    }
-                }
-
-                return new SseClientTransport(new()
-                {
-                    Name = name,
-                    Endpoint = new Uri(serverConfig.Command),
-                    TransportMode = HttpTransportMode.Sse,
+                    Endpoint = new Uri(serverConfig.Command)
                 });
             default:
                 throw new InvalidOperationException($"Unsupported server type: {serverConfig.TransportType}");

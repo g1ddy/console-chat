@@ -12,9 +12,8 @@ internal static class PromptFactory
 {
     public static McpPromptCollection CreateCollectionWithPrompt(string name)
     {
-        var prompt = new Prompt { Name = name, Description = string.Empty, Arguments = new() };
-        var ctor = typeof(McpClientPrompt).GetConstructor(BindingFlags.NonPublic | BindingFlags.Instance, null, new[] { typeof(IMcpClient), typeof(Prompt) }, null)!;
-        var clientPrompt = (McpClientPrompt)ctor.Invoke(new object?[] { Substitute.For<IMcpClient>(), prompt });
+        var prompt = new Prompt { Name = name, Description = string.Empty, Arguments = new List<PromptArgument>() };
+        var clientPrompt = new McpClientPrompt(Substitute.For<McpClient>(), prompt);
         var entry = new McpServerState.ServerEntry
         {
             Enabled = true,
@@ -37,13 +36,12 @@ internal static class PromptFactory
             Enabled = true,
             Status = ServerStatus.Ready
         };
-        var ctor = typeof(McpClientPrompt).GetConstructor(BindingFlags.NonPublic | BindingFlags.Instance, null, new[] { typeof(IMcpClient), typeof(Prompt) }, null)!;
 
         var prompts = new List<McpClientPrompt>();
         foreach (var name in names)
         {
-            var prompt = new Prompt { Name = name, Description = string.Empty, Arguments = new() };
-            var clientPrompt = (McpClientPrompt)ctor.Invoke(new object?[] { Substitute.For<IMcpClient>(), prompt });
+            var prompt = new Prompt { Name = name, Description = string.Empty, Arguments = new List<PromptArgument>() };
+            var clientPrompt = new McpClientPrompt(Substitute.For<McpClient>(), prompt);
             prompts.Add(clientPrompt);
         }
         entry.Prompts = prompts;

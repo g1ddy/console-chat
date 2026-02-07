@@ -61,7 +61,7 @@ public sealed class UsePromptCommandStrategy : IChatCommandStrategy
         var messages = new List<ChatMessage>();
         foreach (var message in result.Messages)
         {
-            string text = message.Content.Text ?? string.Empty;
+            string text = message.Content is TextContentBlock textBlock ? textBlock.Text : string.Empty;
             ChatRole role = message.Role switch
             {
                 Role.User => ChatRole.User,
