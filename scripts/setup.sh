@@ -4,8 +4,8 @@ set -e
 # Project name (adjust if needed)
 PROJECT_NAME=ConsoleChat
 
-# .NET version (here 8.0, adjust if needed)
-DOTNET_VERSION=8.0
+# .NET version (here 10.0, adjust if needed)
+DOTNET_VERSION=10.0
 
 # Update package sources
 sudo apt-get update
