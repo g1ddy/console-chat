@@ -124,14 +124,16 @@ public class ChatConsoleHelpersTests
         Assert.Equal(string.Empty, result);
     }
 
-    [Fact]
-    public void IsValidJson_Returns_Expected_Results()
+    [Theory]
+    [InlineData("{\"key\": \"value\"}", true)]
+    [InlineData("[1, 2, 3]", true)]
+    [InlineData("not json", false)]
+    [InlineData("", false)]
+    [InlineData("   ", false)]
+    [InlineData(null, false)]
+    public void IsValidJson_Returns_Expected_Results(string? json, bool expected)
     {
-        Assert.True(ChatConsoleHelpers.IsValidJson("{\"key\": \"value\"}"));
-        Assert.True(ChatConsoleHelpers.IsValidJson("[1, 2, 3]"));
-        Assert.False(ChatConsoleHelpers.IsValidJson("not json"));
-        Assert.False(ChatConsoleHelpers.IsValidJson(""));
-        Assert.False(ChatConsoleHelpers.IsValidJson(null));
+        Assert.Equal(expected, ChatConsoleHelpers.IsValidJson(json));
     }
 
     [Fact]
@@ -146,24 +148,15 @@ public class ChatConsoleHelpersTests
         Assert.Contains("\"key\":\"value\"", result);
     }
 
-    [Fact]
-    public void FormatPanelContent_Returns_Expected_Number_Of_Items()
+    [Theory]
+    [InlineData("{\"a\":1}", false, 1)] // Debug disabled
+    [InlineData("{\"a\":1}", true, 2)]  // Debug enabled, valid JSON
+    [InlineData("not json", true, 2)]   // Debug enabled, invalid JSON
+    [InlineData(null, true, 1)]         // Debug enabled, null JSON
+    public void FormatPanelContent_Returns_Expected_Number_Of_Items(string? json, bool debugEnabled, int expectedCount)
     {
-        // Debug disabled
-        var result1 = ChatConsoleHelpers.FormatPanelContent("markup", "{\"a\":1}", false);
-        Assert.Single(result1);
-
-        // Debug enabled, valid JSON
-        var result2 = ChatConsoleHelpers.FormatPanelContent("markup", "{\"a\":1}", true);
-        Assert.Equal(2, result2.Count());
-
-        // Debug enabled, invalid JSON
-        var result3 = ChatConsoleHelpers.FormatPanelContent("markup", "not json", true);
-        Assert.Equal(2, result3.Count());
-
-        // Debug enabled, null JSON
-        var result4 = ChatConsoleHelpers.FormatPanelContent("markup", null, true);
-        Assert.Single(result4);
+        var result = ChatConsoleHelpers.FormatPanelContent("markup", json, debugEnabled);
+        Assert.Equal(expectedCount, result.Count());
     }
 
     [Fact]

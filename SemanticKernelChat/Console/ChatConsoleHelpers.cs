@@ -64,7 +64,7 @@ internal static class ChatConsoleHelpers
 
     public static bool IsValidJson(string? text)
     {
-        if (text == null)
+        if (string.IsNullOrWhiteSpace(text))
         {
             return false;
         }
