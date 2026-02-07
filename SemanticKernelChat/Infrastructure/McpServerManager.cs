@@ -92,7 +92,7 @@ public sealed class McpServerManager : IAsyncDisposable
         try
         {
             var transport = await McpClientHelper.CreateTransportAsync(name, config, cancellationToken: cancellationToken);
-            var client = await McpClientFactory.CreateAsync(transport);
+            var client = await McpClient.CreateAsync(transport);
             _disposables.Add(client);
 
             var capabilities = client.ServerCapabilities;

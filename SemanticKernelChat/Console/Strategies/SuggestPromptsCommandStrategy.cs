@@ -58,7 +58,8 @@ public sealed class SuggestPromptsCommandStrategy : IChatCommandStrategy
                 }
                 foreach (var message in result.Messages)
                 {
-                    console.WriteLine(message.Content.Text ?? string.Empty);
+                    string messageText = message.Content is TextContentBlock textBlock ? textBlock.Text : string.Empty;
+                    console.WriteLine(messageText);
                 }
             }
             catch (Exception ex)
