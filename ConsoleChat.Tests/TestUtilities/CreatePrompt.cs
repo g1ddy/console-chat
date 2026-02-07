@@ -39,14 +39,16 @@ internal static class PromptFactory
         };
         var ctor = typeof(McpClientPrompt).GetConstructor(BindingFlags.NonPublic | BindingFlags.Instance, null, new[] { typeof(IMcpClient), typeof(Prompt) }, null)!;
 
+        var prompts = new List<McpClientPrompt>();
         foreach (var name in names)
         {
             var prompt = new Prompt { Name = name, Description = string.Empty, Arguments = new() };
             var clientPrompt = (McpClientPrompt)ctor.Invoke(new object?[] { Substitute.For<IMcpClient>(), prompt });
-            entry.Prompts.Add(clientPrompt);
+            prompts.Add(clientPrompt);
         }
+        entry.Prompts = prompts;
 
-        var dict = new Dictionary<string, McpServerState.ServerEntry>(StringComparer.OrdinalIgnoreCase)
+        var dict = new ConcurrentDictionary<string, McpServerState.ServerEntry>(StringComparer.OrdinalIgnoreCase)
         {
             ["server"] = entry
         };
