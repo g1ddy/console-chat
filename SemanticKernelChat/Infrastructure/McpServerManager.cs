@@ -87,9 +87,8 @@ public sealed class McpServerManager : IAsyncDisposable
 
     private async Task LoadServerAsync(string name, CancellationToken cancellationToken = default)
     {
-        var entry = _state.GetEntry(name)!;
         var config = _configs[name];
-        entry.Status = ServerStatus.Loading;
+        _state.UpdateServerStatus(name, ServerStatus.Loading);
         try
         {
             var transport = await McpClientHelper.CreateTransportAsync(name, config, cancellationToken: cancellationToken);
@@ -106,14 +105,12 @@ public sealed class McpServerManager : IAsyncDisposable
                 ? await client.ListPromptsAsync()
                 : Array.Empty<McpClientPrompt>();
 
-            entry.Tools = tools.ToList();
-            entry.Prompts = prompts.ToList();
-            entry.Status = ServerStatus.Ready;
+            _state.UpdateServerToolsAndPrompts(name, tools.ToList(), prompts.ToList());
+            _state.UpdateServerStatus(name, ServerStatus.Ready);
         }
         catch (Exception ex)
         {
-            entry.Status = ServerStatus.Failed;
-            entry.FailureReason = ex.Message;
+            _state.UpdateServerStatus(name, ServerStatus.Failed, ex.Message);
             _logger.LogError(ex, "Error loading MCP server {ServerName}", name);
         }
     }
