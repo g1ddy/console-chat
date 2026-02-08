@@ -66,11 +66,7 @@ internal static class ChatHistoryReducerExtensions
             return -1;
         }
 
-        int messageIndex = chatHistory.Count - targetCount;
-        if (messageIndex >= chatHistory.Count)
-        {
-            messageIndex = chatHistory.Count - 1;
-        }
+        int messageIndex = Math.Min(chatHistory.Count - targetCount, chatHistory.Count - 1);
 
         while (messageIndex >= 0)
         {

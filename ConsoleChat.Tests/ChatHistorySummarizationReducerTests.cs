@@ -67,17 +67,22 @@ public class ChatHistorySummarizationReducerTests
         var targetCount = 2;
         var reducer = new ChatHistorySummarizationReducer(chatClient, targetCount, thresholdCount: 1);
 
-        // Create a history that exceeds the target count significantly to trigger reduction
-        // LocateSafeReductionIndex logic: targetCount=2. History count=5.
+        // LocateSafeReductionIndex logic: targetCount=2, History count=5.
         // It looks for a User message backwards from index (Count - targetCount) = 3.
-        // Index 3 is User. So it will likely reduce up to index 3.
+        // Index 3 is Assistant.
+        // Index 2 is User.
+        // So the reduction should happen up to index 2 (exclusive or inclusive? Extract uses inclusive).
+        // Let's verify expected behavior.
+        // If LocateSafeReductionIndex returns 2:
+        // AssemblySummarizedHistory yields summary, then loop from truncationIndex (2) to end.
+        // So we expect: Summary, Message 2, Response 2, Message 3.
         var history = new List<ChatMessage>
         {
-            new(ChatRole.User, "Message 1"),      // 0
-            new(ChatRole.Assistant, "Response 1"), // 1
-            new(ChatRole.User, "Message 2"),      // 2
-            new(ChatRole.Assistant, "Response 2"), // 3
-            new(ChatRole.User, "Message 3"),      // 4
+            new(ChatRole.User, "Message 1"),      // 0 - To be summarized
+            new(ChatRole.Assistant, "Response 1"), // 1 - To be summarized
+            new(ChatRole.User, "Message 2"),      // 2 - To be kept
+            new(ChatRole.Assistant, "Response 2"), // 3 - To be kept
+            new(ChatRole.User, "Message 3"),      // 4 - To be kept
         };
 
         // Act
@@ -87,16 +92,20 @@ public class ChatHistorySummarizationReducerTests
         Assert.NotNull(result);
         var resultList = result!.ToList();
 
-        // Expecting:
-        // Summary message (Assistant)
-        // Message 3 (User) - from index 4?
-        // Let's trace carefully.
-        // LocateSafeReductionIndex logic is complex.
-
         // Verify summary message contains metadata
         var summaryMessage = resultList.FirstOrDefault(m => m.AdditionalProperties?.ContainsKey(ChatHistorySummarizationReducer.SummaryMetadataKey) == true);
         Assert.NotNull(summaryMessage);
         Assert.Equal(summaryText, summaryMessage!.Text);
+
+        // Verify the structure of the reduced history
+        // Based on logic: LocateSafeReductionIndex finds the index of the message to START keeping from.
+        // It searches backwards for a User message.
+        // Expecting: [summary, Message 2, Response 2, Message 3]
+        Assert.Equal(4, resultList.Count);
+        Assert.Same(summaryMessage, resultList[0]);
+        Assert.Equal(history[2].Text, resultList[1].Text); // Message 2
+        Assert.Equal(history[3].Text, resultList[2].Text); // Response 2
+        Assert.Equal(history[4].Text, resultList[3].Text); // Message 3
 
         // Verify chat client was called
         await chatClient.Received(1).GetResponseAsync(Arg.Any<List<ChatMessage>>(), Arg.Any<ChatOptions>(), Arg.Any<CancellationToken>());
