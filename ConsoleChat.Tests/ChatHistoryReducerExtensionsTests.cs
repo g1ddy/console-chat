@@ -53,10 +53,10 @@ public class ChatHistoryReducerExtensionsTests
         var result = history.Extract(0, systemMessage: systemMessage);
 
         // Assert
-        Assert.Equal(3, result.Count());
-        Assert.Equal(systemMessage, result.First());
-        Assert.Equal(history[0], result.ElementAt(1));
-        Assert.Equal(history[1], result.ElementAt(2));
+        Assert.Collection(result,
+            item => Assert.Equal(systemMessage, item),
+            item => Assert.Equal(history[0], item),
+            item => Assert.Equal(history[1], item));
     }
 
     [Fact]
@@ -74,9 +74,9 @@ public class ChatHistoryReducerExtensionsTests
         var result = history.Extract(1);
 
         // Assert
-        Assert.Equal(2, result.Count());
-        Assert.Equal(history[1], result.ElementAt(0));
-        Assert.Equal(history[2], result.ElementAt(1));
+        Assert.Collection(result,
+            item => Assert.Equal(history[1], item),
+            item => Assert.Equal(history[2], item));
     }
 
     [Fact]
@@ -94,9 +94,9 @@ public class ChatHistoryReducerExtensionsTests
         var result = history.Extract(0, finalIndex: 1);
 
         // Assert
-        Assert.Equal(2, result.Count());
-        Assert.Equal(history[0], result.ElementAt(0));
-        Assert.Equal(history[1], result.ElementAt(1));
+        Assert.Collection(result,
+            item => Assert.Equal(history[0], item),
+            item => Assert.Equal(history[1], item));
     }
 
     [Fact]
@@ -114,9 +114,9 @@ public class ChatHistoryReducerExtensionsTests
         var result = history.Extract(0, filter: msg => msg.Text == "skip");
 
         // Assert
-        Assert.Equal(2, result.Count());
-        Assert.Equal(history[0], result.ElementAt(0));
-        Assert.Equal(history[2], result.ElementAt(1));
+        Assert.Collection(result,
+            item => Assert.Equal(history[0], item),
+            item => Assert.Equal(history[2], item));
     }
 
     [Fact]
