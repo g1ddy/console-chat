@@ -32,7 +32,7 @@ public class TagsTools(ITagsApi api) : RaindropToolBase<ITagsApi>(api)
         [Description("The name of the tag that the source tags will be merged into.")] string newTag,
         [Description("Collection ID if scoped")] int? collectionId = null)
     {
-        var payload = new TagRenameRequest { Replace = newTag, Tags = tags.ToList() };
+        var payload = new TagRenameRequest { Replace = newTag, Tags = tags };
         return collectionId is null
             ? Api.UpdateAsync(payload)
             : Api.UpdateForCollectionAsync(collectionId.Value, payload);
@@ -51,7 +51,7 @@ public class TagsTools(ITagsApi api) : RaindropToolBase<ITagsApi>(api)
         [Description("A collection of tag names to be removed.")] IEnumerable<string> tags,
         [Description("Collection ID if scoped")] int? collectionId = null)
     {
-        var payload = new TagDeleteRequest { Tags = tags.ToList() };
+        var payload = new TagDeleteRequest { Tags = tags };
         return collectionId is null
             ? Api.DeleteAsync(payload)
             : Api.DeleteForCollectionAsync(collectionId.Value, payload);
