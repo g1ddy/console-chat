@@ -20,16 +20,11 @@ public sealed class SetMcpServerStateCommandStrategy : IChatCommandStrategy
         {
             return new[] { CliConstants.Commands.Enable, CliConstants.Commands.Disable };
         }
-        if (tokens.Length == 2 &&
-            (tokens[0].Equals(CliConstants.Commands.Enable, StringComparison.OrdinalIgnoreCase) ||
-             tokens[0].Equals(CliConstants.Commands.Disable, StringComparison.OrdinalIgnoreCase)))
+        if (tokens.Length == 2 && IsEnableOrDisable(tokens[0]))
         {
             return new[] { CliConstants.Options.Mcp };
         }
-        if (tokens.Length >= 3 &&
-            (tokens[0].Equals(CliConstants.Commands.Enable, StringComparison.OrdinalIgnoreCase) ||
-             tokens[0].Equals(CliConstants.Commands.Disable, StringComparison.OrdinalIgnoreCase)) &&
-            tokens[1].Equals(CliConstants.Options.Mcp, StringComparison.OrdinalIgnoreCase))
+        if (tokens.Length >= 3 && IsEnableOrDisable(tokens[0]) && IsMcpOption(tokens[1]))
         {
             return _tools.Servers.ToList();
         }
@@ -44,11 +39,8 @@ public sealed class SetMcpServerStateCommandStrategy : IChatCommandStrategy
             return false;
         }
 
-        bool hasCommand = tokens[0].Equals(CliConstants.Commands.Enable, StringComparison.OrdinalIgnoreCase) ||
-                           tokens[0].Equals(CliConstants.Commands.Disable, StringComparison.OrdinalIgnoreCase);
-
-        return hasCommand &&
-               tokens[1].Equals(CliConstants.Options.Mcp, StringComparison.OrdinalIgnoreCase) &&
+        return IsEnableOrDisable(tokens[0]) &&
+               IsMcpOption(tokens[1]) &&
                _tools.Servers.Contains(tokens[2]);
     }
 
@@ -64,5 +56,16 @@ public sealed class SetMcpServerStateCommandStrategy : IChatCommandStrategy
         string name = tokens[2];
         _tools.SetServerEnabled(name, enable);
         return Task.FromResult(true);
+    }
+
+    private static bool IsEnableOrDisable(string token)
+    {
+        return token.Equals(CliConstants.Commands.Enable, StringComparison.OrdinalIgnoreCase) ||
+               token.Equals(CliConstants.Commands.Disable, StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static bool IsMcpOption(string token)
+    {
+        return token.Equals(CliConstants.Options.Mcp, StringComparison.OrdinalIgnoreCase);
     }
 }
