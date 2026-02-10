@@ -26,16 +26,14 @@ public class McpServerStateTests
 
     private McpClientTool CreateTool(string name)
     {
-        // Passing null for McpClient as we don't need it for these tests
-        // and instantiating it is difficult due to internal/protected constructors.
-        // We try to use NSubstitute to create a mock.
+        // McpClient is mocked as it's not needed for these tests and is difficult to instantiate.
         var client = NSubstitute.Substitute.For<McpClient>();
         return new McpClientTool(client, new Tool { Name = name }, null);
     }
 
     private McpClientPrompt CreatePrompt(string name)
     {
-        // Passing null for McpClient as we don't need it for these tests.
+        // McpClient is mocked as it's not needed for these tests.
         var client = NSubstitute.Substitute.For<McpClient>();
         return new McpClientPrompt(client, new Prompt { Name = name });
     }
@@ -191,7 +189,7 @@ public class McpServerStateTests
     }
 
     [Fact]
-    public void GetTools_InvalidatesCache_OnUpdate()
+    public void GetTools_InvalidatesCache_OnUpdateServerToolsAndPrompts()
     {
         var state = CreateState(("server1", true, ServerStatus.Ready));
         var tool1 = CreateTool("tool1");
@@ -207,6 +205,54 @@ public class McpServerStateTests
 
         Assert.NotSame(tools1, tools2);
         Assert.Equal(2, tools2.Count);
+    }
+
+    [Fact]
+    public void GetTools_InvalidatesCache_OnSetServerEnabled()
+    {
+        var state = CreateState(("server1", true, ServerStatus.Ready));
+        var tool1 = CreateTool("tool1");
+        state.UpdateServerToolsAndPrompts("server1", new[] { tool1 }, Array.Empty<McpClientPrompt>());
+
+        var tools1 = state.GetTools();
+
+        // Disable server
+        state.SetServerEnabled("server1", false);
+        var tools2 = state.GetTools();
+
+        Assert.NotSame(tools1, tools2);
+        Assert.Empty(tools2);
+
+        // Enable server
+        state.SetServerEnabled("server1", true);
+        var tools3 = state.GetTools();
+
+        Assert.NotSame(tools2, tools3);
+        Assert.Single(tools3);
+    }
+
+    [Fact]
+    public void GetTools_InvalidatesCache_OnUpdateServerStatus()
+    {
+        var state = CreateState(("server1", true, ServerStatus.Ready));
+        var tool1 = CreateTool("tool1");
+        state.UpdateServerToolsAndPrompts("server1", new[] { tool1 }, Array.Empty<McpClientPrompt>());
+
+        var tools1 = state.GetTools();
+
+        // Change status to Loading
+        state.UpdateServerStatus("server1", ServerStatus.Loading);
+        var tools2 = state.GetTools();
+
+        Assert.NotSame(tools1, tools2);
+        Assert.Empty(tools2);
+
+        // Change status back to Ready
+        state.UpdateServerStatus("server1", ServerStatus.Ready);
+        var tools3 = state.GetTools();
+
+        Assert.NotSame(tools2, tools3);
+        Assert.Single(tools3);
     }
 
     [Fact]
