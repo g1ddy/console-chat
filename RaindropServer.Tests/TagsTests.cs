@@ -10,9 +10,10 @@ public class TagsTests : TestBase
     {
         s.AddTransient<RaindropsTools>();
         s.AddTransient<TagsTools>();
-    }) { }
+    })
+    { }
 
-    [Fact(Skip="Requires live Raindrop API")]
+    [Fact(Skip = "Requires live Raindrop API")]
     public async Task Crud()
     {
         var raindropsTool = Provider.GetRequiredService<RaindropsTools>();
@@ -20,7 +21,7 @@ public class TagsTests : TestBase
         {
             Link = "https://example.com/tag",
             Title = "Tags Crud - Raindrop",
-            Tags = [ "TagRenameTestOne" ],
+            Tags = ["TagRenameTestOne"],
             Note = "tag"
         });
         long raindropId = createResponse.Item.Id;
@@ -38,7 +39,7 @@ public class TagsTests : TestBase
         }
     }
 
-    [Fact(Skip="Requires live Raindrop API")]
+    [Fact(Skip = "Requires live Raindrop API")]
     public async Task CrudForCollection()
     {
         var raindropsTool = Provider.GetRequiredService<RaindropsTools>();
@@ -46,7 +47,7 @@ public class TagsTests : TestBase
         {
             Link = "https://example.com/tag/collection",
             Title = "Tags CrudForCollection - Raindrop",
-            Tags = [ "TagCollectionTestOne" ],
+            Tags = ["TagCollectionTestOne"],
             Note = "tag-col"
         });
         long raindropId = createResponse.Item.Id;

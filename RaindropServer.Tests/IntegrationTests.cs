@@ -15,9 +15,10 @@ public class IntegrationTests : TestBase
         s.AddTransient<RaindropsTools>();
         s.AddTransient<HighlightsTools>();
         s.AddTransient<TagsTools>();
-    }) { }
+    })
+    { }
 
-    [Fact(Skip="Requires live Raindrop API")]
+    [Fact(Skip = "Requires live Raindrop API")]
     public async Task FullFlow()
     {
         var collections = Provider.GetRequiredService<CollectionsTools>();

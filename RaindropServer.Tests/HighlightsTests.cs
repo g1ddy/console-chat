@@ -13,9 +13,10 @@ public class HighlightsTests : TestBase
         s.AddTransient<CollectionsTools>();
         s.AddTransient<RaindropsTools>();
         s.AddTransient<HighlightsTools>();
-    }) { }
+    })
+    { }
 
-    [Fact(Skip="Requires live Raindrop API")]
+    [Fact(Skip = "Requires live Raindrop API")]
     public async Task Crud()
     {
         var collections = Provider.GetRequiredService<CollectionsTools>();

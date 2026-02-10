@@ -9,7 +9,7 @@ public class RaindropsBulkTests : TestBase
 {
     public RaindropsBulkTests() : base(s => s.AddTransient<RaindropsTools>()) { }
 
-    [Fact(Skip="Requires live Raindrop API")]
+    [Fact(Skip = "Requires live Raindrop API")]
     public async Task BulkEndpoints()
     {
         var tool = Provider.GetRequiredService<RaindropsTools>();

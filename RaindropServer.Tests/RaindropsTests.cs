@@ -7,7 +7,7 @@ public class RaindropsTests : TestBase
 {
     public RaindropsTests() : base(s => s.AddTransient<RaindropsTools>()) { }
 
-    [Fact(Skip="Requires live Raindrop API")]
+    [Fact(Skip = "Requires live Raindrop API")]
     public async Task Crud()
     {
         var raindropsTool = Provider.GetRequiredService<RaindropsTools>();
@@ -22,7 +22,7 @@ public class RaindropsTests : TestBase
         try
         {
             await raindropsTool.UpdateBookmarkAsync(raindropId, new RaindropUpdateRequest { Title = "Raindrops Crud - Updated" });
-            await raindropsTool.UpdateBookmarksAsync(0, new RaindropBulkUpdate { Ids = [ raindropId ], Important = true });
+            await raindropsTool.UpdateBookmarksAsync(0, new RaindropBulkUpdate { Ids = [raindropId], Important = true });
             // add a delay before searching
             await Task.Delay(5000);
             var search = await raindropsTool.ListBookmarksAsync(0, "example");
