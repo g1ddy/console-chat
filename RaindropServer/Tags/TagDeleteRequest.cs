@@ -9,5 +9,5 @@ namespace RaindropServer.Tags;
 public record TagDeleteRequest
 {
     [Description("Tags to remove")]
-    public List<string> Tags { get; init; } = new();
+    public IEnumerable<string> Tags { get; init; } = Array.Empty<string>();
 }
