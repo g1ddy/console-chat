@@ -38,7 +38,7 @@ Never guess tool results or add extra text.
         var tools = _tools.Tools;
 
         List<ChatMessage> messages =
-        [ new(ChatRole.System, SystemPrompt), new(ChatRole.User, settings.Query) ];
+        [new(ChatRole.System, SystemPrompt), new(ChatRole.User, settings.Query)];
 
         var response = await _chatClient.GetResponseAsync(
             messages,

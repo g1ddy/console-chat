@@ -12,9 +12,10 @@ public class TagsBulkTests : TestBase
     {
         s.AddTransient<RaindropsTools>();
         s.AddTransient<TagsTools>();
-    }) { }
+    })
+    { }
 
-    [Fact(Skip="Requires live Raindrop API")]
+    [Fact(Skip = "Requires live Raindrop API")]
     public async Task BulkEndpoints()
     {
         var raindrops = Provider.GetRequiredService<RaindropsTools>();

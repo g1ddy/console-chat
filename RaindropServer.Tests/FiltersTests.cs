@@ -7,7 +7,7 @@ public class FiltersTests : TestBase
 {
     public FiltersTests() : base(s => s.AddTransient<FiltersTools>()) { }
 
-    [Fact(Skip="Requires live Raindrop API")]
+    [Fact(Skip = "Requires live Raindrop API")]
     public async Task List()
     {
         var filters = Provider.GetRequiredService<FiltersTools>();

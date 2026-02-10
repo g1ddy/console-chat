@@ -10,7 +10,7 @@ public class ChatController : IChatController
     private readonly McpToolCollection _toolCollection;
     private readonly IReadOnlyList<AIFunction> _functions;
 
-    private ChatOptions CreateChatOptions() => new() { Tools = [.._toolCollection.Tools, .._functions] };
+    private ChatOptions CreateChatOptions() => new() { Tools = [.. _toolCollection.Tools, .. _functions] };
     private const int DefaultSummaryThreshold = 20;
     private const int DefaultSummaryKeepLast = 5;
 
@@ -134,7 +134,7 @@ public class ChatController : IChatController
             return;
         }
 
-        history.Add([..messages]);
+        history.Add([.. messages]);
 
         finalCallback?.Invoke(messages);
     }

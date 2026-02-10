@@ -172,7 +172,6 @@ public class ChatConsole : IChatConsole
                     AppendUpdate(renderables, textBuilder, callNames, update);
                     rows = new Rows(renderables);
                     ctx.UpdateTarget(rows);
-                    ctx.Refresh();
                 }
             });
 

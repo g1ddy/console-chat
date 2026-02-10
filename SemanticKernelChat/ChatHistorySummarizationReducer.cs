@@ -76,7 +76,7 @@ public class ChatHistorySummarizationReducer : IChatHistoryReducer
 
             try
             {
-                List<ChatMessage> summarizationRequest = [..summarizedHistory, new ChatMessage(ChatRole.System, SummarizationInstructions)];
+                List<ChatMessage> summarizationRequest = [.. summarizedHistory, new ChatMessage(ChatRole.System, SummarizationInstructions)];
                 ChatResponse response = await _chatClient.GetResponseAsync(summarizationRequest, options: null, cancellationToken).ConfigureAwait(false);
                 ChatMessage summaryMessage = response.Messages.Last();
                 summaryMessage.AdditionalProperties ??= new();

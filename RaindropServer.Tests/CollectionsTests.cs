@@ -9,7 +9,7 @@ public class CollectionsTests : TestBase
 {
     public CollectionsTests() : base(s => s.AddTransient<CollectionsTools>()) { }
 
-    [Fact(Skip="Requires live Raindrop API")]
+    [Fact(Skip = "Requires live Raindrop API")]
     public async Task Crud()
     {
         var collections = Provider.GetRequiredService<CollectionsTools>();
@@ -29,7 +29,7 @@ public class CollectionsTests : TestBase
         }
     }
 
-    [Fact(Skip="Requires live Raindrop API")]
+    [Fact(Skip = "Requires live Raindrop API")]
     public async Task ListChildren()
     {
         var collections = Provider.GetRequiredService<CollectionsTools>();
@@ -49,7 +49,7 @@ public class CollectionsTests : TestBase
         }
     }
 
-    [Fact(Skip="Requires live Raindrop API")]
+    [Fact(Skip = "Requires live Raindrop API")]
     public async Task MergeCollections()
     {
         var collections = Provider.GetRequiredService<CollectionsTools>();
