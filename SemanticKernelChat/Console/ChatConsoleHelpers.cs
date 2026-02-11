@@ -19,7 +19,7 @@ internal static class ChatConsoleHelpers
             "user" => (":bust_in_silhouette: User", Justify.Left, new Style(Color.RoyalBlue1)),
             "assistant" => (":robot: Assistant", Justify.Right, new Style(Color.DarkSeaGreen2)),
             "tool" => (":wrench: Tool", Justify.Center, new Style(Color.Grey37)),
-            _ => (roleName, Justify.Left, Style.Plain)
+            _ => (Markup.Escape(roleName), Justify.Left, Style.Plain)
         };
 
         var headerText = $"{baseHeader} | [grey]({DateTime.Now.ToShortTimeString()})[/]";

@@ -166,7 +166,7 @@ public class ChatConsole : IChatConsole
         var lastUpdate = TimeSpan.Zero;
         var updateInterval = TimeSpan.FromMilliseconds(50);
         (string headerText, Justify justify, Style style)? assistantStyle = null;
-        bool[] hasAssistantPanelState = [false];
+        var displayState = new DisplayState();
 
         await _console.Live(new Rows(renderables))
             .AutoClear(false)
@@ -176,7 +176,7 @@ public class ChatConsole : IChatConsole
                 {
                     messageUpdates.Add(update);
 
-                    if (update.Role == ChatRole.Assistant)
+                    if (update.Role == ChatRole.Assistant && assistantStyle == null)
                     {
                         assistantStyle = ChatConsoleHelpers.GetHeaderStyle(update.Role);
                     }
@@ -186,12 +186,12 @@ public class ChatConsole : IChatConsole
                     var currentTime = stopwatch.Elapsed;
                     if (addedNewPanels || currentTime - lastUpdate > updateInterval)
                     {
-                        RefreshUI(ctx, renderables, textBuilder, assistantStyle, hasAssistantPanelState);
+                        RefreshUI(ctx, renderables, textBuilder, assistantStyle, displayState);
                         lastUpdate = currentTime;
                     }
                 }
 
-                RefreshUI(ctx, renderables, textBuilder, assistantStyle, hasAssistantPanelState);
+                RefreshUI(ctx, renderables, textBuilder, assistantStyle, displayState);
             });
 
         var response = Microsoft.Extensions.AI.ChatResponseExtensions.ToChatResponse(messageUpdates);
@@ -204,7 +204,7 @@ public class ChatConsole : IChatConsole
         List<Panel> panels,
         StringBuilder textBuilder,
         (string headerText, Justify justify, Style style)? assistantStyle,
-        bool[] hasAssistantPanelState)
+        DisplayState displayState)
     {
         if (assistantStyle.HasValue)
         {
@@ -213,18 +213,23 @@ public class ChatConsole : IChatConsole
             var markupText = new Markup(textBuilder.ToString());
             var assistantPanel = ChatConsoleHelpers.CreatePanel(markupText, style, header);
 
-            if (hasAssistantPanelState[0])
+            if (displayState.HasAssistantPanel)
             {
                 panels[0] = assistantPanel;
             }
             else
             {
                 panels.Insert(0, assistantPanel);
-                hasAssistantPanelState[0] = true;
+                displayState.HasAssistantPanel = true;
             }
         }
 
         ctx.UpdateTarget(new Rows(panels));
+    }
+
+    private class DisplayState
+    {
+        public bool HasAssistantPanel { get; set; }
     }
 
     private bool AccumulateUpdate(
