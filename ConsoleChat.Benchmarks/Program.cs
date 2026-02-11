@@ -5,6 +5,6 @@ public class Program
 {
     public static void Main(string[] args)
     {
-        BenchmarkRunner.Run<DisplayStreamingUpdatesBenchmark>();
+        BenchmarkSwitcher.FromAssembly(typeof(Program).Assembly).Run(args);
     }
 }
