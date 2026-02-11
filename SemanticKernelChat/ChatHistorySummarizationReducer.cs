@@ -94,7 +94,7 @@ public class ChatHistorySummarizationReducer : IChatHistoryReducer
                     throw;
                 }
 
-                _logger?.LogError(ex, "Summarization failed: {Message}", ex.Message);
+                _logger?.LogError(ex, "Summarization failed");
             }
         }
 
