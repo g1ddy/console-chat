@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Extensions.AI;
+using Microsoft.Extensions.Logging.Abstractions;
 using SemanticKernelChat;
 using SemanticKernelChat.Commands;
 using SemanticKernelChat.Console;
@@ -37,7 +38,7 @@ public class ChatCommandTests
         var lineEditor = new FakeLineEditor(new[] { "hi", null });
         var chatConsole = new ChatConsole(lineEditor, testConsole);
         var client = new FakeChatClient { Response = new(new ChatMessage(ChatRole.Assistant, "done")) };
-        var controller = new ChatController(chatConsole, client, McpCollectionFactory.CreateToolCollection(), []);
+        var controller = new ChatController(chatConsole, client, McpCollectionFactory.CreateToolCollection(), [], NullLoggerFactory.Instance);
         var history = new ChatHistoryService();
         var command = new ChatCommand(history, controller, chatConsole, Enumerable.Empty<IChatCommandStrategy>());
 
@@ -49,4 +50,3 @@ public class ChatCommandTests
         Assert.Contains("done", testConsole.Output);
     }
 }
-

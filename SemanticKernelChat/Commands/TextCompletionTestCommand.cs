@@ -1,4 +1,5 @@
 using Microsoft.Extensions.AI;
+using Microsoft.Extensions.Logging;
 
 using SemanticKernelChat.Console;
 using SemanticKernelChat.Infrastructure;
@@ -51,8 +52,9 @@ public sealed class TextCompletionTestCommand : ChatCommandBase
         McpToolCollection tools,
         IReadOnlyList<AIFunction> functions,
         IEnumerable<IChatCommandStrategy> strategies,
-        IAnsiConsole ansiConsole)
-        : this(history, CreateController(chatClient, tools, functions, ansiConsole), strategies)
+        IAnsiConsole ansiConsole,
+        ILoggerFactory loggerFactory)
+        : this(history, CreateController(chatClient, tools, functions, ansiConsole, loggerFactory), strategies)
     {
     }
 
@@ -68,10 +70,11 @@ public sealed class TextCompletionTestCommand : ChatCommandBase
         IChatClient chatClient,
         McpToolCollection tools,
         IReadOnlyList<AIFunction> functions,
-        IAnsiConsole ansiConsole)
+        IAnsiConsole ansiConsole,
+        ILoggerFactory loggerFactory)
     {
         var chatConsole = new ChatConsole(new FakeLineEditor(ScriptedInputs), ansiConsole);
-        var controller = new ChatController(chatConsole, chatClient, tools, functions);
+        var controller = new ChatController(chatConsole, chatClient, tools, functions, loggerFactory);
         return (controller, chatConsole);
     }
 

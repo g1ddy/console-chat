@@ -1,6 +1,7 @@
 using ConsoleChat.Tests.TestUtilities;
 
 using Microsoft.Extensions.AI;
+using Microsoft.Extensions.Logging.Abstractions;
 
 using SemanticKernelChat;
 using SemanticKernelChat.Console;
@@ -152,7 +153,7 @@ public class ChatConsoleTests
         var client = new FakeChatClient { Response = new(new ChatMessage(ChatRole.Assistant, "done")) };
         var completion = new CommandCompletion(Enumerable.Empty<IChatCommandStrategy>());
         var console = new ChatConsole(new ChatLineEditor(completion), testConsole);
-        var controller = new ChatController(console, client, McpCollectionFactory.CreateToolCollection(), []);
+        var controller = new ChatController(console, client, McpCollectionFactory.CreateToolCollection(), [], NullLoggerFactory.Instance);
         await controller.SendAndDisplayAsync(history);
 
         Assert.Equal(2, history.Messages.Count);
@@ -173,7 +174,7 @@ public class ChatConsoleTests
 
         var completion = new CommandCompletion(Enumerable.Empty<IChatCommandStrategy>());
         var console = new ChatConsole(new ChatLineEditor(completion), testConsole);
-        var controller = new ChatController(console, client, McpCollectionFactory.CreateToolCollection(), []);
+        var controller = new ChatController(console, client, McpCollectionFactory.CreateToolCollection(), [], NullLoggerFactory.Instance);
         await controller.SendAndDisplayStreamingAsync(history);
 
         Assert.Equal(2, history.Messages.Count);
