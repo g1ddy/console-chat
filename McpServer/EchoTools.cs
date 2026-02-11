@@ -1,6 +1,6 @@
 using ModelContextProtocol.Server;
-
 using System.ComponentModel;
+using System.Globalization;
 
 namespace McpServer;
 
@@ -14,10 +14,19 @@ public static class EchoTools
     public static string ReverseEcho(string message)
     {
         ArgumentNullException.ThrowIfNull(message);
+
         return string.Create(message.Length, message, (span, state) =>
         {
-            state.AsSpan().CopyTo(span);
-            span.Reverse();
+            int sourceIndex = 0;
+            int writeIndex = span.Length;
+
+            while (sourceIndex < state.Length)
+            {
+                int count = StringInfo.GetNextTextElementLength(state, sourceIndex);
+                writeIndex -= count;
+                state.AsSpan(sourceIndex, count).CopyTo(span.Slice(writeIndex));
+                sourceIndex += count;
+            }
         });
     }
 }
