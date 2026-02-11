@@ -15,7 +15,7 @@ public sealed class McpServerManager : IAsyncDisposable
     private readonly McpServerState _state;
     private readonly Dictionary<string, McpServerConfig> _configs;
     private readonly ConcurrentDictionary<string, Task> _loadTasks = new();
-    private readonly List<IAsyncDisposable> _disposables = new();
+    private readonly ConcurrentStack<IAsyncDisposable> _disposables = new();
     private readonly ILogger<McpServerState> _logger;
     private bool _disposed;
 
@@ -93,7 +93,7 @@ public sealed class McpServerManager : IAsyncDisposable
         {
             var transport = await McpClientHelper.CreateTransportAsync(name, config, cancellationToken: cancellationToken);
             var client = await McpClient.CreateAsync(transport);
-            _disposables.Add(client);
+            _disposables.Push(client);
 
             var capabilities = client.ServerCapabilities;
 
@@ -122,7 +122,7 @@ public sealed class McpServerManager : IAsyncDisposable
             return;
         }
 
-        foreach (var disposable in Enumerable.Reverse(_disposables))
+        while (_disposables.TryPop(out var disposable))
         {
             await disposable.DisposeAsync();
         }
