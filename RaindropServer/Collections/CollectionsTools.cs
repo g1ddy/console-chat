@@ -47,7 +47,7 @@ public class CollectionsTools(ICollectionsApi api) :
      Description("Merge multiple collections into a destination collection. Requires both the target collection ID and an array of source collection IDs to merge.")]
     public Task<SuccessResponse> MergeCollectionsAsync(
         [Description("Target collection ID where source collections will be merged")] int to,
-        [Description("Collection IDs to merge")] HashSet<int> ids)
+        [Description("Collection IDs to merge")] IReadOnlySet<int> ids)
     {
         if (ids is null)
             throw new ArgumentNullException(nameof(ids));
