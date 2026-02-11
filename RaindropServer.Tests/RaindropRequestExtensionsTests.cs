@@ -24,14 +24,7 @@ public class RaindropRequestExtensionsTests
         var raindrop = request.ToRaindrop();
 
         // Assert
-        Assert.Equal(request.Link, raindrop.Link);
-        Assert.Equal(request.Title, raindrop.Title);
-        Assert.Equal(request.Excerpt, raindrop.Excerpt);
-        Assert.Equal(request.Note, raindrop.Note);
-        Assert.NotNull(raindrop.Tags);
-        Assert.Equal(request.Tags, raindrop.Tags);
-        Assert.Equal(request.Important, raindrop.Important);
-        Assert.Equal(request.CollectionId, raindrop.CollectionId);
+        AssertAllPropertiesMapped(request, raindrop);
     }
 
     [Fact]
@@ -88,14 +81,7 @@ public class RaindropRequestExtensionsTests
         var raindrop = request.ToRaindrop();
 
         // Assert
-        Assert.Equal(request.Link, raindrop.Link);
-        Assert.Equal(request.Title, raindrop.Title);
-        Assert.Equal(request.Excerpt, raindrop.Excerpt);
-        Assert.Equal(request.Note, raindrop.Note);
-        Assert.NotNull(raindrop.Tags);
-        Assert.Equal(request.Tags, raindrop.Tags);
-        Assert.Equal(request.Important, raindrop.Important);
-        Assert.Equal(request.CollectionId, raindrop.CollectionId);
+        AssertAllPropertiesMapped(request, raindrop);
     }
 
     [Fact]
@@ -112,6 +98,23 @@ public class RaindropRequestExtensionsTests
 
         // Assert
         Assert.Null(raindrop.Tags);
+    }
+
+    [Fact]
+    public void ToRaindrop_UpdateRequest_HandlesEmptyTags()
+    {
+        // Arrange
+        var request = new RaindropUpdateRequest
+        {
+            Tags = new List<string>()
+        };
+
+        // Act
+        var raindrop = request.ToRaindrop();
+
+        // Assert
+        Assert.NotNull(raindrop.Tags);
+        Assert.Empty(raindrop.Tags);
     }
 
     [Fact]
@@ -134,5 +137,17 @@ public class RaindropRequestExtensionsTests
         Assert.Null(raindrop.Tags);
         Assert.Null(raindrop.Important);
         Assert.Null(raindrop.CollectionId);
+    }
+
+    private void AssertAllPropertiesMapped(dynamic request, Raindrop raindrop)
+    {
+        Assert.Equal(request.Link, raindrop.Link);
+        Assert.Equal(request.Title, raindrop.Title);
+        Assert.Equal(request.Excerpt, raindrop.Excerpt);
+        Assert.Equal(request.Note, raindrop.Note);
+        Assert.NotNull(raindrop.Tags);
+        Assert.Equal(request.Tags, raindrop.Tags);
+        Assert.Equal(request.Important, raindrop.Important);
+        Assert.Equal(request.CollectionId, raindrop.CollectionId);
     }
 }
