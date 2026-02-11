@@ -159,20 +159,39 @@ public class ChatConsole : IChatConsole
         var messageUpdates = new List<ChatResponseUpdate>();
         var textBuilder = new StringBuilder();
         var renderables = new List<Panel>();
-        var rows = new Rows(renderables);
 
         var callNames = new Dictionary<string, string>();
-        await _console.Live(rows)
+
+        var stopwatch = System.Diagnostics.Stopwatch.StartNew();
+        var lastUpdate = TimeSpan.Zero;
+        var updateInterval = TimeSpan.FromMilliseconds(50);
+        (string headerText, Justify justify, Style style)? assistantStyle = null;
+        var displayState = new DisplayState();
+
+        await _console.Live(new Rows(renderables))
             .AutoClear(false)
             .StartAsync(async ctx =>
             {
                 await foreach (var update in updates)
                 {
                     messageUpdates.Add(update);
-                    AppendUpdate(renderables, textBuilder, callNames, update);
-                    rows = new Rows(renderables);
-                    ctx.UpdateTarget(rows);
+
+                    if (update.Role == ChatRole.Assistant && assistantStyle == null)
+                    {
+                        assistantStyle = ChatConsoleHelpers.GetHeaderStyle(update.Role);
+                    }
+
+                    bool addedNewPanels = AccumulateUpdate(renderables, textBuilder, callNames, update);
+
+                    var currentTime = stopwatch.Elapsed;
+                    if (addedNewPanels || currentTime - lastUpdate > updateInterval)
+                    {
+                        RefreshUI(ctx, renderables, textBuilder, assistantStyle, displayState);
+                        lastUpdate = currentTime;
+                    }
                 }
+
+                RefreshUI(ctx, renderables, textBuilder, assistantStyle, displayState);
             });
 
         var response = Microsoft.Extensions.AI.ChatResponseExtensions.ToChatResponse(messageUpdates);
@@ -180,7 +199,40 @@ public class ChatConsole : IChatConsole
         return [.. response.Messages];
     }
 
-    private void AppendUpdate(
+    private void RefreshUI(
+        LiveDisplayContext ctx,
+        List<Panel> panels,
+        StringBuilder textBuilder,
+        (string headerText, Justify justify, Style style)? assistantStyle,
+        DisplayState displayState)
+    {
+        if (assistantStyle.HasValue)
+        {
+            var (headerText, justify, style) = assistantStyle.Value;
+            var header = new PanelHeader(headerText, justify);
+            var markupText = new Markup(textBuilder.ToString());
+            var assistantPanel = ChatConsoleHelpers.CreatePanel(markupText, style, header);
+
+            if (displayState.HasAssistantPanel)
+            {
+                panels[0] = assistantPanel;
+            }
+            else
+            {
+                panels.Insert(0, assistantPanel);
+                displayState.HasAssistantPanel = true;
+            }
+        }
+
+        ctx.UpdateTarget(new Rows(panels));
+    }
+
+    private class DisplayState
+    {
+        public bool HasAssistantPanel { get; set; }
+    }
+
+    private bool AccumulateUpdate(
         List<Panel> panels,
         StringBuilder textBuilder,
         Dictionary<string, string> callNames,
@@ -190,25 +242,6 @@ public class ChatConsole : IChatConsole
         ChatConsoleHelpers.CollectFunctionCallNames(contents, callNames);
 
         _ = textBuilder.Append(update.Text?.EscapeMarkup() ?? string.Empty);
-
-        var (headerText, justify, style) = ChatConsoleHelpers.GetHeaderStyle(update.Role);
-        var header = new PanelHeader(headerText, justify);
-
-        if (update.Role == ChatRole.Assistant)
-        {
-            var markupText = new Markup(textBuilder.ToString());
-            var assistantPanel = ChatConsoleHelpers.CreatePanel(markupText, style, header);
-
-            // update first or default or insert new row to panels
-            if (panels.Count > 0)
-            {
-                panels[0] = assistantPanel;
-            }
-            else
-            {
-                panels.Add(assistantPanel);
-            }
-        }
 
         var renderables = new List<IRenderable>();
         AddDebugPanels(
@@ -221,9 +254,14 @@ public class ChatConsole : IChatConsole
 
         if (renderables.Any())
         {
+            var (headerText, justify, style) = ChatConsoleHelpers.GetHeaderStyle(update.Role);
+            var header = new PanelHeader(headerText, justify);
             var rows = new Rows(renderables);
             var toolsPanel = ChatConsoleHelpers.CreatePanel(rows, style, header);
             panels.Add(toolsPanel);
+            return true;
         }
+
+        return false;
     }
 }
