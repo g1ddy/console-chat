@@ -122,7 +122,7 @@ public sealed class McpServerManager : IAsyncDisposable
             return;
         }
 
-        foreach (var disposable in _disposables)
+        while (_disposables.TryPop(out var disposable))
         {
             await disposable.DisposeAsync();
         }
