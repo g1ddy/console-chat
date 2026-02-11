@@ -1,6 +1,7 @@
 using ConsoleChat.Tests.TestUtilities;
 
 using Microsoft.Extensions.AI;
+using Microsoft.Extensions.Logging.Abstractions;
 
 using SemanticKernelChat;
 using SemanticKernelChat.Commands;
@@ -26,7 +27,7 @@ public class FileCommandTests
             var lineEditor = new ChatLineEditor(new CommandCompletion(Enumerable.Empty<IChatCommandStrategy>()));
             var chatConsole = new ChatConsole(lineEditor, console);
             var client = new FakeChatClient { Response = new(new ChatMessage(ChatRole.Assistant, "done")) };
-            var controller = new ChatController(chatConsole, client, McpCollectionFactory.CreateToolCollection(), []);
+            var controller = new ChatController(chatConsole, client, McpCollectionFactory.CreateToolCollection(), [], NullLoggerFactory.Instance);
 
             var command = new FileCommand(history, controller);
             var context = new CommandContext(new FakeRemainingArguments(), "file", new object());

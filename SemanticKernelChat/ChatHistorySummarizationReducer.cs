@@ -1,4 +1,5 @@
 using Microsoft.Extensions.AI;
+using Microsoft.Extensions.Logging;
 
 namespace SemanticKernelChat;
 
@@ -38,8 +39,9 @@ public class ChatHistorySummarizationReducer : IChatHistoryReducer
     private readonly IChatClient _chatClient;
     private readonly int _thresholdCount;
     private readonly int _targetCount;
+    private readonly ILogger? _logger;
 
-    public ChatHistorySummarizationReducer(IChatClient chatClient, int targetCount, int? thresholdCount = null)
+    public ChatHistorySummarizationReducer(IChatClient chatClient, int targetCount, int? thresholdCount = null, ILogger? logger = null)
     {
         ArgumentNullException.ThrowIfNull(chatClient);
         if (targetCount <= 0) throw new ArgumentOutOfRangeException(nameof(targetCount));
@@ -48,6 +50,7 @@ public class ChatHistorySummarizationReducer : IChatHistoryReducer
         _chatClient = chatClient;
         _targetCount = targetCount;
         _thresholdCount = thresholdCount ?? 0;
+        _logger = logger;
     }
 
     public async Task<IEnumerable<ChatMessage>?> ReduceAsync(
@@ -91,7 +94,7 @@ public class ChatHistorySummarizationReducer : IChatHistoryReducer
                     throw;
                 }
 
-                System.Console.Error.WriteLine($"Summarization failed: {ex.Message}");
+                _logger?.LogError(ex, "Summarization failed");
             }
         }
 

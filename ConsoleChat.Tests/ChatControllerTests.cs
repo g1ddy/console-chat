@@ -1,6 +1,7 @@
 using ConsoleChat.Tests.TestUtilities;
 
 using Microsoft.Extensions.AI;
+using Microsoft.Extensions.Logging.Abstractions;
 
 using NSubstitute;
 
@@ -23,7 +24,7 @@ public class ChatControllerTests
             .Returns(call => ((Func<Task>)call[0])());
 
         var client = new FakeChatClient { Response = new(new ChatMessage(ChatRole.Assistant, "done")) };
-        var controller = new ChatController(console, client, McpCollectionFactory.CreateToolCollection(), []);
+        var controller = new ChatController(console, client, McpCollectionFactory.CreateToolCollection(), [], NullLoggerFactory.Instance);
 
         await controller.SendAndDisplayAsync(history);
 
@@ -48,7 +49,7 @@ public class ChatControllerTests
             .GetResponseAsync(Arg.Any<IEnumerable<ChatMessage>>(), Arg.Any<ChatOptions?>(), Arg.Any<CancellationToken>())
             .Returns(call => Task.FromException<ChatResponse>(new InvalidOperationException("fail")));
 
-        var controller = new ChatController(console, client, McpCollectionFactory.CreateToolCollection(), []);
+        var controller = new ChatController(console, client, McpCollectionFactory.CreateToolCollection(), [], NullLoggerFactory.Instance);
 
         await controller.SendAndDisplayAsync(history);
 
@@ -72,7 +73,7 @@ public class ChatControllerTests
         console.DisplayStreamingUpdatesAsync(Arg.Any<IAsyncEnumerable<ChatResponseUpdate>>())
             .Returns(Task.FromResult<IReadOnlyList<ChatMessage>>(new[] { new ChatMessage(ChatRole.Assistant, "AB") }));
 
-        var controller = new ChatController(console, client, McpCollectionFactory.CreateToolCollection(), []);
+        var controller = new ChatController(console, client, McpCollectionFactory.CreateToolCollection(), [], NullLoggerFactory.Instance);
         IReadOnlyList<ChatMessage>? finalMessages = null;
 
         await controller.SendAndDisplayStreamingAsync(history, msgs => finalMessages = msgs);
@@ -98,7 +99,7 @@ public class ChatControllerTests
             .DisplayStreamingUpdatesAsync(Arg.Any<IAsyncEnumerable<ChatResponseUpdate>>())
             .Returns(call => Task.FromException<IReadOnlyList<ChatMessage>>(new InvalidOperationException("fail")));
 
-        var controller = new ChatController(console, client, McpCollectionFactory.CreateToolCollection(), []);
+        var controller = new ChatController(console, client, McpCollectionFactory.CreateToolCollection(), [], NullLoggerFactory.Instance);
 
         await controller.SendAndDisplayStreamingAsync(history);
 
@@ -136,7 +137,7 @@ public class ChatControllerTests
                 return Task.FromResult(new ChatResponse(new ChatMessage(ChatRole.Assistant, "done")));
             });
 
-        var controller = new ChatController(console, client, McpCollectionFactory.CreateToolCollection(), [], summaryThreshold: 5, summaryKeepLast: 2);
+        var controller = new ChatController(console, client, McpCollectionFactory.CreateToolCollection(), [], NullLoggerFactory.Instance, summaryThreshold: 5, summaryKeepLast: 2);
 
         await controller.SummarizeAsync(history);
         await controller.SendAndDisplayAsync(history);

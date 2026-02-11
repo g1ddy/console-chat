@@ -1,4 +1,5 @@
 using Microsoft.Extensions.AI;
+using Microsoft.Extensions.Logging;
 using SemanticKernelChat.Infrastructure;
 
 namespace SemanticKernelChat.Console;
@@ -24,7 +25,9 @@ public class ChatController : IChatController
     public ChatController(
         IChatConsole console,
         IChatClient chatClient,
-        McpToolCollection toolCollection, IReadOnlyList<AIFunction> functions,
+        McpToolCollection toolCollection,
+        IReadOnlyList<AIFunction> functions,
+        ILoggerFactory loggerFactory,
         int summaryThreshold = DefaultSummaryThreshold,
         int summaryKeepLast = DefaultSummaryKeepLast)
     {
@@ -52,7 +55,11 @@ public class ChatController : IChatController
 
         int targetCount = _summaryKeepLast + 1;
         int thresholdCount = _summaryThreshold - targetCount;
-        _reducer = new ChatHistorySummarizationReducer(chatClient, targetCount, thresholdCount)
+        _reducer = new ChatHistorySummarizationReducer(
+            chatClient,
+            targetCount,
+            thresholdCount,
+            loggerFactory.CreateLogger<ChatHistorySummarizationReducer>())
         {
             SummarizationInstructions = SummarizationPrompt,
             UseSingleSummary = true,
