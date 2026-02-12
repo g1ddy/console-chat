@@ -69,15 +69,22 @@ internal static class ChatConsoleHelpers
             return false;
         }
 
-        try
+        var trimmed = text.AsSpan().Trim();
+        if ((trimmed.StartsWith("{") && trimmed.EndsWith("}")) ||
+            (trimmed.StartsWith("[") && trimmed.EndsWith("]")))
         {
-            _ = JsonDocument.Parse(text);
-            return true;
+            try
+            {
+                using var doc = JsonDocument.Parse(text);
+                return true;
+            }
+            catch (JsonException)
+            {
+                return false;
+            }
         }
-        catch (JsonException)
-        {
-            return false;
-        }
+
+        return false;
     }
 
     public static string? SerializeArguments(IDictionary<string, object?>? args)
