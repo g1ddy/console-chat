@@ -3,5 +3,12 @@ namespace SemanticKernelChat.Console;
 internal static class CommandTokenizer
 {
     public static string[] SplitArguments(string input)
-        => input.Split(' ', StringSplitOptions.TrimEntries);
+    {
+        if (string.IsNullOrWhiteSpace(input))
+        {
+            return Array.Empty<string>();
+        }
+
+        return input.Split(' ', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
+    }
 }
