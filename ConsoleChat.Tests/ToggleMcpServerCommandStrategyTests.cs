@@ -99,12 +99,12 @@ public class ToggleMcpServerCommandStrategyTests
         var history = Substitute.For<IChatHistoryService>();
         var controller = Substitute.For<IChatController>();
 
-        // Capture arguments to verify state passed to prompt
+        // Capture the initial state passed to the prompt to verify it matches the tool collection
         IEnumerable<(string Name, bool Selected)>? capturedItems = null;
 
         // Mock user selection: keep server1 enabled, disable server2
-        // We use Arg.Do to capture the arguments, ensuring we materialize the enumerable
-        // because Select is lazy and will reflect future state changes if not consumed now.
+        // Use Arg.Do to capture and materialize the enumerable immediately (via ToList)
+        // to avoid lazy evaluation reflecting future state changes.
         console.PromptMultiSelection(
             Arg.Any<string>(),
             Arg.Do<IEnumerable<(string Name, bool Selected)>>(x => capturedItems = x.ToList()))
@@ -117,7 +117,7 @@ public class ToggleMcpServerCommandStrategyTests
         Assert.True(tools.IsServerEnabled(server1));   // Selected -> Enabled
         Assert.False(tools.IsServerEnabled(server2));  // Not selected -> Disabled
 
-        // Verify prompt was called with correct initial state
+        // Verify prompt was called with correct initial state (all servers enabled by default)
         Assert.NotNull(capturedItems);
         var itemsList = capturedItems.ToList();
         Assert.Equal(2, itemsList.Count);
