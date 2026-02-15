@@ -54,29 +54,19 @@ public static class RaindropServiceCollectionExtensions
             client.BaseAddress = new Uri(options.BaseUrl);
         }
 
-        services.AddRefitClient<ICollectionsApi>(settings)
-            .ConfigureHttpClient(Configure)
-            .AddHttpMessageHandler<AuthHeaderHandler>();
+        void AddApi<T>() where T : class
+        {
+            services.AddRefitClient<T>(settings)
+                .ConfigureHttpClient(Configure)
+                .AddHttpMessageHandler<AuthHeaderHandler>();
+        }
 
-        services.AddRefitClient<IRaindropsApi>(settings)
-            .ConfigureHttpClient(Configure)
-            .AddHttpMessageHandler<AuthHeaderHandler>();
-
-        services.AddRefitClient<IHighlightsApi>(settings)
-            .ConfigureHttpClient(Configure)
-            .AddHttpMessageHandler<AuthHeaderHandler>();
-
-        services.AddRefitClient<IFiltersApi>(settings)
-            .ConfigureHttpClient(Configure)
-            .AddHttpMessageHandler<AuthHeaderHandler>();
-
-        services.AddRefitClient<ITagsApi>(settings)
-            .ConfigureHttpClient(Configure)
-            .AddHttpMessageHandler<AuthHeaderHandler>();
-
-        services.AddRefitClient<IUserApi>(settings)
-            .ConfigureHttpClient(Configure)
-            .AddHttpMessageHandler<AuthHeaderHandler>();
+        AddApi<ICollectionsApi>();
+        AddApi<IRaindropsApi>();
+        AddApi<IHighlightsApi>();
+        AddApi<IFiltersApi>();
+        AddApi<ITagsApi>();
+        AddApi<IUserApi>();
 
         return services;
     }

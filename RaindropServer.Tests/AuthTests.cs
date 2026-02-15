@@ -15,6 +15,42 @@ namespace RaindropServer.Tests;
 public class AuthTests
 {
     [Fact]
+    public void HttpContextTokenProvider_ReturnsToken_ForBearerScheme()
+    {
+        // Arrange
+        var contextAccessor = Substitute.For<IHttpContextAccessor>();
+        var context = new DefaultHttpContext();
+        context.Request.Headers["Authorization"] = "Bearer test-token";
+        contextAccessor.HttpContext.Returns(context);
+
+        var provider = new HttpContextTokenProvider(contextAccessor);
+
+        // Act
+        var token = provider.GetToken();
+
+        // Assert
+        Assert.Equal("test-token", token);
+    }
+
+    [Fact]
+    public void HttpContextTokenProvider_ReturnsNull_ForNonBearerScheme()
+    {
+        // Arrange
+        var contextAccessor = Substitute.For<IHttpContextAccessor>();
+        var context = new DefaultHttpContext();
+        context.Request.Headers["Authorization"] = "Basic some-token";
+        contextAccessor.HttpContext.Returns(context);
+
+        var provider = new HttpContextTokenProvider(contextAccessor);
+
+        // Act
+        var token = provider.GetToken();
+
+        // Assert
+        Assert.Null(token);
+    }
+
+    [Fact]
     public async Task PassThroughAuthenticationHandler_ReturnsSuccess_WhenHeaderPresent()
     {
         // Arrange
@@ -23,8 +59,6 @@ public class AuthTests
         var logger = NullLoggerFactory.Instance;
         var encoder = UrlEncoder.Default;
 
-        // Use TestPassThroughAuthenticationHandler to bypass InitializeAsync complexity if needed,
-        // but InitializeAsync is on AuthenticationHandler so it should be fine to call directly on the SUT.
         var handler = new PassThroughAuthenticationHandler(optionsMonitor, logger, encoder);
 
         var context = new DefaultHttpContext();
