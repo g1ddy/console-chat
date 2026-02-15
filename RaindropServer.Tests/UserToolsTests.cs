@@ -51,4 +51,18 @@ public class UserToolsTests
         var exception = await Assert.ThrowsAsync<InvalidOperationException>(() => _sut.GetUserInfoAsync());
         Assert.Same(expectedException, exception);
     }
+
+    [Fact]
+    public async Task GetUserInfoAsync_ApiReturnsNullResponse_ReturnsNull()
+    {
+        // Arrange
+        _api.GetAsync().Returns(Task.FromResult<ItemResponse<UserInfo>>(null!));
+
+        // Act
+        var result = await _sut.GetUserInfoAsync();
+
+        // Assert
+        Assert.Null(result);
+        await _api.Received(1).GetAsync();
+    }
 }
