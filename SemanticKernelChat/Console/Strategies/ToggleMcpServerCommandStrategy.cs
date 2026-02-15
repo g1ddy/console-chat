@@ -15,7 +15,7 @@ public sealed class ToggleMcpServerCommandStrategy : IChatCommandStrategy
 
     public IEnumerable<string>? GetCompletions(string prefix, string word, string suffix)
     {
-        var tokens = CommandTokenizer.SplitArguments((prefix + word).TrimStart());
+        var tokens = (prefix + word).TrimStart().Split(' ', StringSplitOptions.TrimEntries);
         if (tokens.Length == 1)
         {
             return new[] { CliConstants.Commands.Toggle };
@@ -29,7 +29,7 @@ public sealed class ToggleMcpServerCommandStrategy : IChatCommandStrategy
 
     public bool CanExecute(string input)
     {
-        var tokens = CommandTokenizer.SplitArguments(input);
+        var tokens = input.Split(' ', StringSplitOptions.TrimEntries);
         return tokens.Length == 2 &&
                tokens[0].Equals(CliConstants.Commands.Toggle, StringComparison.OrdinalIgnoreCase) &&
                tokens[1].Equals(CliConstants.Options.Mcp, StringComparison.OrdinalIgnoreCase);

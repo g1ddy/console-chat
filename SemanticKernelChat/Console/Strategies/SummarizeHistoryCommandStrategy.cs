@@ -8,7 +8,7 @@ public sealed class SummarizeHistoryCommandStrategy : IChatCommandStrategy
 {
     public IEnumerable<string>? GetCompletions(string prefix, string word, string suffix)
     {
-        var tokens = CommandTokenizer.SplitArguments((prefix + word).TrimStart());
+        var tokens = (prefix + word).TrimStart().Split(' ', StringSplitOptions.TrimEntries);
         if (tokens.Length == 1)
         {
             return new[] { CliConstants.Commands.Summarize };
