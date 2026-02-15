@@ -51,7 +51,13 @@ public static class RaindropServiceCollectionExtensions
                 throw new InvalidOperationException("Raindrop BaseUrl is required");
             }
 
+            if (options.TimeoutSeconds <= 0)
+            {
+                throw new InvalidOperationException("Raindrop TimeoutSeconds must be greater than 0");
+            }
+
             client.BaseAddress = new Uri(options.BaseUrl);
+            client.Timeout = TimeSpan.FromSeconds(options.TimeoutSeconds);
         }
 
         void AddApi<T>() where T : class
