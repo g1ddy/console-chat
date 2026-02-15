@@ -9,6 +9,7 @@ using RaindropServer.Highlights;
 using RaindropServer.Filters;
 using RaindropServer.Tags;
 using RaindropServer.User;
+using RaindropServer.Common;
 
 namespace RaindropServer;
 
@@ -25,6 +26,13 @@ public static class RaindropServiceCollectionExtensions
     {
         services.Configure<RaindropOptions>(configuration.GetSection("Raindrop"));
 
+        // Register core authentication services for clients
+        services.AddHttpContextAccessor();
+        services.AddTransient<AuthHeaderHandler>();
+
+        // Register default token provider if not already registered (allows tests to override)
+        services.AddSingleton<ITokenProvider, HttpContextTokenProvider>();
+
         var settings = new RefitSettings
         {
             ContentSerializer = new SystemTextJsonContentSerializer(new System.Text.Json.JsonSerializerOptions
@@ -34,7 +42,7 @@ public static class RaindropServiceCollectionExtensions
             })
         };
 
-        void Configure(HttpClient client, IServiceProvider sp)
+        void Configure(IServiceProvider sp, HttpClient client)
         {
             var options = sp.GetRequiredService<IOptions<RaindropOptions>>().Value;
 
@@ -43,21 +51,32 @@ public static class RaindropServiceCollectionExtensions
                 throw new InvalidOperationException("Raindrop BaseUrl is required");
             }
 
-            if (string.IsNullOrWhiteSpace(options.ApiToken))
-            {
-                throw new InvalidOperationException("Raindrop ApiToken is required");
-            }
-
             client.BaseAddress = new Uri(options.BaseUrl);
-            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", options.ApiToken);
         }
 
-        services.AddRefitClient<ICollectionsApi>(settings).ConfigureHttpClient((sp, client) => Configure(client, sp));
-        services.AddRefitClient<IRaindropsApi>(settings).ConfigureHttpClient((sp, client) => Configure(client, sp));
-        services.AddRefitClient<IHighlightsApi>(settings).ConfigureHttpClient((sp, client) => Configure(client, sp));
-        services.AddRefitClient<IFiltersApi>(settings).ConfigureHttpClient((sp, client) => Configure(client, sp));
-        services.AddRefitClient<ITagsApi>(settings).ConfigureHttpClient((sp, client) => Configure(client, sp));
-        services.AddRefitClient<IUserApi>(settings).ConfigureHttpClient((sp, client) => Configure(client, sp));
+        services.AddRefitClient<ICollectionsApi>(settings)
+            .ConfigureHttpClient(Configure)
+            .AddHttpMessageHandler<AuthHeaderHandler>();
+
+        services.AddRefitClient<IRaindropsApi>(settings)
+            .ConfigureHttpClient(Configure)
+            .AddHttpMessageHandler<AuthHeaderHandler>();
+
+        services.AddRefitClient<IHighlightsApi>(settings)
+            .ConfigureHttpClient(Configure)
+            .AddHttpMessageHandler<AuthHeaderHandler>();
+
+        services.AddRefitClient<IFiltersApi>(settings)
+            .ConfigureHttpClient(Configure)
+            .AddHttpMessageHandler<AuthHeaderHandler>();
+
+        services.AddRefitClient<ITagsApi>(settings)
+            .ConfigureHttpClient(Configure)
+            .AddHttpMessageHandler<AuthHeaderHandler>();
+
+        services.AddRefitClient<IUserApi>(settings)
+            .ConfigureHttpClient(Configure)
+            .AddHttpMessageHandler<AuthHeaderHandler>();
 
         return services;
     }

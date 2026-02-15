@@ -1,5 +1,7 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using RaindropServer.Common;
+using RaindropServer.Tests.Common;
 
 namespace RaindropServer.Tests;
 
@@ -11,6 +13,7 @@ public abstract class TestBase
     {
         var config = new ConfigurationBuilder()
             .AddJsonFile("appsettings.json", optional: true)
+            .AddEnvironmentVariables()
             .Build();
 
         var token = config["Raindrop:ApiToken"];
@@ -19,7 +22,13 @@ public abstract class TestBase
             throw new InvalidOperationException("Set Raindrop:ApiToken and Raindrop:BaseUrl to run tests");
 
         var services = new ServiceCollection();
+
+        // Register client services (this registers HttpContextTokenProvider by default)
         services.AddRaindropApiClient(config);
+
+        // Override with StaticTokenProvider for tests
+        services.AddSingleton<ITokenProvider>(new StaticTokenProvider(token));
+
         foreach (var reg in registrations) reg(services);
         Provider = services.BuildServiceProvider();
     }

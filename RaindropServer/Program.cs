@@ -1,10 +1,25 @@
 using RaindropServer;
+using RaindropServer.Common;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authorization;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Logging.AddConsole(options =>
 {
     options.LogToStandardErrorThreshold = LogLevel.Trace;
+});
+
+// Configure Authentication
+builder.Services.AddAuthentication("PassThrough")
+    .AddScheme<AuthenticationSchemeOptions, PassThroughAuthenticationHandler>("PassThrough", null);
+
+// Configure Authorization
+builder.Services.AddAuthorization(options =>
+{
+    options.FallbackPolicy = new AuthorizationPolicyBuilder()
+        .RequireAuthenticatedUser()
+        .Build();
 });
 
 builder.Services
@@ -27,6 +42,9 @@ Renderable functions like RenderTable, RenderTree and RenderChart can visualize 
     .WithPromptsFromAssembly();
 
 var app = builder.Build();
+
+app.UseAuthentication();
+app.UseAuthorization();
 
 app.MapMcp();
 
