@@ -47,7 +47,7 @@ public class ChatHistorySummarizationReducerTests
 
         // Assert
         Assert.Null(result);
-        await chatClient.DidNotReceiveWithAnyArgs().GetResponseAsync(Arg.Any<List<ChatMessage>>(), Arg.Any<ChatOptions>(), Arg.Any<CancellationToken>());
+        await chatClient.DidNotReceiveWithAnyArgs().GetResponseAsync(Arg.Any<IEnumerable<ChatMessage>>(), Arg.Any<ChatOptions>(), Arg.Any<CancellationToken>());
     }
 
     [Fact]
@@ -61,7 +61,7 @@ public class ChatHistorySummarizationReducerTests
             new(ChatRole.Assistant, summaryText)
         });
 
-        chatClient.GetResponseAsync(Arg.Any<List<ChatMessage>>(), Arg.Any<ChatOptions>(), Arg.Any<CancellationToken>())
+        chatClient.GetResponseAsync(Arg.Any<IEnumerable<ChatMessage>>(), Arg.Any<ChatOptions>(), Arg.Any<CancellationToken>())
             .Returns(Task.FromResult(summaryResponse));
 
         var targetCount = 2;
@@ -108,7 +108,7 @@ public class ChatHistorySummarizationReducerTests
         Assert.Equal(history[4].Text, resultList[3].Text); // Message 3
 
         // Verify chat client was called
-        await chatClient.Received(1).GetResponseAsync(Arg.Any<List<ChatMessage>>(), Arg.Any<ChatOptions>(), Arg.Any<CancellationToken>());
+        await chatClient.Received(1).GetResponseAsync(Arg.Any<IEnumerable<ChatMessage>>(), Arg.Any<ChatOptions>(), Arg.Any<CancellationToken>());
     }
 
     [Fact]
@@ -121,7 +121,7 @@ public class ChatHistorySummarizationReducerTests
             new(ChatRole.Assistant, "Summary")
         });
 
-        chatClient.GetResponseAsync(Arg.Any<List<ChatMessage>>(), Arg.Any<ChatOptions>(), Arg.Any<CancellationToken>())
+        chatClient.GetResponseAsync(Arg.Any<IEnumerable<ChatMessage>>(), Arg.Any<ChatOptions>(), Arg.Any<CancellationToken>())
             .Returns(Task.FromResult(summaryResponse));
 
         var reducer = new ChatHistorySummarizationReducer(chatClient, targetCount: 1, thresholdCount: 1);
@@ -148,7 +148,7 @@ public class ChatHistorySummarizationReducerTests
     {
         // Arrange
         var chatClient = Substitute.For<IChatClient>();
-        chatClient.GetResponseAsync(Arg.Any<List<ChatMessage>>(), Arg.Any<ChatOptions>(), Arg.Any<CancellationToken>())
+        chatClient.GetResponseAsync(Arg.Any<IEnumerable<ChatMessage>>(), Arg.Any<ChatOptions>(), Arg.Any<CancellationToken>())
             .Returns(Task.FromException<ChatResponse>(new Exception("Summarization error")));
 
         var reducer = new ChatHistorySummarizationReducer(chatClient, targetCount: 1, thresholdCount: 1)
@@ -171,7 +171,7 @@ public class ChatHistorySummarizationReducerTests
     {
         // Arrange
         var chatClient = Substitute.For<IChatClient>();
-        chatClient.GetResponseAsync(Arg.Any<List<ChatMessage>>(), Arg.Any<ChatOptions>(), Arg.Any<CancellationToken>())
+        chatClient.GetResponseAsync(Arg.Any<IEnumerable<ChatMessage>>(), Arg.Any<ChatOptions>(), Arg.Any<CancellationToken>())
             .Returns(Task.FromException<ChatResponse>(new Exception("Summarization error")));
 
         var reducer = new ChatHistorySummarizationReducer(chatClient, targetCount: 1, thresholdCount: 1)
