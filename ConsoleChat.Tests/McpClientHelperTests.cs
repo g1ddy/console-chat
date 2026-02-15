@@ -1,5 +1,6 @@
 using System.IO;
 using System.Threading.Tasks;
+using System.Collections.Generic;
 using SemanticKernelChat.Helpers;
 using ModelContextProtocol.Client;
 using Xunit;
@@ -59,54 +60,28 @@ public class McpClientHelperTests
             McpClientHelper.CreateTransportAsync("test-server", config));
     }
 
-    [Fact]
-    public async Task CreateTransportAsync_Returns_StdioClientTransport_For_Stdio_Type()
+    public static IEnumerable<object?[]> CreateTransportAsync_HappyPath_TestData()
     {
-        // Arrange
-        var config = new McpServerConfig
-        {
-            Command = "dotnet",
-            TransportType = "stdio"
-        };
-
-        // Act
-        var transport = await McpClientHelper.CreateTransportAsync("test-server", config);
-
-        // Assert
-        Assert.IsType<StdioClientTransport>(transport);
+        yield return new object?[] { "stdio", "dotnet", typeof(StdioClientTransport) };
+        yield return new object?[] { "sse", "http://localhost:8080/sse", typeof(HttpClientTransport) };
+        yield return new object?[] { null, "dotnet", typeof(StdioClientTransport) };
     }
 
-    [Fact]
-    public async Task CreateTransportAsync_Returns_HttpClientTransport_For_Sse_Type()
+    [Theory]
+    [MemberData(nameof(CreateTransportAsync_HappyPath_TestData))]
+    public async Task CreateTransportAsync_Returns_Correct_Transport_For_Valid_Type(string? transportType, string command, Type expectedTransportType)
     {
         // Arrange
         var config = new McpServerConfig
         {
-            Command = "http://localhost:8080/sse",
-            TransportType = "sse"
+            Command = command,
+            TransportType = transportType
         };
 
         // Act
         var transport = await McpClientHelper.CreateTransportAsync("test-server", config);
 
         // Assert
-        Assert.IsType<HttpClientTransport>(transport);
-    }
-
-    [Fact]
-    public async Task CreateTransportAsync_Defaults_To_Stdio_When_TransportType_Is_Null()
-    {
-        // Arrange
-        var config = new McpServerConfig
-        {
-            Command = "dotnet",
-            TransportType = null
-        };
-
-        // Act
-        var transport = await McpClientHelper.CreateTransportAsync("test-server", config);
-
-        // Assert
-        Assert.IsType<StdioClientTransport>(transport);
+        Assert.IsType(expectedTransportType, transport);
     }
 }
