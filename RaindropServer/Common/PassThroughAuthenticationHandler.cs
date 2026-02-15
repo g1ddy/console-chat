@@ -19,18 +19,31 @@ public class PassThroughAuthenticationHandler : AuthenticationHandler<Authentica
     protected override Task<AuthenticateResult> HandleAuthenticateAsync()
     {
         // Check for Authorization header presence
-        if (!Request.Headers.ContainsKey("Authorization"))
+        if (!Request.Headers.TryGetValue("Authorization", out var authHeaderValue))
         {
             return Task.FromResult(AuthenticateResult.Fail("Missing Authorization Header"));
         }
 
-        var authHeader = Request.Headers["Authorization"].ToString();
+        var authHeader = authHeaderValue.ToString();
         if (string.IsNullOrWhiteSpace(authHeader))
         {
              return Task.FromResult(AuthenticateResult.Fail("Empty Authorization Header"));
         }
 
-        // We don't validate the token content, just its presence.
+        // Validate Scheme
+        if (!authHeader.StartsWith("Bearer ", StringComparison.OrdinalIgnoreCase))
+        {
+            return Task.FromResult(AuthenticateResult.Fail("Invalid Authentication Scheme"));
+        }
+
+        var token = authHeader.Substring("Bearer ".Length).Trim();
+
+        // Validate Token Format (GUID)
+        if (!Guid.TryParse(token, out _))
+        {
+             return Task.FromResult(AuthenticateResult.Fail("Invalid Token Format"));
+        }
+
         // Create a user identity.
         var claims = new[] { new Claim(ClaimTypes.Name, "RaindropUser") };
         var identity = new ClaimsIdentity(claims, "PassThrough");

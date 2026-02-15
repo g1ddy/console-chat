@@ -51,7 +51,7 @@ public class AuthTests
     }
 
     [Fact]
-    public async Task PassThroughAuthenticationHandler_ReturnsSuccess_WhenHeaderPresent()
+    public async Task PassThroughAuthenticationHandler_ReturnsSuccess_WhenHeaderPresentAndValidGuid()
     {
         // Arrange
         var optionsMonitor = Substitute.For<IOptionsMonitor<AuthenticationSchemeOptions>>();
@@ -62,7 +62,8 @@ public class AuthTests
         var handler = new PassThroughAuthenticationHandler(optionsMonitor, logger, encoder);
 
         var context = new DefaultHttpContext();
-        context.Request.Headers["Authorization"] = "Bearer test-token";
+        var validGuid = Guid.NewGuid().ToString();
+        context.Request.Headers["Authorization"] = $"Bearer {validGuid}";
 
         await handler.InitializeAsync(new AuthenticationScheme("PassThrough", "PassThrough", typeof(PassThroughAuthenticationHandler)), context);
 
@@ -97,6 +98,30 @@ public class AuthTests
         // Assert
         Assert.False(result.Succeeded);
         Assert.Equal("Missing Authorization Header", result.Failure?.Message);
+    }
+
+    [Fact]
+    public async Task PassThroughAuthenticationHandler_ReturnsFail_WhenTokenIsNotGuid()
+    {
+        // Arrange
+        var optionsMonitor = Substitute.For<IOptionsMonitor<AuthenticationSchemeOptions>>();
+        optionsMonitor.Get(Arg.Any<string>()).Returns(new AuthenticationSchemeOptions());
+        var logger = NullLoggerFactory.Instance;
+        var encoder = UrlEncoder.Default;
+
+        var handler = new PassThroughAuthenticationHandler(optionsMonitor, logger, encoder);
+
+        var context = new DefaultHttpContext();
+        context.Request.Headers["Authorization"] = "Bearer not-a-guid";
+
+        await handler.InitializeAsync(new AuthenticationScheme("PassThrough", "PassThrough", typeof(PassThroughAuthenticationHandler)), context);
+
+        // Act
+        var result = await handler.AuthenticateAsync();
+
+        // Assert
+        Assert.False(result.Succeeded);
+        Assert.Equal("Invalid Token Format", result.Failure?.Message);
     }
 
     [Fact]
