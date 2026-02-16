@@ -18,6 +18,7 @@ public class McpIntegrationTests
             .SetBasePath(AppContext.BaseDirectory)
             .AddJsonFile("appsettings.json", optional: true)
             .AddEnvironmentVariables()
+            .AddUserSecrets<McpIntegrationTests>()
             .Build();
     }
 
