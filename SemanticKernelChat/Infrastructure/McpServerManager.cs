@@ -43,9 +43,9 @@ public sealed class McpServerManager : IAsyncDisposable
 
     private static (McpServerState State, Dictionary<string, McpServerConfig> Configs) ParseConfiguration(IConfiguration configuration)
     {
-        var configs = new Dictionary<string, McpServerConfig>(
-            McpClientHelper.GetServerConfigs(configuration),
-            StringComparer.OrdinalIgnoreCase);
+        var configs = McpClientHelper.GetServerConfigs(configuration)
+            .Where(kvp => kvp.Value is not null)
+            .ToDictionary(kvp => kvp.Key, kvp => kvp.Value, StringComparer.OrdinalIgnoreCase);
 
         var serversDict = new ConcurrentDictionary<string, McpServerState.ServerEntry>(StringComparer.OrdinalIgnoreCase);
         foreach (var (name, config) in configs)
