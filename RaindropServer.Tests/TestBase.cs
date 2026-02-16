@@ -12,6 +12,7 @@ public abstract class TestBase
         var config = new ConfigurationBuilder()
             .AddJsonFile("appsettings.json", optional: true)
             .AddEnvironmentVariables()
+            .AddUserSecrets<TestBase>()
             .Build();
 
         var token = config["Raindrop:ApiToken"];
