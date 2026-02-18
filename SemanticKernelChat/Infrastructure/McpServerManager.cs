@@ -31,18 +31,28 @@ public sealed class McpServerManager : IAsyncDisposable
     {
     }
 
-    public McpServerManager(IConfiguration configuration, ILogger<McpServerState> logger)
+    private McpServerManager((McpServerState State, Dictionary<string, McpServerConfig> Configs) init, ILogger<McpServerState> logger)
+        : this(init.State, init.Configs, logger)
     {
-        _logger = logger;
-        _configs = new Dictionary<string, McpServerConfig>(
-            McpClientHelper.GetServerConfigs(configuration),
-            StringComparer.OrdinalIgnoreCase);
+    }
+
+    public McpServerManager(IConfiguration configuration, ILogger<McpServerState> logger)
+        : this(ParseConfiguration(configuration), logger)
+    {
+    }
+
+    private static (McpServerState State, Dictionary<string, McpServerConfig> Configs) ParseConfiguration(IConfiguration configuration)
+    {
+        var configs = McpClientHelper.GetServerConfigs(configuration)
+            .Where(kvp => kvp.Value is not null)
+            .ToDictionary(kvp => kvp.Key, kvp => kvp.Value, StringComparer.OrdinalIgnoreCase);
+
         var serversDict = new ConcurrentDictionary<string, McpServerState.ServerEntry>(StringComparer.OrdinalIgnoreCase);
-        foreach (var (name, config) in _configs)
+        foreach (var (name, config) in configs)
         {
             serversDict[name] = new McpServerState.ServerEntry { Enabled = !config.Disabled };
         }
-        _state = new McpServerState(serversDict);
+        return (new McpServerState(serversDict), configs);
     }
 
     public McpServerState State => _state;
