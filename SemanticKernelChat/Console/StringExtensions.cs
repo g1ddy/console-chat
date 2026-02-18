@@ -1,7 +1,9 @@
+using System;
+
 namespace SemanticKernelChat.Console;
 
-internal static class CommandTokenizer
+internal static class StringExtensions
 {
-    public static string[] SplitArguments(string? input)
+    public static string[] SplitCommandArguments(this string? input)
         => input?.Split(' ', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries) ?? Array.Empty<string>();
 }
