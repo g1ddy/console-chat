@@ -94,23 +94,17 @@ public class ChatController : IChatController
     public async Task SendAndDisplayAsync(IChatHistoryService history)
     {
         ChatMessage[] responses = [];
-        Exception? error = null;
-        await _console.DisplayThinkingIndicator(async () =>
+        bool success = await ExecuteSafeAsync(async () =>
         {
-            try
+            await _console.DisplayThinkingIndicator(async () =>
             {
                 var response = await _chatClient.GetResponseAsync(history.Messages, CreateChatOptions());
                 responses = [.. response.Messages];
-            }
-            catch (Exception ex)
-            {
-                error = ex;
-            }
+            });
         });
 
-        if (error is not null)
+        if (!success)
         {
-            _console.DisplayError(error);
             return;
         }
 
@@ -123,26 +117,34 @@ public class ChatController : IChatController
         Action<IReadOnlyList<ChatMessage>>? finalCallback = null)
     {
         var updates = _chatClient.GetStreamingResponseAsync(history.Messages, CreateChatOptions());
-        Exception? error = null;
         IReadOnlyList<ChatMessage> messages = [];
 
-        try
+        bool success = await ExecuteSafeAsync(async () =>
         {
             messages = await _console.DisplayStreamingUpdatesAsync(updates);
-        }
-        catch (Exception ex)
-        {
-            error = ex;
-        }
+        });
 
-        if (error is not null)
+        if (!success)
         {
-            _console.DisplayError(error);
             return;
         }
 
         history.Add([.. messages]);
 
         finalCallback?.Invoke(messages);
+    }
+
+    private async Task<bool> ExecuteSafeAsync(Func<Task> action)
+    {
+        try
+        {
+            await action();
+            return true;
+        }
+        catch (Exception ex)
+        {
+            _console.DisplayError(ex);
+            return false;
+        }
     }
 }
