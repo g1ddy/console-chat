@@ -35,7 +35,7 @@ public class ChatControllerTests
     }
 
     [Fact]
-    public async Task SendAndDisplayAsync_On_Error_Displays_Error()
+    public async Task SendAndDisplayAsync_On_Error_Displays_Generic_Message_And_Logs()
     {
         var history = new ChatHistoryService();
         history.AddUserMessage("hi");
@@ -54,7 +54,9 @@ public class ChatControllerTests
         await controller.SendAndDisplayAsync(history);
 
         await console.Received(1).DisplayThinkingIndicator(Arg.Any<Func<Task>>());
-        console.Received(1).DisplayError(Arg.Any<Exception>());
+        // Verify we get the generic error message instead of the exception details
+        console.Received(1).WriteLine(Arg.Is<string>(s => s.Contains("An unexpected error occurred")));
+        console.DidNotReceive().DisplayError(Arg.Any<Exception>());
         console.DidNotReceive().WriteChatMessages(Arg.Any<ChatMessage[]>());
         Assert.Single(history.Messages);
     }
@@ -86,7 +88,7 @@ public class ChatControllerTests
     }
 
     [Fact]
-    public async Task SendAndDisplayStreamingAsync_On_Error_Displays_Error()
+    public async Task SendAndDisplayStreamingAsync_On_Error_Displays_Generic_Message_And_Logs()
     {
         var history = new ChatHistoryService();
         history.AddUserMessage("hi");
@@ -104,7 +106,9 @@ public class ChatControllerTests
         await controller.SendAndDisplayStreamingAsync(history);
 
         _ = await console.Received(1).DisplayStreamingUpdatesAsync(Arg.Any<IAsyncEnumerable<ChatResponseUpdate>>());
-        console.Received(1).DisplayError(Arg.Any<Exception>());
+        // Verify we get the generic error message instead of the exception details
+        console.Received(1).WriteLine(Arg.Is<string>(s => s.Contains("An unexpected error occurred")));
+        console.DidNotReceive().DisplayError(Arg.Any<Exception>());
         Assert.Single(history.Messages);
     }
 
