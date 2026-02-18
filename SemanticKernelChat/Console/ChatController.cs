@@ -18,6 +18,7 @@ public class ChatController : IChatController
     private readonly int _summaryThreshold;
     private readonly int _summaryKeepLast;
     private readonly IChatHistoryReducer _reducer;
+    private readonly ILogger<ChatController> _logger;
     private const string SummarizationPrompt = "Summarize the previous conversation in a concise form.";
 
     public McpToolCollection ToolCollection => _toolCollection;
@@ -31,6 +32,8 @@ public class ChatController : IChatController
         int summaryThreshold = DefaultSummaryThreshold,
         int summaryKeepLast = DefaultSummaryKeepLast)
     {
+        _logger = loggerFactory.CreateLogger<ChatController>();
+
         if (summaryThreshold <= 0)
         {
             throw new ArgumentOutOfRangeException(nameof(summaryThreshold), "Must be positive.");
@@ -143,7 +146,8 @@ public class ChatController : IChatController
         }
         catch (Exception ex)
         {
-            _console.DisplayError(ex);
+            _logger.LogError(ex, "An error occurred during chat execution.");
+            _console.WriteLine("An unexpected error occurred. Please try again.");
             return false;
         }
     }
