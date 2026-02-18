@@ -15,7 +15,7 @@ public sealed class SetMcpServerStateCommandStrategy : IChatCommandStrategy
 
     public IEnumerable<string>? GetCompletions(string prefix, string word, string suffix)
     {
-        var tokens = string.Concat(prefix, word).TrimStart().Split(' ', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
+        var tokens = string.Concat(prefix, word).TrimStart().SplitCommandArguments();
         if (tokens.Length == 1)
         {
             return new[] { CliConstants.Commands.Enable, CliConstants.Commands.Disable };
@@ -33,7 +33,7 @@ public sealed class SetMcpServerStateCommandStrategy : IChatCommandStrategy
 
     public bool CanExecute(string input)
     {
-        var tokens = (input ?? string.Empty).Split(' ', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
+        var tokens = input.SplitCommandArguments();
         if (tokens.Length != 3)
         {
             return false;
@@ -46,7 +46,7 @@ public sealed class SetMcpServerStateCommandStrategy : IChatCommandStrategy
 
     public Task<bool> ExecuteAsync(string input, IChatHistoryService history, IChatController controller, IChatConsole console)
     {
-        var tokens = (input ?? string.Empty).Split(' ', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
+        var tokens = input.SplitCommandArguments();
         if (tokens.Length < 3)
         {
             return Task.FromResult(true);
