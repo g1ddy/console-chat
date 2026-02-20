@@ -17,6 +17,7 @@ public class McpIntegrationTests
         _config = new ConfigurationBuilder()
             .SetBasePath(AppContext.BaseDirectory)
             .AddJsonFile("appsettings.json", optional: true)
+            .AddUserSecrets<McpIntegrationTests>()
             .AddEnvironmentVariables()
             .Build();
     }
