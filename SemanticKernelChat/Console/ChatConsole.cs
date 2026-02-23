@@ -33,7 +33,7 @@ public class ChatConsole : IChatConsole
             foreach (var call in callContents)
             {
                 string toolName = ChatConsoleHelpers.GetToolName(callNames, call.CallId, authorName, role);
-                string toolMarkup = string.Format(CliConstants.Tool.ParametersFormat, toolName.EscapeMarkup());
+                string toolMarkup = CliConstants.Tool.ParametersFormat(toolName.EscapeMarkup());
                 renderables.AddRange(ChatConsoleHelpers.FormatPanelContent(toolMarkup, ChatConsoleHelpers.SerializeArguments(call.Arguments), DebugEnabled));
             }
         }
@@ -43,7 +43,7 @@ public class ChatConsole : IChatConsole
             foreach (var result in resultContents)
             {
                 string toolName = ChatConsoleHelpers.GetToolName(callNames, result.CallId, authorName, role);
-                string toolMarkup = string.Format(CliConstants.Tool.ResultFormat, toolName.EscapeMarkup());
+                string toolMarkup = CliConstants.Tool.ResultFormat(toolName.EscapeMarkup());
                 renderables.AddRange(ChatConsoleHelpers.FormatPanelContent(toolMarkup, result.Result?.ToString(), DebugEnabled));
             }
         }

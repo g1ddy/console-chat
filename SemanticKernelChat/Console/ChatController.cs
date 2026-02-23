@@ -19,7 +19,6 @@ public class ChatController : IChatController
     private readonly int _summaryKeepLast;
     private readonly IChatHistoryReducer _reducer;
     private readonly ILogger<ChatController> _logger;
-    private const string SummarizationPrompt = CliConstants.SummarizationPrompt;
 
     public McpToolCollection ToolCollection => _toolCollection;
 
@@ -64,7 +63,7 @@ public class ChatController : IChatController
             thresholdCount,
             loggerFactory.CreateLogger<ChatHistorySummarizationReducer>())
         {
-            SummarizationInstructions = SummarizationPrompt,
+            SummarizationInstructions = CliConstants.SummarizationPrompt,
             UseSingleSummary = true,
             FailOnError = false
         };

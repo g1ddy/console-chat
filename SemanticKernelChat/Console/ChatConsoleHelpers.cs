@@ -102,7 +102,7 @@ internal static class ChatConsoleHelpers
             }
             else
             {
-                rows.Add(new Markup(string.Format(CliConstants.Tool.WarningFormat, Markup.Escape(rawJson))));
+                rows.Add(new Markup(CliConstants.Tool.WarningFormat(Markup.Escape(rawJson))));
             }
         }
 

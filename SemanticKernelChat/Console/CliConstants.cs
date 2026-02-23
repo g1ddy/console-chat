@@ -57,9 +57,9 @@ internal static class CliConstants
 
     public static class Tool
     {
-        public const string ParametersFormat = "[grey]:wrench: {0} Parameters...[/]";
-        public const string ResultFormat = "[grey]:wrench: {0} Result...[/]";
-        public const string WarningFormat = "[orange1]:warning: {0}[/]";
+        public static string ParametersFormat(string toolName) => $"[grey]:wrench: {toolName} Parameters...[/]";
+        public static string ResultFormat(string toolName) => $"[grey]:wrench: {toolName} Result...[/]";
+        public static string WarningFormat(string message) => $"[orange1]:warning: {message}[/]";
     }
 
     public static class Roles
