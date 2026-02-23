@@ -10,8 +10,12 @@ public static class UtilityTools
     public static string CurrentTime() => DateTime.UtcNow.ToString("o");
 
     [McpServerTool, Description("Converts the input to uppercase.")]
-    public static string ToUpper(string input) => input.ToUpperInvariant();
+    public static string ToUpper(string input)
+    {
+        ArgumentNullException.ThrowIfNull(input);
+        return input.ToUpperInvariant();
+    }
 
     [McpServerTool, Description("Adds two numbers together.")]
-    public static int Add(int a, int b) => a + b;
+    public static int Add(int a, int b) => checked(a + b);
 }
