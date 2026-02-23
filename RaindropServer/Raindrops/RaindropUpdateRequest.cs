@@ -1,4 +1,5 @@
 using System.ComponentModel;
+using System.ComponentModel.DataAnnotations;
 
 namespace RaindropServer.Raindrops;
 
@@ -8,6 +9,8 @@ namespace RaindropServer.Raindrops;
 [Description("Request payload for updating an existing bookmark")]
 public record RaindropUpdateRequest : IRaindropRequest
 {
+    [Url]
+    [RegularExpression(@"^https?://.*", ErrorMessage = "The Link must use http or https protocol.")]
     [Description("The new URL for the bookmark.")]
     public string? Link { get; init; }
 

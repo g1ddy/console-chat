@@ -1,4 +1,5 @@
 using System.ComponentModel;
+using System.ComponentModel.DataAnnotations;
 using System.Text.Json.Serialization;
 using RaindropServer.Common;
 
@@ -18,6 +19,8 @@ public record Raindrop
     [Description("Title of the bookmarked page")]
     public string? Title { get; init; }
 
+    [Url]
+    [RegularExpression(@"^https?://.*", ErrorMessage = "The Link must use http or https protocol.")]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     [Description("URL of the page")]
     public string? Link { get; init; }
