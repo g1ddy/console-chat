@@ -19,7 +19,7 @@ public class ChatController : IChatController
     private readonly int _summaryKeepLast;
     private readonly IChatHistoryReducer _reducer;
     private readonly ILogger<ChatController> _logger;
-    private const string SummarizationPrompt = "Summarize the previous conversation in a concise form.";
+    private const string SummarizationPrompt = CliConstants.SummarizationPrompt;
 
     public McpToolCollection ToolCollection => _toolCollection;
 
@@ -147,7 +147,7 @@ public class ChatController : IChatController
         catch (Exception ex)
         {
             _logger.LogError(ex, "An error occurred during chat execution.");
-            _console.WriteLine("An unexpected error occurred. Please try again.");
+            _console.WriteLine(CliConstants.GenericErrorMessage);
             return false;
         }
     }

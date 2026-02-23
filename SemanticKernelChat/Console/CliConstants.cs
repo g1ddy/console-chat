@@ -7,6 +7,9 @@ internal static class CliConstants
 
     public const string ExitMessage = "[red]Exiting ConsoleChat...[/]";
     public const string UserPrompt = "[grey]You: [/]";
+    public const string ThinkingMessage = "Thinking...";
+    public const string GenericErrorMessage = "An unexpected error occurred. Please try again.";
+    public const string SummarizationPrompt = "Summarize the previous conversation in a concise form.";
 
     public class Commands
     {
@@ -40,5 +43,29 @@ internal static class CliConstants
         public const string Mcp = "mcp";
         public const string Tools = "tools";
         public const string Prompts = "prompts";
+    }
+
+    public static class MultiSelection
+    {
+        public const string Instructions = "[grey](Press <space> to toggle, <enter> to accept)[/]";
+        public const string Enabled = "[green](enabled)[/]";
+        public const string Disabled = "[red](disabled)[/]";
+        public const string SelectedHeader = "[bold]Selected[/]";
+        public const string SelectionMarker = "[yellow]*[/]";
+        public const string NoSelections = "[grey]No selections made.[/]";
+    }
+
+    public static class Tool
+    {
+        public const string ParametersFormat = "[grey]:wrench: {0} Parameters...[/]";
+        public const string ResultFormat = "[grey]:wrench: {0} Result...[/]";
+        public const string WarningFormat = "[orange1]:warning: {0}[/]";
+    }
+
+    public static class Roles
+    {
+        public const string UserHeader = ":bust_in_silhouette: User";
+        public const string AssistantHeader = ":robot: Assistant";
+        public const string ToolHeader = ":wrench: Tool";
     }
 }

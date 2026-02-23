@@ -33,7 +33,7 @@ public class ChatConsole : IChatConsole
             foreach (var call in callContents)
             {
                 string toolName = ChatConsoleHelpers.GetToolName(callNames, call.CallId, authorName, role);
-                string toolMarkup = $"[grey]:wrench: {toolName.EscapeMarkup()} Parameters...[/]";
+                string toolMarkup = string.Format(CliConstants.Tool.ParametersFormat, toolName.EscapeMarkup());
                 renderables.AddRange(ChatConsoleHelpers.FormatPanelContent(toolMarkup, ChatConsoleHelpers.SerializeArguments(call.Arguments), DebugEnabled));
             }
         }
@@ -43,7 +43,7 @@ public class ChatConsole : IChatConsole
             foreach (var result in resultContents)
             {
                 string toolName = ChatConsoleHelpers.GetToolName(callNames, result.CallId, authorName, role);
-                string toolMarkup = $"[grey]:wrench: {toolName.EscapeMarkup()} Result...[/]";
+                string toolMarkup = string.Format(CliConstants.Tool.ResultFormat, toolName.EscapeMarkup());
                 renderables.AddRange(ChatConsoleHelpers.FormatPanelContent(toolMarkup, result.Result?.ToString(), DebugEnabled));
             }
         }
@@ -101,8 +101,8 @@ public class ChatConsole : IChatConsole
     {
         var prompt = new MultiSelectionPrompt<(string Name, bool Selected)>()
             .Title(title)
-            .InstructionsText("[grey](Press <space> to toggle, <enter> to accept)[/]")
-            .UseConverter(c => $"{c.Name} {(c.Selected ? "[green](enabled)[/]" : "[red](disabled)[/]")}");
+            .InstructionsText(CliConstants.MultiSelection.Instructions)
+            .UseConverter(c => $"{c.Name} {(c.Selected ? CliConstants.MultiSelection.Enabled : CliConstants.MultiSelection.Disabled)}");
 
         foreach (var item in items)
         {
@@ -119,18 +119,18 @@ public class ChatConsole : IChatConsole
         if (result.Count > 0)
         {
             var table = new Table().Border(TableBorder.Rounded).BorderColor(Color.Grey);
-            _ = table.AddColumn("[bold]Selected[/]");
+            _ = table.AddColumn(CliConstants.MultiSelection.SelectedHeader);
 
             foreach (var selection in result)
             {
-                _ = table.AddRow($"[yellow]*[/] {selection.Name.EscapeMarkup()}");
+                _ = table.AddRow($"{CliConstants.MultiSelection.SelectionMarker} {selection.Name.EscapeMarkup()}");
             }
 
             _console.Write(table);
         }
         else
         {
-            _console.MarkupLine("[grey]No selections made.[/]");
+            _console.MarkupLine(CliConstants.MultiSelection.NoSelections);
         }
 
         return result.Select(selection => selection.Name).ToList();
@@ -147,7 +147,7 @@ public class ChatConsole : IChatConsole
     {
         await _console.Status()
             .Spinner(Spinner.Known.Monkey)
-            .StartAsync("Thinking...", async _ => await action());
+            .StartAsync(CliConstants.ThinkingMessage, async _ => await action());
     }
 
     public void DisplayError(Exception ex)
