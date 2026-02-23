@@ -13,6 +13,7 @@ public abstract class TestBase
     {
         var config = new ConfigurationBuilder()
             .AddJsonFile("appsettings.json", optional: true)
+            .AddUserSecrets<TestBase>()
             .AddEnvironmentVariables()
             .Build();
 
