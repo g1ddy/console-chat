@@ -16,9 +16,9 @@ internal static class ChatConsoleHelpers
 
         var (baseHeader, justify, style) = roleName switch
         {
-            "user" => (":bust_in_silhouette: User", Justify.Left, new Style(Color.RoyalBlue1)),
-            "assistant" => (":robot: Assistant", Justify.Right, new Style(Color.DarkSeaGreen2)),
-            "tool" => (":wrench: Tool", Justify.Center, new Style(Color.Grey37)),
+            "user" => (CliConstants.Roles.UserHeader, Justify.Left, new Style(Color.RoyalBlue1)),
+            "assistant" => (CliConstants.Roles.AssistantHeader, Justify.Right, new Style(Color.DarkSeaGreen2)),
+            "tool" => (CliConstants.Roles.ToolHeader, Justify.Center, new Style(Color.Grey37)),
             _ => (Markup.Escape(roleName), Justify.Left, Style.Plain)
         };
 
@@ -102,7 +102,7 @@ internal static class ChatConsoleHelpers
             }
             else
             {
-                rows.Add(new Markup($"[orange1]:warning: {Markup.Escape(rawJson)}[/]"));
+                rows.Add(new Markup(CliConstants.Tool.WarningFormat(Markup.Escape(rawJson))));
             }
         }
 
