@@ -62,4 +62,16 @@ public class UtilityToolsTests
         // Assert
         Assert.Equal(expected, result);
     }
+
+    [Fact]
+    public void Add_ThrowsOnOverflow()
+    {
+        Assert.Throws<OverflowException>(() => UtilityTools.Add(int.MaxValue, 1));
+    }
+
+    [Fact]
+    public void Add_ThrowsOnUnderflow()
+    {
+        Assert.Throws<OverflowException>(() => UtilityTools.Add(int.MinValue, -1));
+    }
 }

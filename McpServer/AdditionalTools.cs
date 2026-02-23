@@ -17,5 +17,5 @@ public static class UtilityTools
     }
 
     [McpServerTool, Description("Adds two numbers together.")]
-    public static int Add(int a, int b) => a + b;
+    public static int Add(int a, int b) => checked(a + b);
 }
