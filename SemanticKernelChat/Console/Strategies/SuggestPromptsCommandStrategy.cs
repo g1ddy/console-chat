@@ -1,5 +1,6 @@
 using System.Text.RegularExpressions;
 using Microsoft.Extensions.AI;
+using ModelContextProtocol.Client;
 using ModelContextProtocol.Protocol;
 using SemanticKernelChat.Infrastructure;
 
@@ -44,10 +45,15 @@ public sealed partial class SuggestPromptsCommandStrategy : IChatCommandStrategy
         string? text = response.Messages.LastOrDefault()?.Text;
         IEnumerable<string> suggestions = ParseSuggestions(text);
 
+        var promptsByName = new Dictionary<string, McpClientPrompt>(StringComparer.OrdinalIgnoreCase);
+        foreach (var p in _prompts.Prompts)
+        {
+            promptsByName.TryAdd(p.Name, p);
+        }
+
         foreach (string name in suggestions)
         {
-            var prompt = _prompts.Prompts.FirstOrDefault(p => p.Name.Equals(name, StringComparison.OrdinalIgnoreCase));
-            if (prompt is null)
+            if (!promptsByName.TryGetValue(name, out var prompt))
             {
                 continue;
             }
