@@ -45,11 +45,9 @@ public sealed partial class SuggestPromptsCommandStrategy : IChatCommandStrategy
         string? text = response.Messages.LastOrDefault()?.Text;
         IEnumerable<string> suggestions = ParseSuggestions(text);
 
-        var promptsByName = new Dictionary<string, McpClientPrompt>(StringComparer.OrdinalIgnoreCase);
-        foreach (var p in _prompts.Prompts)
-        {
-            promptsByName.TryAdd(p.Name, p);
-        }
+        var promptsByName = _prompts.Prompts
+            .DistinctBy(p => p.Name, StringComparer.OrdinalIgnoreCase)
+            .ToDictionary(p => p.Name, p => p, StringComparer.OrdinalIgnoreCase);
 
         foreach (string name in suggestions)
         {
