@@ -16,7 +16,7 @@ public class RenderableFunctionsTests
     {
         _testConsole = new TestConsole();
         var completion = new CommandCompletion(System.Linq.Enumerable.Empty<IChatCommandStrategy>());
-        var console = new ChatConsole(new ChatLineEditor(completion), _testConsole);
+        var console = new ChatConsole(new ChatLineEditor(completion, _testConsole), _testConsole);
         _functions = new RenderableFunctions(console);
     }
 

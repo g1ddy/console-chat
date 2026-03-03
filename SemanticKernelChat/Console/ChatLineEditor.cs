@@ -1,4 +1,5 @@
 using RadLine;
+using Spectre.Console;
 
 namespace SemanticKernelChat.Console;
 
@@ -14,7 +15,7 @@ public sealed class ChatLineEditor : IChatLineEditor
     private readonly LineEditor _editor;
     private readonly string? _historyPath;
 
-    public ChatLineEditor(ITextCompletion completion)
+    public ChatLineEditor(ITextCompletion completion, IAnsiConsole console)
     {
         _editor = new LineEditor
         {
@@ -28,24 +29,64 @@ public sealed class ChatLineEditor : IChatLineEditor
         _editor.KeyBindings.Add<PreviousHistoryCommand>(ConsoleKey.UpArrow);
         _editor.KeyBindings.Add<NextHistoryCommand>(ConsoleKey.DownArrow);
 
-        _historyPath = Environment.GetEnvironmentVariable(HistoryEnvVar);
-        if (!string.IsNullOrEmpty(_historyPath) && File.Exists(_historyPath))
+        var rawPath = Environment.GetEnvironmentVariable(HistoryEnvVar);
+        if (!string.IsNullOrEmpty(rawPath))
         {
-            try
+            if (IsPathSafe(rawPath, out var validatedPath))
             {
-                foreach (var line in File.ReadLines(_historyPath))
+                _historyPath = validatedPath;
+                if (File.Exists(_historyPath))
                 {
-                    if (!string.IsNullOrWhiteSpace(line))
+                    try
                     {
-                        _editor.History.Add(line);
+                        foreach (var line in File.ReadLines(_historyPath))
+                        {
+                            if (!string.IsNullOrWhiteSpace(line))
+                            {
+                                _editor.History.Add(line);
+                            }
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        console.MarkupLine($"[yellow]Warning: Failed to load chat history from '{Markup.Escape(_historyPath)}'. {Markup.Escape(ex.Message)}[/]");
                     }
                 }
             }
-            catch (Exception ex)
+            else
             {
-                System.Console.Error.WriteLine($"Warning: Failed to load chat history from '{_historyPath}'. {ex.Message}");
+                console.MarkupLine($"[red]Warning: Chat history file path '{Markup.Escape(rawPath)}' is outside the safe directory and will be ignored.[/]");
             }
         }
+    }
+
+    private static bool IsPathSafe(string path, out string? validatedPath)
+    {
+        validatedPath = null;
+        try
+        {
+            var fullPath = Path.GetFullPath(path);
+            var safeRoot = Path.GetFullPath(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile));
+
+            // Ensure safeRoot ends with a directory separator for accurate prefix matching
+            var safeRootWithSeparator = safeRoot.EndsWith(Path.DirectorySeparatorChar)
+                ? safeRoot
+                : safeRoot + Path.DirectorySeparatorChar;
+
+            // Allow files only within the safeRoot
+            if (fullPath.StartsWith(safeRootWithSeparator, StringComparison.OrdinalIgnoreCase) ||
+                fullPath.Equals(safeRoot, StringComparison.OrdinalIgnoreCase))
+            {
+                validatedPath = fullPath;
+                return true;
+            }
+        }
+        catch
+        {
+            // Fall through to return false
+        }
+
+        return false;
     }
 
     public async Task<string?> ReadLine(CancellationToken cancellationToken)
@@ -61,9 +102,9 @@ public sealed class ChatLineEditor : IChatLineEditor
                 {
                     await File.AppendAllTextAsync(_historyPath, line + Environment.NewLine, cancellationToken);
                 }
-                catch (Exception ex)
+                catch
                 {
-                    System.Console.Error.WriteLine($"Warning: Failed to write to history file: {ex.Message}");
+                    // Silent failure on write to avoid interrupting the chat flow
                 }
             }
         }
