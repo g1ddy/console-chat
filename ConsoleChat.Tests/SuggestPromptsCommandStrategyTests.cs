@@ -1,5 +1,9 @@
+using System.Collections.Concurrent;
 using ConsoleChat.Tests.TestUtilities;
 using Microsoft.Extensions.AI;
+using ModelContextProtocol;
+using ModelContextProtocol.Client;
+using ModelContextProtocol.Protocol;
 using NSubstitute;
 using SemanticKernelChat;
 using SemanticKernelChat.Console;
@@ -41,5 +45,43 @@ public class SuggestPromptsCommandStrategyTests
 
         Assert.NotNull(client.LastMessages);
         Assert.Contains("Suggest", client.LastMessages!.Last().Text, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
+    public async Task ExecuteAsync_WhenGetAsyncThrows_CallsDisplayError()
+    {
+        // Arrange
+        var expectedException = new Exception("Prompt retrieval failed");
+        var mcpClient = Substitute.For<McpClient>();
+        mcpClient.SendRequestAsync(Arg.Any<JsonRpcRequest>(), Arg.Any<CancellationToken>())
+            .Returns(Task.FromException<JsonRpcResponse>(expectedException));
+
+        var prompt = new Prompt { Name = "One", Description = string.Empty, Arguments = [] };
+        var clientPrompt = new McpClientPrompt(mcpClient, prompt);
+
+        var entry = new McpServerState.ServerEntry
+        {
+            Enabled = true,
+            Status = ServerStatus.Ready,
+            Prompts = new[] { clientPrompt }
+        };
+        var dict = new ConcurrentDictionary<string, McpServerState.ServerEntry>(StringComparer.OrdinalIgnoreCase)
+        {
+            ["server"] = entry
+        };
+        var state = new McpServerState(dict);
+        var manager = new McpServerManager(state);
+        var prompts = new McpPromptCollection(manager);
+
+        var chatClient = new FakeChatClient { Response = new(new ChatMessage(ChatRole.Assistant, "One")) };
+        var strategy = new SuggestPromptsCommandStrategy(chatClient, prompts);
+        var history = new ChatHistoryService();
+        var console = Substitute.For<IChatConsole>();
+
+        // Act
+        await strategy.ExecuteAsync("/suggest", history, Substitute.For<IChatController>(), console);
+
+        // Assert
+        console.Received(1).DisplayError(expectedException);
     }
 }
