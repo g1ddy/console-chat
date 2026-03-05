@@ -70,7 +70,18 @@ internal static class ChatHistoryReducerExtensions
 
         while (messageIndex >= 0)
         {
-            if (!chatHistory[messageIndex].Contents.Any(i => i is FunctionCallContent || i is FunctionResultContent))
+            bool hasFunctionContent = false;
+            var contents = chatHistory[messageIndex].Contents;
+            for (int i = 0; i < contents.Count; i++)
+            {
+                if (contents[i] is FunctionCallContent || contents[i] is FunctionResultContent)
+                {
+                    hasFunctionContent = true;
+                    break;
+                }
+            }
+
+            if (!hasFunctionContent)
             {
                 break;
             }
