@@ -22,7 +22,7 @@ public class ChatHistorySecurityTests
         // For reproduction, we just want to see if it reads it.
 
         string envVarName = "CHAT_HISTORY_FILE";
-        string originalValue = Environment.GetEnvironmentVariable(envVarName);
+        string? originalValue = Environment.GetEnvironmentVariable(envVarName);
 
         var testConsole = new Spectre.Console.Testing.TestConsole();
         try
@@ -33,7 +33,7 @@ public class ChatHistorySecurityTests
             var editor = new ChatLineEditor(completion, testConsole);
 
             // Assert
-            string output = testConsole.Output;
+            string output = testConsole.Output.Replace("\n", " ").Replace("\r", "");
             Assert.Contains("invalid or outside the safe directory", output, StringComparison.OrdinalIgnoreCase);
         }
         finally
@@ -52,7 +52,7 @@ public class ChatHistorySecurityTests
         var hiddenFile = Path.Combine(safeDir, ".bashrc");
 
         string envVarName = "CHAT_HISTORY_FILE";
-        string originalValue = Environment.GetEnvironmentVariable(envVarName);
+        string? originalValue = Environment.GetEnvironmentVariable(envVarName);
 
         var testConsole = new Spectre.Console.Testing.TestConsole();
         try
@@ -63,7 +63,8 @@ public class ChatHistorySecurityTests
             var editor = new ChatLineEditor(completion, testConsole);
 
             // Assert
-            Assert.Contains("invalid or outside the safe directory", testConsole.Output, StringComparison.OrdinalIgnoreCase);
+            string output = testConsole.Output.Replace("\n", " ").Replace("\r", "");
+            Assert.Contains("invalid or outside the safe directory", output, StringComparison.OrdinalIgnoreCase);
         }
         finally
         {
