@@ -24,7 +24,7 @@ public class FileCommandTests
         {
             var history = new ChatHistoryService();
             var console = new TestConsole();
-            var lineEditor = new ChatLineEditor(new CommandCompletion(Enumerable.Empty<IChatCommandStrategy>()));
+            var lineEditor = new ChatLineEditor(new CommandCompletion(Enumerable.Empty<IChatCommandStrategy>()), console);
             var chatConsole = new ChatConsole(lineEditor, console);
             var client = new FakeChatClient { Response = new(new ChatMessage(ChatRole.Assistant, "done")) };
             var controller = new ChatController(chatConsole, client, McpCollectionFactory.CreateToolCollection(), [], NullLoggerFactory.Instance);
