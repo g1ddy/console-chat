@@ -51,7 +51,7 @@ Never guess tool results or add extra text.
 
         foreach (var message in response.Messages)
         {
-            if (message.Role == ChatRole.Assistant && message.Text != null)
+            if (message.Role == ChatRole.Assistant)
                 _ansiConsole.WriteLine(message.Text);
         }
 
