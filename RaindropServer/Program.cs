@@ -11,6 +11,7 @@ builder.Logging.AddConsole(options =>
 });
 
 // Configure Authentication
+builder.Services.AddMemoryCache();
 builder.Services.AddAuthentication("PassThrough")
     .AddScheme<AuthenticationSchemeOptions, PassThroughAuthenticationHandler>("PassThrough", null);
 

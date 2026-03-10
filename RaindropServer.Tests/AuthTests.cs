@@ -3,10 +3,13 @@ using System.Security.Claims;
 using System.Text.Encodings.Web;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using RaindropServer.Common;
 using RaindropServer.Tests.Common;
+using RaindropServer.User;
 using Xunit;
 using NSubstitute;
 
@@ -51,19 +54,25 @@ public class AuthTests
     }
 
     [Fact]
-    public async Task PassThroughAuthenticationHandler_ReturnsSuccess_WhenHeaderPresentAndValidGuid()
+    public async Task PassThroughAuthenticationHandler_ReturnsSuccess_WhenTokenIsValid()
     {
         // Arrange
         var optionsMonitor = Substitute.For<IOptionsMonitor<AuthenticationSchemeOptions>>();
         optionsMonitor.Get(Arg.Any<string>()).Returns(new AuthenticationSchemeOptions());
         var logger = NullLoggerFactory.Instance;
         var encoder = UrlEncoder.Default;
+        var cache = new MemoryCache(new MemoryCacheOptions());
+        var userApi = Substitute.For<IUserApi>();
+        userApi.GetAsync().Returns(new ItemResponse<UserInfo>(true, new UserInfo()));
 
-        var handler = new PassThroughAuthenticationHandler(optionsMonitor, logger, encoder);
+        var handler = new PassThroughAuthenticationHandler(optionsMonitor, logger, encoder, cache);
 
         var context = new DefaultHttpContext();
-        var validGuid = Guid.NewGuid().ToString();
-        context.Request.Headers["Authorization"] = $"Bearer {validGuid}";
+        var services = new ServiceCollection();
+        services.AddSingleton(userApi);
+        context.RequestServices = services.BuildServiceProvider();
+
+        context.Request.Headers["Authorization"] = "Bearer valid-token";
 
         await handler.InitializeAsync(new AuthenticationScheme("PassThrough", "PassThrough", typeof(PassThroughAuthenticationHandler)), context);
 
@@ -74,6 +83,7 @@ public class AuthTests
         Assert.True(result.Succeeded);
         Assert.NotNull(result.Principal);
         Assert.Equal("RaindropUser", result.Principal?.Identity?.Name);
+        await userApi.Received(1).GetAsync();
     }
 
     [Fact]
@@ -84,8 +94,9 @@ public class AuthTests
         optionsMonitor.Get(Arg.Any<string>()).Returns(new AuthenticationSchemeOptions());
         var logger = NullLoggerFactory.Instance;
         var encoder = UrlEncoder.Default;
+        var cache = new MemoryCache(new MemoryCacheOptions());
 
-        var handler = new PassThroughAuthenticationHandler(optionsMonitor, logger, encoder);
+        var handler = new PassThroughAuthenticationHandler(optionsMonitor, logger, encoder, cache);
 
         var context = new DefaultHttpContext();
         // No header
@@ -101,18 +112,25 @@ public class AuthTests
     }
 
     [Fact]
-    public async Task PassThroughAuthenticationHandler_ReturnsFail_WhenTokenIsNotGuid()
+    public async Task PassThroughAuthenticationHandler_ReturnsFail_WhenTokenIsInvalid()
     {
         // Arrange
         var optionsMonitor = Substitute.For<IOptionsMonitor<AuthenticationSchemeOptions>>();
         optionsMonitor.Get(Arg.Any<string>()).Returns(new AuthenticationSchemeOptions());
         var logger = NullLoggerFactory.Instance;
         var encoder = UrlEncoder.Default;
+        var cache = new MemoryCache(new MemoryCacheOptions());
+        var userApi = Substitute.For<IUserApi>();
+        userApi.GetAsync().Returns(new ItemResponse<UserInfo>(false, null!));
 
-        var handler = new PassThroughAuthenticationHandler(optionsMonitor, logger, encoder);
+        var handler = new PassThroughAuthenticationHandler(optionsMonitor, logger, encoder, cache);
 
         var context = new DefaultHttpContext();
-        context.Request.Headers["Authorization"] = "Bearer not-a-guid";
+        var services = new ServiceCollection();
+        services.AddSingleton(userApi);
+        context.RequestServices = services.BuildServiceProvider();
+
+        context.Request.Headers["Authorization"] = "Bearer invalid-token";
 
         await handler.InitializeAsync(new AuthenticationScheme("PassThrough", "PassThrough", typeof(PassThroughAuthenticationHandler)), context);
 
@@ -121,7 +139,40 @@ public class AuthTests
 
         // Assert
         Assert.False(result.Succeeded);
-        Assert.Equal("Invalid Token Format", result.Failure?.Message);
+        Assert.Equal("Invalid Token", result.Failure?.Message);
+    }
+
+    [Fact]
+    public async Task PassThroughAuthenticationHandler_CachesSuccessfulResult()
+    {
+        // Arrange
+        var optionsMonitor = Substitute.For<IOptionsMonitor<AuthenticationSchemeOptions>>();
+        optionsMonitor.Get(Arg.Any<string>()).Returns(new AuthenticationSchemeOptions());
+        var logger = NullLoggerFactory.Instance;
+        var encoder = UrlEncoder.Default;
+        var cache = new MemoryCache(new MemoryCacheOptions());
+        var userApi = Substitute.For<IUserApi>();
+        userApi.GetAsync().Returns(new ItemResponse<UserInfo>(true, new UserInfo()));
+
+        var handler = new PassThroughAuthenticationHandler(optionsMonitor, logger, encoder, cache);
+
+        var context = new DefaultHttpContext();
+        var services = new ServiceCollection();
+        services.AddSingleton(userApi);
+        context.RequestServices = services.BuildServiceProvider();
+
+        context.Request.Headers["Authorization"] = "Bearer cached-token";
+
+        await handler.InitializeAsync(new AuthenticationScheme("PassThrough", "PassThrough", typeof(PassThroughAuthenticationHandler)), context);
+
+        // Act
+        var result1 = await handler.AuthenticateAsync();
+        var result2 = await handler.AuthenticateAsync();
+
+        // Assert
+        Assert.True(result1.Succeeded);
+        Assert.True(result2.Succeeded);
+        await userApi.Received(1).GetAsync(); // Should only call API once
     }
 
     [Fact]
