@@ -1,5 +1,6 @@
 using Microsoft.Extensions.AI;
 using SemanticKernelChat.Infrastructure;
+using Spectre.Console;
 using Spectre.Console.Cli;
 
 namespace SemanticKernelChat.Commands;
@@ -20,17 +21,21 @@ Never guess tool results or add extra text.
 
     private readonly IChatClient _chatClient;
     private readonly McpToolCollection _tools;
+    private readonly IAnsiConsole _ansiConsole;
 
-    public TextCompletionCommand(IChatClient chatClient, McpToolCollection tools)
+    public TextCompletionCommand(IChatClient chatClient, McpToolCollection tools, IAnsiConsole ansiConsole)
     {
         _chatClient = chatClient;
         _tools = tools;
+        _ansiConsole = ansiConsole;
     }
 
     public override async Task<int> ExecuteAsync(CommandContext context, Settings settings)
     {
         if (string.IsNullOrWhiteSpace(settings.Query))
         {
+            // Note: In Spectre.Console 0.48.0, IAnsiConsole doesn't have an .Error property.
+            // Using System.Console.Error for standard error output while keeping the rest refactored.
             System.Console.Error.WriteLine("--query is required");
             return -1;
         }
@@ -46,8 +51,8 @@ Never guess tool results or add extra text.
 
         foreach (var message in response.Messages)
         {
-            if (message.Role == ChatRole.Assistant)
-                System.Console.WriteLine(message.Text);
+            if (message.Role == ChatRole.Assistant && message.Text != null)
+                _ansiConsole.WriteLine(message.Text);
         }
 
         return 0;
