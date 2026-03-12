@@ -34,7 +34,9 @@ Never guess tool results or add extra text.
     {
         if (string.IsNullOrWhiteSpace(settings.Query))
         {
-            _ansiConsole.MarkupLine("[red]--query is required[/]");
+            // Note: In Spectre.Console 0.48.0, IAnsiConsole doesn't have an .Error property.
+            // Using System.Console.Error for standard error output while keeping the rest refactored.
+            System.Console.Error.WriteLine("--query is required");
             return -1;
         }
 
@@ -49,7 +51,7 @@ Never guess tool results or add extra text.
 
         foreach (var message in response.Messages)
         {
-            if (message.Role == ChatRole.Assistant && message.Text != null)
+            if (message.Role == ChatRole.Assistant)
                 _ansiConsole.WriteLine(message.Text);
         }
 
