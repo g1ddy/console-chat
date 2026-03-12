@@ -21,16 +21,18 @@ public sealed class TextCompletionTestCommand : ChatCommandBase
     private sealed class FakeLineEditor : IChatLineEditor
     {
         private readonly Queue<string?> _inputs;
+        private readonly IAnsiConsole _console;
 
-        public FakeLineEditor(IEnumerable<string?> inputs)
+        public FakeLineEditor(IEnumerable<string?> inputs, IAnsiConsole console)
         {
             _inputs = new Queue<string?>(inputs);
+            _console = console;
         }
 
         public Task<string?> ReadLine(CancellationToken cancellationToken)
         {
             _ = _inputs.TryDequeue(out var input);
-            System.Console.WriteLine(input);
+            _console.WriteLine(input);
             return Task.FromResult(input);
         }
     }
@@ -73,7 +75,7 @@ public sealed class TextCompletionTestCommand : ChatCommandBase
         IAnsiConsole ansiConsole,
         ILoggerFactory loggerFactory)
     {
-        var chatConsole = new ChatConsole(new FakeLineEditor(ScriptedInputs), ansiConsole);
+        var chatConsole = new ChatConsole(new FakeLineEditor(ScriptedInputs, ansiConsole), ansiConsole);
         var controller = new ChatController(chatConsole, chatClient, tools, functions, loggerFactory);
         return (controller, chatConsole);
     }
