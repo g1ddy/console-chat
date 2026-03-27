@@ -10,6 +10,8 @@ builder.Logging.AddConsole(options =>
     options.LogToStandardErrorThreshold = LogLevel.Trace;
 });
 
+builder.Services.AddMemoryCache();
+
 // Configure Authentication
 builder.Services.AddAuthentication("PassThrough")
     .AddScheme<AuthenticationSchemeOptions, PassThroughAuthenticationHandler>("PassThrough", null);
