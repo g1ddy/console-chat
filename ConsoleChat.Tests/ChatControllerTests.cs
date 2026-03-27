@@ -151,4 +151,49 @@ public class ChatControllerTests
         await client.Received(2).GetResponseAsync(Arg.Any<IEnumerable<ChatMessage>>(), Arg.Any<ChatOptions?>(), Arg.Any<CancellationToken>());
         console.Received(1).WriteChatMessages(Arg.Is<ChatMessage[]>(msgs => msgs.Last().Text == "done"));
     }
+
+    [Theory]
+    [InlineData(0)]
+    [InlineData(-1)]
+    public void Constructor_Throws_ArgumentOutOfRangeException_When_SummaryThreshold_Is_Not_Positive(int threshold)
+    {
+        var console = Substitute.For<IChatConsole>();
+        var client = Substitute.For<IChatClient>();
+        var tools = McpCollectionFactory.CreateToolCollection();
+
+        var ex = Assert.Throws<ArgumentOutOfRangeException>(() =>
+            new ChatController(console, client, tools, [], NullLoggerFactory.Instance, summaryThreshold: threshold));
+
+        Assert.Equal("summaryThreshold", ex.ParamName);
+    }
+
+    [Theory]
+    [InlineData(0)]
+    [InlineData(-1)]
+    public void Constructor_Throws_ArgumentOutOfRangeException_When_SummaryKeepLast_Is_Not_Positive(int keepLast)
+    {
+        var console = Substitute.For<IChatConsole>();
+        var client = Substitute.For<IChatClient>();
+        var tools = McpCollectionFactory.CreateToolCollection();
+
+        var ex = Assert.Throws<ArgumentOutOfRangeException>(() =>
+            new ChatController(console, client, tools, [], NullLoggerFactory.Instance, summaryKeepLast: keepLast));
+
+        Assert.Equal("summaryKeepLast", ex.ParamName);
+    }
+
+    [Theory]
+    [InlineData(10, 10)]
+    [InlineData(10, 11)]
+    public void Constructor_Throws_ArgumentException_When_SummaryKeepLast_Greater_Or_Equal_To_SummaryThreshold(int threshold, int keepLast)
+    {
+        var console = Substitute.For<IChatConsole>();
+        var client = Substitute.For<IChatClient>();
+        var tools = McpCollectionFactory.CreateToolCollection();
+
+        var ex = Assert.Throws<ArgumentException>(() =>
+            new ChatController(console, client, tools, [], NullLoggerFactory.Instance, summaryThreshold: threshold, summaryKeepLast: keepLast));
+
+        Assert.Equal("summaryKeepLast", ex.ParamName);
+    }
 }
