@@ -18,7 +18,7 @@ public class JsonValidationBenchmark
     [Benchmark(Baseline = true)]
     public bool Original()
     {
-        // Simulate original implementation (buggy, no dispose)
+        // Simulate original implementation
         if (string.IsNullOrWhiteSpace(Json))
         {
             return false;
@@ -26,7 +26,7 @@ public class JsonValidationBenchmark
 
         try
         {
-            _ = JsonDocument.Parse(Json);
+            using var doc = JsonDocument.Parse(Json);
             return true;
         }
         catch (JsonException)
