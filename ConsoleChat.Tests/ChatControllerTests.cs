@@ -165,6 +165,7 @@ public class ChatControllerTests
             new ChatController(console, client, tools, [], NullLoggerFactory.Instance, summaryThreshold: threshold));
 
         Assert.Equal("summaryThreshold", ex.ParamName);
+        Assert.StartsWith("Must be positive.", ex.Message);
     }
 
     [Theory]
@@ -180,6 +181,7 @@ public class ChatControllerTests
             new ChatController(console, client, tools, [], NullLoggerFactory.Instance, summaryKeepLast: keepLast));
 
         Assert.Equal("summaryKeepLast", ex.ParamName);
+        Assert.StartsWith("Must be positive.", ex.Message);
     }
 
     [Theory]
@@ -195,5 +197,6 @@ public class ChatControllerTests
             new ChatController(console, client, tools, [], NullLoggerFactory.Instance, summaryThreshold: threshold, summaryKeepLast: keepLast));
 
         Assert.Equal("summaryKeepLast", ex.ParamName);
+        Assert.StartsWith("summaryKeepLast must be less than summaryThreshold.", ex.Message);
     }
 }
