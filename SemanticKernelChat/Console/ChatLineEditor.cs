@@ -16,7 +16,7 @@ public sealed class ChatLineEditor : IChatLineEditor
     internal readonly LineEditor _editor;
     private readonly IAnsiConsole _console;
     private readonly string? _historyPath;
-    private readonly Lazy<Task> _historyLoader;
+    internal readonly Lazy<Task> _historyLoader;
 
     public ChatLineEditor(ITextCompletion completion, IAnsiConsole console)
     {
