@@ -11,6 +11,10 @@ namespace RaindropServer.Common;
 
 public class PassThroughAuthenticationHandler : AuthenticationHandler<AuthenticationSchemeOptions>
 {
+    private const string CacheKeyPrefix = "TokenValidation_";
+    private static readonly TimeSpan SuccessfulValidationCacheDuration = TimeSpan.FromMinutes(5);
+    private static readonly TimeSpan FailedValidationCacheDuration = TimeSpan.FromMinutes(1);
+
     private readonly IMemoryCache _cache;
 
     public PassThroughAuthenticationHandler(
@@ -52,7 +56,7 @@ public class PassThroughAuthenticationHandler : AuthenticationHandler<Authentica
         }
 
         // Check Cache
-        string cacheKey = $"TokenValidation_{token}";
+        string cacheKey = $"{CacheKeyPrefix}{token}";
         if (_cache.TryGetValue(cacheKey, out bool isValid))
         {
             return isValid ? Success() : AuthenticateResult.Fail("Invalid Token");
@@ -70,12 +74,12 @@ public class PassThroughAuthenticationHandler : AuthenticationHandler<Authentica
 
             if (response.Result)
             {
-                _cache.Set(cacheKey, true, TimeSpan.FromMinutes(5));
+                _cache.Set(cacheKey, true, SuccessfulValidationCacheDuration);
                 return Success();
             }
             else
             {
-                _cache.Set(cacheKey, false, TimeSpan.FromMinutes(1));
+                _cache.Set(cacheKey, false, FailedValidationCacheDuration);
                 return AuthenticateResult.Fail("Invalid Token");
             }
         }
