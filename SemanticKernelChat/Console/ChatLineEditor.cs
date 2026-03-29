@@ -13,9 +13,10 @@ public sealed class ChatLineEditor : IChatLineEditor
     private const string HistoryEnvVar = "CHAT_HISTORY_FILE";
     private const string SafeHistorySubdir = ".config/semantickernelchat";
 
-    private readonly LineEditor _editor;
+    internal readonly LineEditor _editor;
     private readonly IAnsiConsole _console;
     private readonly string? _historyPath;
+    internal readonly Lazy<Task> _historyLoader;
 
     public ChatLineEditor(ITextCompletion completion, IAnsiConsole console)
     {
@@ -38,28 +39,36 @@ public sealed class ChatLineEditor : IChatLineEditor
             if (IsPathSafe(rawPath, out var validatedPath))
             {
                 _historyPath = validatedPath;
-                if (File.Exists(_historyPath))
-                {
-                    try
-                    {
-                        foreach (var line in File.ReadLines(_historyPath))
-                        {
-                            if (!string.IsNullOrWhiteSpace(line))
-                            {
-                                _editor.History.Add(line);
-                            }
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        _console.MarkupLine($"[yellow]Warning: Failed to load chat history from '{Markup.Escape(_historyPath)}'. {Markup.Escape(ex.Message)}[/]");
-                    }
-                }
             }
             else
             {
                 _console.MarkupLine($"[red]Warning: Chat history file path '{Markup.Escape(rawPath)}' is invalid or outside the safe directory and will be ignored.[/]");
             }
+        }
+
+        _historyLoader = new Lazy<Task>(LoadHistoryAsync);
+    }
+
+    private async Task LoadHistoryAsync()
+    {
+        if (string.IsNullOrEmpty(_historyPath) || !File.Exists(_historyPath))
+        {
+            return;
+        }
+
+        try
+        {
+            await foreach (var line in File.ReadLinesAsync(_historyPath))
+            {
+                if (!string.IsNullOrWhiteSpace(line))
+                {
+                    _editor.History.Add(line);
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            _console.MarkupLine($"[yellow]Warning: Failed to load chat history from '{Markup.Escape(_historyPath)}'. {Markup.Escape(ex.Message)}[/]");
         }
     }
 
@@ -113,6 +122,8 @@ public sealed class ChatLineEditor : IChatLineEditor
 
     public async Task<string?> ReadLine(CancellationToken cancellationToken)
     {
+        await _historyLoader.Value;
+
         var line = await _editor.ReadLine(cancellationToken);
         if (!string.IsNullOrWhiteSpace(line))
         {
