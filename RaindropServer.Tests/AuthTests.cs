@@ -145,6 +145,12 @@ public class AuthTests
         // Assert
         Assert.False(result.Succeeded);
         Assert.Equal("Invalid Token", result.Failure?.Message);
+        await userApi.Received(1).GetAsync();
+
+        // Verify it was cached as failure
+        var secondResult = await handler.AuthenticateAsync();
+        Assert.False(secondResult.Succeeded);
+        await userApi.Received(1).GetAsync(); // Still only 1 call
     }
 
     [Fact]
