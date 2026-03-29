@@ -35,7 +35,10 @@ public sealed class ChatLineEditor : IChatLineEditor
         var rawPath = Environment.GetEnvironmentVariable(HistoryEnvVar);
         if (!string.IsNullOrEmpty(rawPath))
         {
-            if (IsPathSafe(rawPath, out var validatedPath))
+            var userProfile = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile, Environment.SpecialFolderOption.DoNotVerify);
+            var safeRoot = Path.GetFullPath(Path.Combine(userProfile, SafeHistorySubdir));
+
+            if (IsPathSafe(rawPath, safeRoot, out var validatedPath))
             {
                 _historyPath = validatedPath;
                 if (File.Exists(_historyPath))
@@ -63,14 +66,13 @@ public sealed class ChatLineEditor : IChatLineEditor
         }
     }
 
-    private static bool IsPathSafe(string path, out string? validatedPath)
+    internal static bool IsPathSafe(string path, string safeRoot, out string? validatedPath)
     {
         validatedPath = null;
         try
         {
             var fullPath = Path.GetFullPath(path);
-            var userProfile = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
-            var safeRoot = Path.GetFullPath(Path.Combine(userProfile, SafeHistorySubdir));
+            safeRoot = Path.GetFullPath(safeRoot);
 
             // Ensure the safe directory exists
             if (!Directory.Exists(safeRoot))
@@ -83,17 +85,40 @@ public sealed class ChatLineEditor : IChatLineEditor
                 ? safeRoot
                 : safeRoot + Path.DirectorySeparatorChar;
 
-            // Reject if it's a symbolic link (prevent link-following traversal)
-            var fileInfo = new FileInfo(fullPath);
-            if (fileInfo.Exists && (fileInfo.Attributes & FileAttributes.ReparsePoint) != 0)
+            // Walk the path components to ensure none are reparse points or hidden
+            var current = fullPath;
+            while (!string.IsNullOrEmpty(current) && current.Length >= safeRoot.Length)
             {
-                return false;
-            }
+                // Note: FileInfo works for both files and directories for these checks
+                // On Unix, we use LinkTarget to check for symlinks because FileAttributes.ReparsePoint might not be set for all symlink types
+                // or might require the file to exist.
+                var info = new FileInfo(current);
 
-            // Reject hidden files (starting with a dot)
-            if (Path.GetFileName(fullPath).StartsWith('.'))
-            {
-                return false;
+                if (info.LinkTarget != null)
+                {
+                    return false;
+                }
+
+                // Reject if it's a reparse point (prevent link-following traversal)
+                // We only allow reparse points if they are part of the safeRoot prefix itself (e.g., if the home dir is a symlink)
+                // but for simplicity and maximum security, we'll check everything from fullPath up to the safeRoot
+                if (info.Exists && (info.Attributes & FileAttributes.ReparsePoint) != 0)
+                {
+                    return false;
+                }
+
+                // Reject hidden files or directories (starting with a dot)
+                // Exception: The safe directory itself starts with a dot, so we stop before checking it.
+                if (current.Length > safeRoot.Length)
+                {
+                    var name = Path.GetFileName(current);
+                    if (name.StartsWith('.'))
+                    {
+                        return false;
+                    }
+                }
+
+                current = Path.GetDirectoryName(current);
             }
 
             // Allow files only within the safeRoot
