@@ -133,7 +133,7 @@ public class ChatConsole : IChatConsole
             _console.MarkupLine(CliConstants.MultiSelection.NoSelections);
         }
 
-        return result.Select(selection => selection.Name).ToList();
+        return [.. result.Select(selection => selection.Name)];
     }
 
     /// <summary>

@@ -20,6 +20,11 @@ This repository contains a console chat application and an example Model Context
   ```
 - Always run the test suite after making any changes.
 
+## Performance Optimization
+- Avoid negligible or inconclusive performance optimizations that increase code complexity.
+- Prioritize maintainability and idiomatic C# (like LINQ) over manual array manipulations unless there is a significant, measurable bottleneck.
+- Use simpler expressions like collection expressions (`[.. result]`) or LINQ where appropriate.
+
 ## Running
 - Start the MCP server on its own:
   ```bash
