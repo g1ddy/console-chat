@@ -8,6 +8,7 @@ using NSubstitute;
 
 namespace ConsoleChat.Tests;
 
+[Collection("HistoryTests")]
 public class ChatHistorySecurityTests
 {
     [Fact]

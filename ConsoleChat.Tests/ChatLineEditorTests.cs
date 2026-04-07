@@ -12,6 +12,7 @@ using Spectre.Console.Testing;
 
 namespace ConsoleChat.Tests;
 
+[Collection("HistoryTests")]
 public class ChatLineEditorTests
 {
     [Fact]

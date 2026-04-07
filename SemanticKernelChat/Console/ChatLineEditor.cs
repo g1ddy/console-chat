@@ -45,7 +45,8 @@ public sealed class ChatLineEditor : IChatLineEditor
             }
             else
             {
-                _console.MarkupLine($"[red]Warning: Chat history file path '{Markup.Escape(rawPath)}' is invalid or outside the safe directory and will be ignored.[/]");
+                var warning = $"Warning: Chat history file path '{rawPath}' is invalid or outside the safe directory and will be ignored.";
+                _console.MarkupLine($"[red]{Markup.Escape(warning)}[/]");
             }
         }
 
