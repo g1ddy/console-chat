@@ -32,8 +32,8 @@ public sealed class TextCompletionTestCommand : ChatCommandBase
         public Task<string?> ReadLine(CancellationToken cancellationToken)
         {
             _ = _inputs.TryDequeue(out var input);
-            _console.WriteLine(input);
-            return Task.FromResult(input);
+            _console.WriteLine(input ?? string.Empty);
+            return Task.FromResult<string?>(input);
         }
     }
 
