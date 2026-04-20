@@ -14,24 +14,27 @@ public class FiltersToolsTests
         _sut = new FiltersTools(_api);
     }
 
-    [Fact]
-    public async Task GetAvailableFiltersAsync_InvalidTagsSort_ThrowsArgumentOutOfRangeException()
+    [Theory]
+    [InlineData("invalid")]
+    [InlineData("")]
+    [InlineData(" ")]
+    public async Task GetAvailableFiltersAsync_InvalidTagsSort_ThrowsArgumentOutOfRangeException(string tagsSort)
     {
         // Act & Assert
         var exception = await Assert.ThrowsAsync<ArgumentOutOfRangeException>(() =>
-            _sut.GetAvailableFiltersAsync(0, tagsSort: "invalid"));
+            _sut.GetAvailableFiltersAsync(0, tagsSort: tagsSort));
         Assert.Equal("tagsSort", exception.ParamName);
+        Assert.Contains("Valid values are '-count' or '_id'.", exception.Message);
     }
 
     [Theory]
-    [InlineData("-count")]
-    [InlineData("_id")]
-    [InlineData(null)]
-    public async Task GetAvailableFiltersAsync_ValidTagsSort_CallsApiWithCorrectParameters(string? tagsSort)
+    [InlineData("-count", "query")]
+    [InlineData("_id", null)]
+    [InlineData(null, "query")]
+    public async Task GetAvailableFiltersAsync_ValidParameters_CallsApiWithCorrectParameters(string? tagsSort, string? search)
     {
         // Arrange
         long collectionId = 123;
-        string? search = "query";
         var expectedResponse = new AvailableFilters { Result = true };
         _api.GetAsync(collectionId, tagsSort, search).Returns(expectedResponse);
 
